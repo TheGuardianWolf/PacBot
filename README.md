@@ -4,7 +4,15 @@ This README would normally document whatever steps are necessary to get your app
 
 ### What is this repository for? ###
 
-* Quick summary
+#### Analog ####
+
+For stuff related to the sensor configuration, building, designing etc. and
+any other analog components.
+
+#### Digital ####
+
+For stuff related to the PSoC and any digital components.
+
 * Version
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 

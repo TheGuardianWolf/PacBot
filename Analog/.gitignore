@@ -1,0 +1,20 @@
+##### Altium
+History
+__Previews
+*.PrjPCBStructure
+*.PrjPcbStructure
+
+*.SchDocPreview
+*.PcbDocPreview
+Project Outputs for *
+Project Logs for *
+
+# PCB
+# *.IntLib
+# *.LOG
+
+##### LTSpice
+*.raw
+*.log
+*.net
+*.plt
