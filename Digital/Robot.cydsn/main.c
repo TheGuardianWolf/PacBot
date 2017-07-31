@@ -9,9 +9,9 @@
  *
  * ========================================
 */
-#include "project.h"
+#include <project.h>
 
-int main(void)
+int main()
 {
     CyGlobalIntEnable; /* Enable global interrupts. */
 
