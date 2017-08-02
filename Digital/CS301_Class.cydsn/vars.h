@@ -1,3 +1,5 @@
+#ifndef VARS_H
+#define VARS_H
 /* ========================================
  *
  * Copyright Univ of Auckland, 2016
@@ -27,17 +29,11 @@ uint8 flag_ts_display = 0;
 
 uint8 flag_rx = 0;
 uint8 flag_packet = 0;
-uint8 flag_KB_string = 0;
 
 uint8 dataready_flag =0;
 
 uint8 flag_rf_transmission_active = UNKNOWN; // [TRUE if receieving data, FALSE is not, UNKNOWN at startup]
 
-//* ========================================
-char displaystring[BUF_SIZE] = "CS301 2016\n";
-char line[BUF_SIZE], entry[BUF_SIZE];
-uint8 usbBuffer[BUF_SIZE];
-//* ========================================
 typedef struct data_main {
 	int8            rssi;	
     uint8           index;			// index number of packet. incremented number
@@ -63,3 +59,5 @@ struct data_main system_state;
 
 //* ========================================
 /* [] END OF FILE */
+
+#endif /* VARS_H */

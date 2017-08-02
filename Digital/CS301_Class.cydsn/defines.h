@@ -1,3 +1,5 @@
+#ifndef DEFINES_H
+#define DEFINES_H
 /* ========================================
  *
  * Copyright Univ of Auckland, 2016
@@ -11,6 +13,8 @@
 */
 // Code setup
 #define USE_USB
+#define USE_RF RF_BT_SELECT_Write(0);
+#define USE_BT RF_BT_SELECT_Write(1);
 
 //* ========================================
 #define FALSE 0
@@ -61,3 +65,5 @@
 #define PACKETSIZE 32    
 #define RXSTRINGSIZE 64 // 4+3+[4+4+4]+[4+4+4+4]+[4+4+4+4]+[4+4+4+4]+delimiters, i.e. no more than 64
 /* [] END OF FILE */
+
+#endif /* DEFINES_H */
