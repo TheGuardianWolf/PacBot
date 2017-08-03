@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.html.txt": "html",
+        "project.h": "c"
+    }
+}

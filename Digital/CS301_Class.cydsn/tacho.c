@@ -10,40 +10,40 @@
  * ========================================
 */
 
-#include <project.h>
-#include "defines.h"
-
-extern int16 speedL, speedR;
-extern int16 posL, posR;
-
-
-void get_position(void);
-void get_speed(void);
-
-//------------------------------------------------------
-void get_position()
-{
-    int pl, pr;
-
-    pl = QuadDec_M1_GetCounter();
-    pr = QuadDec_M2_GetCounter();
-
-    posL = pl;
-    posR = pr;
-}
-//------------------------------------------------------
-void get_speed()
-{
-    int16 pl, pr;
-    
-    // get current position.
-    pl = QuadDec_M1_GetCounter();
-    pr = QuadDec_M2_GetCounter();
-    
-    speedL = pl - posL;
-    speedR = pr - posR;
-    posL = pl;
-    posR = pr;
+//#include <project.h>
+//#include "defines.h"
+//
+//extern int16 speedL, speedR;
+//extern int16 posL, posR;
+//
+//
+//void get_position(void);
+//void get_speed(void);
+//
+////------------------------------------------------------
+//void get_position()
+//{
+//    int pl, pr;
+//
+//    pl = QuadDec_M1_GetCounter();
+//    pr = QuadDec_M2_GetCounter();
+//
+//    posL = pl;
+//    posR = pr;
+//}
+////------------------------------------------------------
+//void get_speed()
+//{
+//    int16 pl, pr;
+//    
+//    // get current position.
+//    pl = QuadDec_M1_GetCounter();
+//    pr = QuadDec_M2_GetCounter();
+//    
+//    speedL = pl - posL;
+//    speedR = pr - posR;
+//    posL = pl;
+//    posR = pr;
     
     
 //    // Speed of Motor 1
@@ -67,6 +67,6 @@ void get_speed()
 //        speed += -32768;
 //    speedR = speed;    
 //    posR = pr;
-}
+//}
 //------------------------------------------------------
 /* [] END OF FILE */
