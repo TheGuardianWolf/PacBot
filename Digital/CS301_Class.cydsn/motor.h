@@ -14,16 +14,19 @@
 
 #include <cytypes.h>
     
-#define M_MAX 127
-#define M_MIN -127
+#define M_FORWARD 127  // Full forward
+#define M_REVERSE -128  // Full reverse
+#define M_DRIFT -1  // Drift
 #define ML_SET(x) M1_PWM_WritePeriod(x)
 #define MR_SET(x) M2_PWM_WritePeriod(x)
-#define ML_DISABLE M1_D1_Write(1)
-#define MR_DISABLE M2_D1_Write(1)
+#define ML_DISABLE() M1_D1_Write(1)
+#define MR_DISABLE() M2_D1_Write(1)
 
 void motor_init();
 
 void motor_set(int8_t speed_L, int8_t speed_R);
+
+void motor_disable(bool disable_L, bool disable_R);
 
 /* [] END OF FILE */
 

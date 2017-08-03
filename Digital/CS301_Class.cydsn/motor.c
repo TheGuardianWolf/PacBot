@@ -11,14 +11,13 @@
 */
 
 #include <project.h>
-
 #include "motor.h"
 
 static uint8_t speed2period(int8_t speed) {
     if (speed < 0) {
-        return (uint8_t) (128 + speed);
+        return ((uint8_t) speed - 128);
     }
-    return (uint8_t) speed * 2;
+    return (uint8_t) speed + 128;
 }
 
 void motor_init() {
@@ -27,15 +26,18 @@ void motor_init() {
 }
 
 void motor_set(int8_t speed_L, int8_t speed_R) {
-    if (speed_L == 0) {
-        ML_DISABLE;
-    }
     ML_SET(speed2period(speed_L));
-
-    if (speed_R == 0) {
-        MR_DISABLE;
-    }
     MR_SET(speed2period(speed_R));
+}
+
+void motor_disable(bool disable_L, bool disable_R) {
+    if (disable_L) {
+        ML_DISABLE();
+    }
+
+    if (disable_R) {
+        MR_DISABLE();
+    }
 }
 
 /* [] END OF FILE */
