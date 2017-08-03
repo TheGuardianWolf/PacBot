@@ -23,8 +23,8 @@
 
 void usb_init();
 bool usb_has_input();
-void usbPutString(char *s);
-void usbPutChar(char c);
+void usb_send_string(char *s);
+void usb_send_char(char c);
 //* ========================================
 
 /* [] END OF FILE */

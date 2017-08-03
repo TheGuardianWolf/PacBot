@@ -34,7 +34,7 @@ char usb_get_char() {
 }
 
 
-void usbPutString(char *s)
+void usb_send_string(char *s)
 {
 // !! Assumes that *s is a string with allocated space >=64 chars     
 //  Since USB implementation retricts data packets to 64 chars, this function truncates the
@@ -45,7 +45,7 @@ void usbPutString(char *s)
     USBUART_PutData((uint8*)s,strlen(s));
 }
 //* ========================================
-void usbPutChar(char c)
+void usb_send_char(char c)
 { 
     while (USBUART_CDCIsReady() == 0);
     USBUART_PutChar(c);   
