@@ -22,6 +22,9 @@
 #include "usb.h"
 #include "vars.h"
 #include "defines.h"
+#include "motor.h"
+#include "quad_dec.h"
+#include "debug.h"
 //* ========================================
 
 static char displaystring[BUF_SIZE] = "CS301 2016\n";
@@ -29,14 +32,21 @@ static char displaystring[BUF_SIZE] = "CS301 2016\n";
 void init() {
     CYGlobalIntEnable;
     USE_RF;
+    motor_init();
     usb_init();
+    quad_dec_init();
 }
 
 int main()
 {
     init();
+    motor_set(50, 50);
+    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
     for(;;)
-    {     
+    {
+        if(quad_dec_get().L > QUADDEC_MAX + 10){
+            //LED_ON;
+        }
     }   
 }
 

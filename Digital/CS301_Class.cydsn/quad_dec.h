@@ -3,7 +3,7 @@
     
 #include <cytypes.h>
 
-#define QUADDEC_MAX 0xFFu
+#define QUADDEC_MAX 0x7FFF
 #define QUADDEC_UNDERFLOW M1_QuadDec_COUNTER_UNDERFLOW
 #define QUADDEC_OVERFLOW M1_QuadDec_COUNTER_OVERFLOW
 #define QDL_GET() M1_QuadDec_GetCounter()
