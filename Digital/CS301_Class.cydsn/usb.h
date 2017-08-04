@@ -1,3 +1,5 @@
+#ifndef USB_H
+#define USB_H
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -28,3 +30,5 @@ void usb_send_char(char c);
 //* ========================================
 
 /* [] END OF FILE */
+
+#endif /* USB_H */

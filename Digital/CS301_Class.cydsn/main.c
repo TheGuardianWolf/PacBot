@@ -20,8 +20,7 @@
 #include <project.h>
 //* ========================================
 #include "usb.h"
-#include "vars.h"
-#include "defines.h"
+#include "wireless.h"
 #include "motor.h"
 #include "quad_dec.h"
 #include "debug.h"
