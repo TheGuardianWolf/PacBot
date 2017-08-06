@@ -41,6 +41,7 @@ int main()
     init();
     motor_set(50, 50);
     M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
+    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
     for(;;)
     {
         if(quad_dec_get().L > QUADDEC_MAX + 10){

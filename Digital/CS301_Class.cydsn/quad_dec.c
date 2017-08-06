@@ -20,13 +20,12 @@ CY_ISR(quad_dec_L) {
 }
 
 CY_ISR(quad_dec_R) {
-    led_set(LED_STATE_ON);
     events_check(M2_QuadDec_GetEvents(), &quad_dec_R_mult);
 }
 
 void quad_dec_init() {
     isr_M1_QuadDec_StartEx(quad_dec_L);
-    isr_M1_QuadDec_StartEx(quad_dec_R);
+    isr_M2_QuadDec_StartEx(quad_dec_R);
     M1_QuadDec_Start();
     M2_QuadDec_Start();
 }
