@@ -14,7 +14,21 @@
 
 #include <cytypes.h>
 #include <stdbool.h>
-    
-CY_ISR_PROTO(pid_timer);
 
-void quad_dec_init();
+#define timeInterval 1000    
+    
+CY_ISR_PROTO(isr_PID_timer_Interrupt);
+
+void pid_timer_init();
+
+void Compute();
+
+double getExpectedRotations();
+
+void setPIDL(double KpL, double KiL, double KdL);
+
+void setPIDR(double KpR, double KiR, double KdR);
+
+unsigned long getTime();
+
+#endif /* PID_H */

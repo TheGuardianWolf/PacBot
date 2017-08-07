@@ -24,6 +24,7 @@
 #include "motor.h"
 #include "quad_dec.h"
 #include "debug.h"
+#include "pid.h"
 //* ========================================
 
 static char displaystring[BUF_SIZE] = "CS301 2016\n";
@@ -34,18 +35,19 @@ void init() {
     motor_init();
     usb_init();
     quad_dec_init();
+    pid_timer_init();
 }
 
 int main()
 {
     init();
-    motor_set(50, 50);
-    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
-    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
+    motor_set(33, 33);
+//    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
+//    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
     for(;;)
     {
-        if(quad_dec_get().L > QUADDEC_MAX + 10){
-            //LED_ON;
+        if(M2_QuadDec_GetCounter()>= 228) {
+            
         }
     }   
 }

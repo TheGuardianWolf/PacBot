@@ -15,7 +15,6 @@ static void events_check(uint8_t events, int8_t *mult) {
 }
 
 CY_ISR(quad_dec_L) {
-    led_set(LED_STATE_ON);
     events_check(M1_QuadDec_GetEvents(), &quad_dec_L_mult);
 }
 
