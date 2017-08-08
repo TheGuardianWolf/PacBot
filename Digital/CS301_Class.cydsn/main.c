@@ -28,26 +28,41 @@
 //* ========================================
 
 static char displaystring[BUF_SIZE] = "CS301 2016\n";
-
+static uint8_t channel = 0;
 void init() {
     CYGlobalIntEnable;
     USE_RF;
     motor_init();
     usb_init();
     quad_dec_init();
-    pid_timer_init();
+    SIGMUX_Start();
+    SIGMUX_FastSelect(0);
+//    pid_timer_init();
 }
 
 int main()
 {
     init();
-    motor_set(33, 33);
+    //motor_set(33, 33);
 //    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
 //    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
     for(;;)
     {
-        if(M2_QuadDec_GetCounter()>= 228) {
-            
+//        if(M2_QuadDec_GetCounter()>= 228) {
+//            
+//        }
+        if(SW_Read() == 1) {
+            led_set(LED_STATE_ON);
+            while(SW_Read() != 0) {
+            }
+            channel++;
+            if (channel > 4) {
+                channel = 0;
+            }
+            SIGMUX_Select(channel);
+        }
+        else {
+            led_set(LED_STATE_OFF);
         }
     }   
 }
