@@ -25,33 +25,22 @@
 #include "quad_dec.h"
 #include "debug.h"
 #include "pid.h"
+#include "analog.h"
 //* ========================================
 
-static char displaystring[BUF_SIZE] = "CS301 2016\n";
-static uint8_t channel = 0;
-
-void sigmux_init() {
-    SIGMUX_Start();
-    SIGMUX_FastSelect(0);
-}
-
-void sigmux_test() {
+void mux_test() {
     if(SW_Read() == 0) {
         led_set(LED_STATE_ON);
         while(SW_Read() == 0) {
         }
-        channel++;
-        if (channel > 4) {
-            channel = 0;
-        }
-        SIGMUX_Select(channel);
+        mux_next();
     }
     else {
         led_set(LED_STATE_OFF);
     }
 }
 
-void init() {
+void system_init() {
     CYGlobalIntEnable;
     USE_RF;
     motor_init();
@@ -59,12 +48,12 @@ void init() {
     quad_dec_init();
     led_set(LED_STATE_OFF);
 //    pid_timer_init();
-    sigmux_init();
+    mux_init();
 }
 
 int main()
 {
-    init();
+    system_init();
     //motor_set(33, 33);
 //    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
 //    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);

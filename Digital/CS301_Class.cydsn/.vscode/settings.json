@@ -2,6 +2,7 @@
     "files.associations": {
         "*.html.txt": "html",
         "project.h": "c",
-        "cytypes.h": "c"
+        "cytypes.h": "c",
+        "quad_dec.h": "c"
     }
 }

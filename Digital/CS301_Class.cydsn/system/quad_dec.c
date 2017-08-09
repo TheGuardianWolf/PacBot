@@ -12,6 +12,7 @@ static void events_check(uint8_t events, int8_t *mult) {
     else if ((events & QUADDEC_UNDERFLOW) == QUADDEC_UNDERFLOW) {
         (*mult)--;
     }
+    led_set(LED_STATE_ON); // Debug line
 }
 
 CY_ISR(quad_dec_L) {
