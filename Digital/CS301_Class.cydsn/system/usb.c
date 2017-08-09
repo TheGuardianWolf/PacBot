@@ -17,8 +17,8 @@
 
 //* ========================================
 static bool has_input = false;
-static char line[BUF_SIZE], entry[BUF_SIZE];
-static uint8 usbBuffer[BUF_SIZE];
+static char line[USB_BUF_SIZE], entry[USB_BUF_SIZE];
+static uint8 usbBuffer[USB_BUF_SIZE];
 //* ========================================
 
 void usb_init() {

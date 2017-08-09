@@ -15,7 +15,6 @@
 #include <cytypes.h>
 #include <stdbool.h>
 
-#define 
 #define M_MAX  92// Full forward
 #define M_MIN -93  // Full reverse
 #define M_DRIFT -1  // Drift

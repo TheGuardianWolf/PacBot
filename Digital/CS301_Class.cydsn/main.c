@@ -28,19 +28,12 @@
 #include "analog.h"
 //* ========================================
 
-static char displaystring[BUF_SIZE] = "CS301 2016\n";
-static uint8_t channel = 0;
-
 void mux_test() {
     if(SW_Read() == 0) {
         led_set(LED_STATE_ON);
         while(SW_Read() == 0) {
         }
-        channel++;
-        if (channel > 4) {
-            channel = 0;
-        }
-        mux_select(channel);
+        mux_next();
     }
     else {
         led_set(LED_STATE_OFF);

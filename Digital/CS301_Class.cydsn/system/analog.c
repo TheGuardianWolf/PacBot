@@ -1,6 +1,7 @@
+#include "analog.h"
 #include <project.h>
 
-static uint8_t current_channel = 0
+static uint8_t current_channel = 0;
 
 void mux_init() {
     SIGMUX_Start();
@@ -10,7 +11,7 @@ void mux_init() {
 void mux_select(uint8_t channel) {
     if (channel < CHANNEL_MAX) {
         current_channel = channel;
-        SIGMUX_FastSelect(channel)
+        SIGMUX_FastSelect(channel);
     }    
 }
 
