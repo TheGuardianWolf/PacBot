@@ -13,11 +13,11 @@
 #include <project.h>
 #include "motor.h"
 
-static uint8_t speed2comp(int8_t speed) {
+static uint8_t speed2pwm(int8_t speed) {
     if (speed < 0) {
-        return ((uint8_t) speed - 128);
+        return ((uint8_t) speed - 128 - 35);  // Dead zone compensation of -35
     }
-    return (uint8_t) speed + 128;
+    return (uint8_t) speed + 128 + 35;  // Dead zone compensation of 35
 }
 
 void motor_init() {
@@ -27,8 +27,8 @@ void motor_init() {
 }
 
 void motor_set(int8_t speed_L, int8_t speed_R) {
-    ML_SET(speed2comp(speed_L));
-    MR_SET(speed2comp(speed_R));
+    ML_SET(speed2pwm(speed_L));
+    MR_SET(speed2pwm(speed_R));
     
     bool disable_L = false;
     bool disable_R = false;

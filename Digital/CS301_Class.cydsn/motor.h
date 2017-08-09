@@ -14,9 +14,10 @@
 
 #include <cytypes.h>
 #include <stdbool.h>
-    
-#define M_FORWARD 127  // Full forward
-#define M_REVERSE -128  // Full reverse
+
+#define 
+#define M_MAX  92// Full forward
+#define M_MIN -93  // Full reverse
 #define M_DRIFT -1  // Drift
 #define ML_SET(x) M1_PWM_WriteCompare(x)
 #define MR_SET(x) M2_PWM_WriteCompare(x)
