@@ -29,15 +29,37 @@
 
 static char displaystring[BUF_SIZE] = "CS301 2016\n";
 static uint8_t channel = 0;
+
+void sigmux_init() {
+    SIGMUX_Start();
+    SIGMUX_FastSelect(0);
+}
+
+void sigmux_test() {
+    if(SW_Read() == 0) {
+        led_set(LED_STATE_ON);
+        while(SW_Read() == 0) {
+        }
+        channel++;
+        if (channel > 4) {
+            channel = 0;
+        }
+        SIGMUX_Select(channel);
+    }
+    else {
+        led_set(LED_STATE_OFF);
+    }
+}
+
 void init() {
     CYGlobalIntEnable;
     USE_RF;
     motor_init();
     usb_init();
     quad_dec_init();
-    SIGMUX_Start();
-    SIGMUX_FastSelect(0);
+    led_set(LED_STATE_OFF);
 //    pid_timer_init();
+    sigmux_init();
 }
 
 int main()
@@ -51,19 +73,7 @@ int main()
 //        if(M2_QuadDec_GetCounter()>= 228) {
 //            
 //        }
-        if(SW_Read() == 1) {
-            led_set(LED_STATE_ON);
-            while(SW_Read() != 0) {
-            }
-            channel++;
-            if (channel > 4) {
-                channel = 0;
-            }
-            SIGMUX_Select(channel);
-        }
-        else {
-            led_set(LED_STATE_OFF);
-        }
+
     }   
 }
 

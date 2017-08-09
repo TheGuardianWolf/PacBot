@@ -25,7 +25,7 @@ static float kpL, kiL, kdL, kpR, kiR, kdR;
 
 //this gives me the rotations predicted based on speed. Dunno how to calculate yet.
 float getExpectedRotations() {
-    return 0;
+    return 0.0;
 }
 
 
@@ -56,7 +56,7 @@ void Compute() {
     motor_set(currentspeedleft * pidout_L, currentspeedright * pidout_R);
 }
 
-CY_ISR(isr_PID_timer_Interrupt) {
+CY_ISR(timer_0) {
     Compute();
 }
 
@@ -85,7 +85,7 @@ void pid_timer_init() {
     errorSum_R = 0;
     errorSum_L = 0;
     
-    isr_PID_timer_StartEx(isr_PID_timer_Interrupt);
+    isr_PID_timer_StartEx(timer_0);
     isr_PID_timer_Start();
     Timer_1_Start();
 }

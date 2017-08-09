@@ -17,17 +17,17 @@
 
 #define timeInterval 1000    
     
-CY_ISR_PROTO(isr_PID_timer_Interrupt);
+CY_ISR_PROTO(timer_0);
 
 void pid_timer_init();
 
 void Compute();
 
-double getExpectedRotations();
+float getExpectedRotations();
 
-void setPIDL(double KpL, double KiL, double KdL);
+void setPIDL(float KpL, float KiL, float KdL);
 
-void setPIDR(double KpR, double KiR, double KdR);
+void setPIDR(float KpR, float KiR, float KdR);
 
 unsigned long getTime();
 
