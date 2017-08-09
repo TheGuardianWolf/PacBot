@@ -30,33 +30,12 @@ void motor_set(int8_t speed_L, int8_t speed_R) {
     ML_SET(speed2pwm(speed_L));
     MR_SET(speed2pwm(speed_R));
     
-    bool disable_L = false;
-    bool disable_R = false;
-    
-    if (speed_L == M_DRIFT) {
-        disable_L = true;
-    }
-    if (speed_R == M_DRIFT) {
-        disable_R = true;
-    }
-    
-    motor_disable(disable_L, disable_R);
+    motor_disable(speed_L == M_DRIFT, speed_R == M_DRIFT);
 }
 
 void motor_disable(bool disable_L, bool disable_R) {
-    if (disable_L) {
-        ML_DISABLE(1);
-    }
-    else {
-        ML_DISABLE(0);
-    }
-
-    if (disable_R) {
-        MR_DISABLE(1);
-    }
-    else {
-        MR_DISABLE(0);
-    }
+    ML_DISABLE((uint8_t) disable_L);
+    MR_DISABLE((uint8_t) disable_R);
 }
 
 /* [] END OF FILE */
