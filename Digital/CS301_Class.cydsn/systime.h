@@ -1,5 +1,6 @@
-#ifndef PID_H
-#define PID_H
+#ifndef SYSTIME_H
+#define SYSTIME_H
+
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -13,20 +14,15 @@
 */
 
 #include <cytypes.h>
-#include <stdbool.h>
+    
+#define SYSTIME_COUNTER_MAX 0xFFFFFFFF
 
-#define timeInterval 1000    
+void system_time_init();
 
-void pid_timer_init();
+uint32_t system_time_ms();
 
-void Compute();
+uint32_t system_time_s();
 
-float getExpectedRotations();
+/* [] END OF FILE */
 
-void setPIDL(float KpL, float KiL, float KdL);
-
-void setPIDR(float KpR, float KiR, float KdR);
-
-unsigned long getTime();
-
-#endif /* PID_H */
+#endif /* SYSTIME_H */
