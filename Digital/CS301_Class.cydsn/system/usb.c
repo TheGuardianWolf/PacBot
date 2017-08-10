@@ -15,11 +15,7 @@
 #include "usb.h"
 //* ========================================
 
-//* ========================================
 static bool has_input = false;
-static char line[USB_BUF_SIZE], entry[USB_BUF_SIZE];
-static uint8 usbBuffer[USB_BUF_SIZE];
-//* ========================================
 
 void usb_init() {
     USBUART_Start(0,USBUART_5V_OPERATION);

@@ -54,16 +54,18 @@ void pk_drain_test() {
     }
 }
 
-void init() {
-    CYGlobalIntEnable;
+void light_array_test() {
+    
+}
+
+void system_init() {
     USE_RF;
     motor_init();
     usb_init();
     quad_dec_init();
-    led_set(LED_STATE_OFF);
-//    pid_timer_init();
     analog_init();
-    system_time_init();
+    systime_init();
+    CYGlobalIntEnable;
 }
 
 int main()
@@ -71,7 +73,7 @@ int main()
     //motor_set(33, 33);
 //    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
 //    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
-    init();
+    system_init();
     for(;;)
     {
         mux_test();

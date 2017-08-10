@@ -17,11 +17,11 @@
     
 #define SYSTIME_COUNTER_MAX 0xFFFFFFFF
 
-void system_time_init();
+void systime_init();
 
-uint32_t system_time_ms();
+uint32_t systime_ms();
 
-uint32_t system_time_s();
+uint32_t systime_s();
 
 /* [] END OF FILE */
 
