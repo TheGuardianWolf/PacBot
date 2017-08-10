@@ -3,8 +3,11 @@
 
 static uint8_t current_channel = 0;
 
-void mux_init() {
+void analog_init() {
     SIGMUX_Start();
+    SAMP_Start();
+    IAMP_Start();
+    PKAMP_Start();
     SIGMUX_FastSelect(current_channel);
 }
 
