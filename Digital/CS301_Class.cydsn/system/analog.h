@@ -5,7 +5,7 @@
 
 #define CHANNEL_MAX 5
 
-void mux_init();
+void analog_init();
 
 void mux_select(uint8_t channel);
 

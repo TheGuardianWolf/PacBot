@@ -41,7 +41,20 @@ void mux_test() {
     }
 }
 
-void system_init() {
+void pk_drain_test() {
+    if(SW_Read() == 0) {
+        led_set(LED_STATE_ON);
+        while(SW_Read() == 0) {
+        }
+        PK_DRAIN_Write(~PK_DRAIN_Read());
+        //mux_next();
+    }
+    else {
+        led_set(LED_STATE_OFF);
+    }
+}
+
+void init() {
     CYGlobalIntEnable;
     USE_RF;
     motor_init();
@@ -49,17 +62,19 @@ void system_init() {
     quad_dec_init();
     led_set(LED_STATE_OFF);
 //    pid_timer_init();
-    mux_init();
+    analog_init();
+    system_time_init();
 }
 
 int main()
 {
-    system_init();
     //motor_set(33, 33);
 //    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
 //    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
+    init();
     for(;;)
     {
+        mux_test();
 //        if(M2_QuadDec_GetCounter()>= 228) {
 //            
 //        }
