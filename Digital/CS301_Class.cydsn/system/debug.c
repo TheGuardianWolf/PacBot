@@ -21,3 +21,7 @@ void led_set(uint8_t state) {
 void log_usb(char* message) {
     usb_send_string(message);
 }
+
+bool switch_get() {
+    return !((bool) SW_Read());
+}

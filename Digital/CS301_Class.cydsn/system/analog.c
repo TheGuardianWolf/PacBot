@@ -3,15 +3,22 @@
 
 static uint8_t current_channel = 0;
 static uint16_t adc_solo_samples[SOLO_SAMPLES] = {0};
+static volatile uint16_t adc_solo_average = 0;
 static uint8_t DMA_SOLO_TD[1];
 static uint8_t DMA_SOLO_Chan;
 
 CY_ISR(adc_seq) {
-
+    
 }
 
 CY_ISR(dma_solo) {
-    
+    CyDmaChDisable(DMA_SOLO_Chan);
+    uint32_t sum = 0;
+    uint8_t i = 0;
+    for (i=0; i < SOLO_SAMPLES; i++) {
+        sum += adc_solo_samples[i];
+    }
+    adc_solo_average = sum / SOLO_SAMPLES;
 }
 
 static void dma_solo_init() {
@@ -35,7 +42,9 @@ void analog_init() {
     IAMP_Start();
     PKAMP_Start();
     ADC_SEQ_Start();
+    ADC_SEQ_IRQ_Disable();
     ADC_SOLO_Start();
+    ADC_SOLO_IRQ_Disable();
 }
 
 void mux_select(uint8_t channel) {
@@ -63,6 +72,14 @@ void mux_prev() {
         current_channel = CHANNEL_MAX;
     }
     SIGMUX_FastSelect(current_channel);
+}
+
+void adc_solo_collect() {
+    CyDmaChEnable(DMA_SOLO_Chan, 1);
+}
+
+uint16_t adc_solo_get() {
+    return adc_solo_average;
 }
 
 void peak_drain_set(bool state) {

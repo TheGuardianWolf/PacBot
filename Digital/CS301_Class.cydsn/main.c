@@ -47,7 +47,6 @@ void pk_drain_test() {
         while(SW_Read() == 0) {
         }
         PK_DRAIN_Write(~PK_DRAIN_Read());
-        //mux_next();
     }
     else {
         led_set(LED_STATE_OFF);
@@ -55,7 +54,15 @@ void pk_drain_test() {
 }
 
 void light_array_test() {
-    
+    if(switch_get()) {
+        led_set(LED_STATE_ON);
+        while(switch_get() == 0) {
+        }
+        adc_solo_collect();
+    }
+    else {
+        led_set(LED_STATE_OFF);
+    }
 }
 
 void system_init() {
@@ -73,14 +80,11 @@ int main()
     //motor_set(33, 33);
 //    M1_QuadDec_SetCounter(QUADDEC_MAX - 10);
 //    M2_QuadDec_SetCounter(QUADDEC_MAX - 10);
+    uint16_t average;
     system_init();
-    for(;;)
-    {
-        mux_test();
-//        if(M2_QuadDec_GetCounter()>= 228) {
-//            
-//        }
-
+    for(;;) {
+        light_array_test();
+        average = adc_solo_get();
     }   
 }
 

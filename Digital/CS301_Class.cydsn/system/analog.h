@@ -23,6 +23,10 @@ void mux_next();
 
 void mux_prev();
 
+void adc_solo_collect();
+
+uint16_t adc_solo_get();
+
 void peak_drain_set(bool state);
 
 #endif /* ANALOG_H */
