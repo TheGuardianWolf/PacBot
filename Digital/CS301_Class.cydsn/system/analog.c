@@ -38,6 +38,7 @@ void analog_init() {
     // dma_solo_init();
     SIGMUX_Start();
     SIGMUX_FastSelect(current_channel);
+    SMUX_BUF_Start();
     SAMP_Start();
     IAMP_Start();
     PKAMP_Start();
