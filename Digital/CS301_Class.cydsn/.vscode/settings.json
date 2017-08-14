@@ -3,6 +3,8 @@
         "*.html.txt": "html",
         "project.h": "c",
         "cytypes.h": "c",
-        "quad_dec.h": "c"
+        "quad_dec.h": "c",
+        "pid.h": "c",
+        "debug.h": "c"
     }
 }
