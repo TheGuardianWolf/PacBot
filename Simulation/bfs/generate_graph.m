@@ -4,7 +4,7 @@ function graph = generate_graph(map)
     for j = 1:map_size(2)
         for i = 1:map_size(1)
             if map(i, j) == 0
-                id = [int2str(i) '.' int2str(j)];
+                id = mat2graphid([i, j]);
                 e = find_edges(map, i, j);
                 graph.nodes(id) = e;
                 if (i == 1 || j == 1 || i == map_size(1) || j == map_size(2))
@@ -25,7 +25,7 @@ function edges = find_edges(map, i, j)
         try
             s = map(i_test, j_test);
             if s == 0
-                edges{end + 1} = [int2str(i_test) '.' int2str(j_test)]; %#ok<AGROW>
+                edges{end + 1} = mat2graphid([i_test, j_test]); %#ok<AGROW>
             end
         catch err
             if (strcmp(err.identifier,'MATLAB:badsubscript'))

@@ -8,19 +8,18 @@ function [ came_from, steps ] = search( graph, start, target )
     came_from(start) = NaN;
     while ~frontier.empty()
         current = frontier.get();
-        neighbours = graph.neighbors(current);
+        neighbours = graph.neighbours(current);
         for i=1:length(neighbours)
             next = neighbours{i};
-            if ~came_from.iskey(next)
+            if ~came_from.isKey(next)
                 steps{end + 1} = next; %#ok<AGROW>
                 came_from(next) = current;
-                if next == target 
+                if strcmp(next, target)
                     break
                 end
                 frontier.put(next);
             end
         end
     end
-
 end
 

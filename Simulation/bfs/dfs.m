@@ -9,8 +9,8 @@
 % write your own function for the DFS algorithm.
 function [retmap,retvisited,retsteps] = dfs( mapfile,startlocation,targetlocation)
     % Preprocessing
-    start = mat2graphid(startlocation(1);
-    target = mat2graphid(targetlocation(1));
+    start = mat2graphid(startlocation);
+    target = mat2graphid(targetlocation);
     map = map_convert(mapfile);
     graph = generate_graph(map);
     
@@ -27,21 +27,21 @@ function [retmap,retvisited,retsteps] = dfs( mapfile,startlocation,targetlocatio
         retvisited(visited_pos(1), visited_pos(2)) = 0;
     end
     
-    shortest = graphid2mat(target);
+%     plotmap(map);
+%     hold on;
+%     for i = 1:length(steps)
+%         visited_pos = graphid2mat(steps{i});
+%         placestep([visited_pos(1), visited_pos(2)], i);
+%     end
+%     hold off;
+    
+    shortest = [];
     link = target;
-    while(~isNaN(link))
-        shortest(end + 1, :) = graphid2mat(came_from(link)); %#ok<AGROW>
+    while(~isnan(link))
+        shortest(end + 1, :) = graphid2mat(link); %#ok<AGROW>
         link = came_from(link);
     end
     retsteps = flipud(shortest);
-end
-
-function mat = graphid2mat(id)
-    mat = strsplit(id, '.');
-end
-
-function graphid = mat2graphid(mat)
-    graphid = [int2str(mat(1)) int2str(mat(2))]
 end
 
 function placestep(position,i)

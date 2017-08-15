@@ -7,10 +7,10 @@ classdef Queue < handle
             r = isempty(self.container);
         end
         function put(self, obj)
-            self.container{end} = obj;  
+            self.container{end + 1} = obj;  
         end
         function r = get(self)
-            r = self.container{0};
+            r = self.container{1};
             self.container = self.container(2:end);
         end
     end
