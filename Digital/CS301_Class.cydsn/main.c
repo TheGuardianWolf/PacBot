@@ -62,7 +62,7 @@ void pwm_test() {
         else if (pwm_mode == 1) {
             motor_set(M_MAX / 2, M_MAX / 2);
         }
-        else if (PWM_mode == 2) {
+        else if (pwm_mode == 2) {
             motor_set(M_MAX, M_MAX);
         }
     }
