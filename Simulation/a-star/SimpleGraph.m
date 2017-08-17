@@ -9,8 +9,13 @@ classdef SimpleGraph < handle
             for j = 1:map_size(2)
                 for i = 1:map_size(1)
                     if map(i, j) == 0
-                        id = Node.mat2id([i, j]);
-                        linked_nodes = cellstr({});
+                        nodeid = Node.mat2id([i, j]);
+                        if obj.nodes.isKey(nodeid)
+                            node = obj.nodes(nodeid);
+                        else
+                            node = Node([i, j]);
+                            obj.nodes(nodeid) = node;
+                        end
                         for k = 1:length(vect)
                             cv = vect(k, :);
                             i_test = i + cv(1);
@@ -18,7 +23,14 @@ classdef SimpleGraph < handle
                             try
                                 s = map(i_test, j_test);
                                 if s == 0
-                                    linked_nodes{end + 1} = Node.mat2id([i_test, j_test]); %#ok<AGROW>
+                                    linked_nodeid = Node.mat2id([i_test, j_test]);
+                                    if obj.nodes.isKey(linked_nodeid)
+                                        linked_node = obj.nodes(linked_nodeid);
+                                    else
+                                        linked_node = Node([i_test, j_test]);
+                                        obj.nodes(linked_nodeid) = linked_node;
+                                    end
+                                    node.add_link(linked_node, 1);
                                 end
                             catch err
                                 if (strcmp(err.identifier,'MATLAB:badsubscript'))
@@ -28,13 +40,12 @@ classdef SimpleGraph < handle
                                 end
                             end
                         end
-                        obj.nodes(id) = linked_nodes;
                     end
                 end
             end
         end
-        function r = neighbours(self, id)
-            r = self.nodes(id);
+        function r = get_neighbours(self, nodeid)
+            r = self.nodes(nodeid).links;
         end
     end
 end

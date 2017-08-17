@@ -12,7 +12,7 @@ function [retmap,retvisited,retsteps] = dfs( mapfile,startlocation,targetlocatio
     start = mat2graphid(startlocation);
     target = mat2graphid(targetlocation);
     map = map_convert(mapfile);
-    graph = generate_graph(map);
+    graph = SimpleGraph(map);
     
     % Processing  
     [came_from, steps] = search(graph, start, target);

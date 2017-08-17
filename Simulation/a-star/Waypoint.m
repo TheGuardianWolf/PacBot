@@ -7,15 +7,14 @@ classdef Waypoint < handle
     end
     
     methods
-        function obj = Waypoint(node, routes)
+        function obj = Waypoint(node)
             obj.node = node;
-            obj.routes = routes;
         end
-        function r = get_position(waypoint)
-            r = waypoint.node.position;
+        function r = get_position(self)
+            r = self.node.position;
         end
-        function r = get_id(waypoint)
-            r = waypoint.node.id;
+        function r = get_id(self)
+            r = self.node.id;
         end
         function [nodes, cost] = get_route(waypoint_from, waypoint_to)
             nodes = waypoint_from.routes(waypoint_to);

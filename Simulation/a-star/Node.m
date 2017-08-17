@@ -12,6 +12,15 @@ classdef Node < handle
             obj.position = position;
             obj.id = Node.mat2id(position);
         end
+        function add_link(self, node, cost)
+            if nargin == 1
+                cost = 1;
+            end
+            self.links(node.id) = {node, cost} ;
+        end
+        function [node, cost] = get_link(self, nodeid)
+            [node, cost] = self.links(nodeid);
+        end
     end
     methods(Static)
         function r = mat2id(mat)
