@@ -68,7 +68,7 @@ ClassGenCCAutoRoomEnabled=1
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=ONUDHDFY
+DocumentUniqueId=BGITRWGF
 
 [Document3]
 DocumentPath=Sensor.SchDoc
@@ -173,6 +173,23 @@ GenerateClassCluster=0
 DocumentUniqueId=NQLJPWMB
 
 [Document9]
+DocumentPath=Peak.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=1
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=EIUHOMLJ
+
+[Document10]
 DocumentPath=cs301_11.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -188,6 +205,23 @@ ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=WNGMBMCI
+
+[Document11]
+DocumentPath=opamps.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=1
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=BXJVMCUV
 
 [Configuration1]
 Name=Default Configuration
