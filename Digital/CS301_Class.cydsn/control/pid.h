@@ -16,8 +16,6 @@
 #include <stdbool.h>
 
 #define timeInterval 1000    
-    
-CY_ISR_PROTO(timer_0);
 
 void pid_timer_init();
 

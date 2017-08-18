@@ -2,16 +2,17 @@
 #include "quad_dec.h"
 #include "debug.h"
 
-static int8_t quad_dec_L_mult = 0;
-static int8_t quad_dec_R_mult = 0;
+static volatile int8_t quad_dec_L_mult = 0;
+static volatile int8_t quad_dec_R_mult = 0;
 
-static void events_check(uint8_t events, int8_t *mult) {
+static void events_check(uint8_t events, volatile int8_t *mult) {
     if ((events & QUADDEC_OVERFLOW) == QUADDEC_OVERFLOW) {
         (*mult)++;
     }
     else if ((events & QUADDEC_UNDERFLOW) == QUADDEC_UNDERFLOW) {
         (*mult)--;
     }
+    led_set(LED_STATE_ON); // Debug line
 }
 
 CY_ISR(quad_dec_L) {

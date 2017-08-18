@@ -56,10 +56,6 @@ void Compute() {
     motor_set(currentspeedleft * pidout_L, currentspeedright * pidout_R);
 }
 
-CY_ISR(timer_0) {
-    Compute();
-}
-
 //prob dont need this since its always 1000
 unsigned long getTime() {
     return timeMilli;
@@ -84,8 +80,4 @@ void pid_timer_init() {
     lastCounter_R = 0;
     errorSum_R = 0;
     errorSum_L = 0;
-    
-    isr_PID_timer_StartEx(timer_0);
-    isr_PID_timer_Start();
-    Timer_1_Start();
 }

@@ -1,3 +1,6 @@
+#ifndef SYSTIME_H
+#define SYSTIME_H
+
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -9,11 +12,17 @@
  *
  * ========================================
 */
-#ifndef CYAPICALLBACKS_H
-#define CYAPICALLBACKS_H
+
+#include <cytypes.h>
     
-    /*Define your macro callbacks here */
-    /*For more information, refer to the Macro Callbacks topic in the PSoC Creator Help.*/
-    
-#endif /* CYAPICALLBACKS_H */   
-/* [] */
+#define SYSTIME_COUNTER_MAX 0xFFFFFFFF
+
+void systime_init();
+
+uint32_t systime_ms();
+
+uint32_t systime_s();
+
+/* [] END OF FILE */
+
+#endif /* SYSTIME_H */

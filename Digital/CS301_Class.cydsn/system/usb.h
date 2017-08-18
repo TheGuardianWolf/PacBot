@@ -15,7 +15,7 @@
 #include <stdbool.h>
 
 // USBUART
-#define BUF_SIZE 64 // USBUART fixed buffer size
+#define USB_BUF_SIZE 64 // USBUART fixed buffer size
 #define CHAR_NULL '0'
 #define CHAR_BACKSP 0x08
 #define CHAR_DEL 0x7F
