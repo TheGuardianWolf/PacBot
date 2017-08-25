@@ -1,86 +1,101 @@
-/* ========================================
- *
- * http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-introduction/ 
- *
- * this 7/08 code only implements 2/8 of the blog
- *
- * ========================================
-*/
-
-/* [] END OF FILE */
+// Algorithm from https://github.com/br3ttb/Arduino-PID-Library/
 
 #include <project.h>
 #include "pid.h"
-#include "quad_dec.h"
-#include "motor.h"
 #include "systime.h"
 
-static uint32_t lastRun = 0;
-static float lastCounter_R, lastCounter_L = 0;
-static float errorSum_L, errorSum_R, pidout_L, pidout_R;
-static float kpL, kiL, kdL, kpR, kiR, kdR;
-
-static PIDData pid_data = {
-    .setpoint_L = 0.0,
-    .setpoint_R = 0.0,
-    .confidence_L = 0.0, 
-    .confidence_R = 0.0
-};
-
-void pid_init() {
-    systime_init();
-    motor_init();
-    quad_dec_init();
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time) {
+    PIDdata data = {
+        .last_run = 0,
+        .kp = kp,
+        .ki = ki,
+        .kd = kd,
+        .setpoint = 0.0,
+        .input = 0.0,
+        .last_input = 0.0,
+        .output = 0.0,
+        .output_sum = 0.0,
+        .output_max = output_max,
+        .output_min = output_min,
+        .sample_time = sample_time,
+        .p_on_m = false;
+    }
+    pid_set_tunings(data, kp, ki, kd, p_on_m);
+    return data;
 }
 
-//this gives me the rotations predicted based on speed. Dunno how to calculate yet.
-float getExpectedRotations() {
-    return 0.0;
-}
+void pid_compute(PIDData* data) {    
+    float error = data->setpoint - data->input;
+    
+    data->input_change = data->input - data->last_input;
+    data->output_sum += data->ki * error;
 
-void pid_worker() {
-    if (systime_ms() - lastRun >= 100) {
-        pid_compute();
-        
+    float output = 0.0
+    if (data->p_on_m) {
+        data->output_sum -= data->kp * data->input_change;
+    }
+    else {
+        output = data->kp * error;
+    }
 
+    if (data->output_sum > data->output_max) {
+        data->output_sum = data->output_max;
+    }
+    else if (data->output_sum < data->output_min) {
+        data->output_sum = data->output_min;
+    }
+
+    output += data->output_sum - data->kd * data->input_change;
+
+    if (output > data->output_max) {
+        data->output = output_max;
+    }
+    else if (output < data->output_min) {
+        data->output = output_min;
+    }
+    else {
+        data->output = (int32_t) output;
     }
 }
 
-void pid_compute() {
-    PIDData pd = pid_data;
-    QuadDecData qd = quad_dec_get();
-    
-    //for proportional part
-    float error_L = pd.confidence_L - pd.setpoint_L;
-    float error_R = pd.confidence_R - pd.setpoint_R;
-    
-    // for integral part
-    errorSum_L += error_L;
-    errorSum_R += error_R;
-    
-    //for differentiatial part
-    float dCounter_L = currentCounter_L - lastCounter_L;
-    float dCounter_R = currentCounter_R - lastCounter_R;
-    
-    pidout_L = kpL * error_L + kiL * errorSum_L - kdL * dCounter_L;
-    pidout_R = kpR * error_R + kiR * errorSum_R - kdR * dCounter_R;
-    
-    lastCounter_L = currentCounter_L;
-    lastCounter_R = currentCounter_R;
-    
-    //probably need getters and setters in motor.c to get the current speeds
-    float currentspeedright, currentspeedleft = 0;
-    motor_set(currentspeedleft * pidout_L, currentspeedright * pidout_R);
+void pid_set_limits(PIDData* data, float output_max, float output_min) {
+    if (data->output_min >= data->output_max) {
+        return;
+    } 
+
+    data->output_max = output_max;
+    data->output_min = output_min;
+
+    if (data->output > output_max) {
+        data->output = output_max;
+    }
+    else if (data->output < output_min) {
+        data->output = output_min;
+    }
+
+    if (data->output_sum > output_max) {
+        data->output_sum= output_max;
+    }
+    else if (data->output_sum < output_min) {
+        data->output_sum= output_min;
+    }
 }
 
-void setPIDL(float KpL, float KiL, float KdL) {
-    kpL = KpL;
-    kiL = KiL;
-    kdL = KdL;
+void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m) {
+    data->p_on_m = p_on_m;
+
+    float sample_time_s = ((float) data->sample_time) / 1000;
+
+    data->kp = kp;
+    data->ki = ki * sample_time_s;
+    data->kd = kd / sample_time_s;
 }
 
-void setPIDR(float KpR, float KiR, float KdR) {
-    kpR = KpR;
-    kiR = KiR;
-    kdR = KdR;
+void pid_set_sample_time(PIDData* data, uint32_t sample_time) {
+    if (sample_time > 0) {
+        float ratio  = (float) sample_time / (float) data->sample_time;
+        data->ki *= ratio;
+        data->kd /= ratio;
+        data->sample_time = sample_time;
+    }
 }

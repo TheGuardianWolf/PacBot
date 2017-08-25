@@ -1,12 +1,13 @@
 #include <stdbool.h>
 #include <project.h>
 #include <unistd.h>
+
 #include "adc.h"
-//#include "pid.h"
+#include "motor_controller.h"
 #include "interactive.h"
 
 void system_init() {
-//    pid_init();
+    motor_controller_init();
     adc_init();
     CYGlobalIntEnable;
     adc_wait_ready();
@@ -31,11 +32,7 @@ int main() {
         // Parent process
         // Mission critical workers only
         while(true) {
-            #ifdef PID_ENABLE
-            pid_worker();
-            #else
-            break;
-            #endif
+            motor_controller_worker();
         }
     }
     else {
