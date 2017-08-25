@@ -5,8 +5,6 @@
 #include "pid.h"
 #include "interactive.h"
 
-#define PID_ENABLE true
-
 void system_init() {
     pid_init();
     adc_init();
