@@ -18,14 +18,17 @@
 #define M_MAX  92// Full forward
 #define M_MIN -93  // Full reverse
 #define M_DRIFT -1  // Drift
-#define ML_SET(x) M1_PWM_WriteCompare(x)
-#define MR_SET(x) M2_PWM_WriteCompare(x)
-#define ML_DISABLE(x) M1_D1_Write(x)
-#define MR_DISABLE(x) M2_D1_Write(x)
+
+typedef struct {
+    int8_t L;
+    int8_t R;
+}  MotorData;
 
 void motor_init();
 
-void motor_set(int8_t speed_L, int8_t speed_R);
+MotorData motor_get();
+
+void motor_set(MotorData data);
 
 void motor_disable(bool disable_L, bool disable_R);
 

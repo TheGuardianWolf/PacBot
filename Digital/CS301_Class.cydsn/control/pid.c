@@ -20,6 +20,12 @@ static float lastCounter_R, lastCounter_L = 0;
 static float errorSum_L, errorSum_R, pidout_L, pidout_R;
 static float kpL, kiL, kdL, kpR, kiR, kdR;
 
+static PIDData pid_data = {
+    .setpoint_L = 0.0,
+    .setpoint_R = 0.0,
+    .confidence_L = 0.0, 
+    .confidence_R = 0.0
+};
 
 void pid_init() {
     systime_init();
@@ -35,15 +41,18 @@ float getExpectedRotations() {
 void pid_worker() {
     if (systime_ms() - lastRun >= 100) {
         pid_compute();
+        
+
     }
 }
 
 void pid_compute() {
-    QuadDecData qd = quad_dec_get(); 
+    PIDData pd = pid_data;
+    QuadDecData qd = quad_dec_get();
     
     //for proportional part
-    float error_L = getExpectedRotations() - currentCounter_L;
-    float error_R = getExpectedRotations() - currentCounter_R;
+    float error_L = pd.confidence_L - pd.setpoint_L;
+    float error_R = pd.confidence_R - pd.setpoint_R;
     
     // for integral part
     errorSum_L += error_L;

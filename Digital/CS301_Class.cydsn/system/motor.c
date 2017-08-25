@@ -13,6 +13,8 @@
 #include <project.h>
 #include "motor.h"
 
+static MotorData motor_last_data = NULL;
+
 static uint8_t speed2pwm(int8_t speed) {
     if (speed < 0) {
         return ((uint8_t) speed - 128 - 35);  // Dead zone compensation of -35
@@ -26,16 +28,22 @@ void motor_init() {
     motor_set(M_DRIFT, M_DRIFT);
 }
 
-void motor_set(int8_t speed_L, int8_t speed_R) {
-    ML_SET(speed2pwm(speed_L));
-    MR_SET(speed2pwm(speed_R));
+MotorData motor_get() {
+    return motor_last_data;
+}
+
+void motor_set(MotorData data) {
+    M1_PWM_WriteCompare((speed2pwm(data.L));
+    M2_PWM_WriteCompare(speed2pwm(data.R));
     
-    motor_disable(speed_L == M_DRIFT, speed_R == M_DRIFT);
+    motor_disable(data.L == M_DRIFT, data.R == M_DRIFT);
+
+    motor_last_data = data;
 }
 
 void motor_disable(bool disable_L, bool disable_R) {
-    ML_DISABLE((uint8_t) disable_L);
-    MR_DISABLE((uint8_t) disable_R);
+    M1_D1_Write((uint8_t) disable_L);
+    M2_D1_Write((uint8_t) disable_R);
 }
 
 /* [] END OF FILE */
