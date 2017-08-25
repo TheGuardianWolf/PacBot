@@ -18,7 +18,7 @@
 #define PID_INTERVAL 100 // ms
 
 typedef struct {
-    float setpoint_L
+    float setpoint_L;
     float setpoint_R;
     float confidence_L;
     float confidence_R;

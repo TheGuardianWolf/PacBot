@@ -13,7 +13,7 @@
 #include <project.h>
 #include "motor.h"
 
-static MotorData motor_last_data = NULL;
+static MotorData motor_last_data;
 
 static uint8_t speed2pwm(int8_t speed) {
     if (speed < 0) {
@@ -25,7 +25,7 @@ static uint8_t speed2pwm(int8_t speed) {
 void motor_init() {
     M1_PWM_Start();
     M2_PWM_Start();
-    motor_set(M_DRIFT, M_DRIFT);
+    motor_disable(true, true);
 }
 
 MotorData motor_get() {
@@ -33,7 +33,7 @@ MotorData motor_get() {
 }
 
 void motor_set(MotorData data) {
-    M1_PWM_WriteCompare((speed2pwm(data.L));
+    M1_PWM_WriteCompare(speed2pwm(data.L));
     M2_PWM_WriteCompare(speed2pwm(data.R));
     
     motor_disable(data.L == M_DRIFT, data.R == M_DRIFT);

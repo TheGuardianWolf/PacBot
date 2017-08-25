@@ -21,6 +21,6 @@ void adc_wait_ready() {
     while (!conversions_ready);
 }
 
-int16_t adc_get() {
+int16_t* adc_get() {
     return ADC_SEQ_finalArray;
 }

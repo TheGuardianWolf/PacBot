@@ -5,7 +5,7 @@ static uint8_t mux_channel = 0;
 
 void signals_init() {
     SIGMUX_Start();
-    SIGMUX_FastSelect(current_channel);
+    SIGMUX_FastSelect(mux_channel);
     SMUX_BUF_Start();
     SAMP_Start();
     IAMP_Start();

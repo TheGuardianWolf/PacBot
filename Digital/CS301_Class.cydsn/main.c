@@ -2,11 +2,11 @@
 #include <project.h>
 #include <unistd.h>
 #include "adc.h"
-#include "pid.h"
+//#include "pid.h"
 #include "interactive.h"
 
 void system_init() {
-    pid_init();
+//    pid_init();
     adc_init();
     CYGlobalIntEnable;
     adc_wait_ready();
@@ -42,6 +42,7 @@ int main() {
         // Error in forking, display warning LED.
         led_set(0b001);
     }
+    return 0;
 }
 
 

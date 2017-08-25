@@ -14,6 +14,7 @@
 */
 
 #include <cytypes.h>
+#include <stdbool.h>
     
 #define SYSTIME_COUNTER_MAX 0xFFFFFFFF
 

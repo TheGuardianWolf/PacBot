@@ -12,6 +12,6 @@ void adc_init();
 
 void adc_wait_ready();
 
-int16_t adc_get();
+int16_t* adc_get();
 
 #endif /* ADC_H */
