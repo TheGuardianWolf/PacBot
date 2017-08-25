@@ -42,5 +42,5 @@ void mux_prev() {
 }
 
 void drain_set(bool state) {
-    REG_(~((uint8_t) state));
+    REG_DRAIN_Write(((uint8_t) state));
 }
