@@ -1,43 +1,35 @@
 #ifndef PID_H
 #define PID_H
-/* ========================================
- *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
- *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
- * ========================================
-*/
 
 #include <cytypes.h>
 #include <stdbool.h>
 
-#define PID_INTERVAL 100 // ms
-
 typedef struct {
-    float setpoint_L;
-    float setpoint_R;
-    float confidence_L;
-    float confidence_R;
+    uint32_t last_run;
+    float kp;
+    float ki;
+    float kd;
+    float setpoint;
+    float input;
+    float last_input;
+    float output;
+    float output_sum;
+    float output_max;
+    float output_min;
+    uint32_t sample_time;
+    bool p_on_m;
 }  PIDData;
 
-void pid_init();
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time, bool p_on_m);
 
-void pid_worker();
+void pid_worker(PIDdata* data);
 
-void pid_timer_init();
+void pid_compute(PIDdata* data);
 
-void Compute();
+void pid_set_limits(PIDData* data, float output_max, float output_min);
 
-float getExpectedRotations();
+void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m);
 
-void setPIDL(float KpL, float KiL, float KdL);
-
-void setPIDR(float KpR, float KiR, float KdR);
-
-unsigned long getTime();
+void pid_set_sample_time(PIDData* data, uint32_t sample_time);
 
 #endif /* PID_H */
