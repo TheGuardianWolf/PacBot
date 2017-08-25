@@ -15,7 +15,10 @@
 #include "systime.h"
 #include <project.h>
 
+static bool systime_started = false;
+
 void systime_init() {
+    systime_started = true;
     SystemClock_Start();
 }
 

@@ -9,29 +9,37 @@
 
 /* [] END OF FILE */
 
-#include "pid.h"
 #include <project.h>
-#include "debug.h"
+#include "pid.h"
 #include "quad_dec.h"
 #include "motor.h"
+#include "systime.h"
 
-//probably using too many static variables?
-static unsigned long lastTime;
-static unsigned long timeMilli;//time since start of program
-static float lastCounter_R, lastCounter_L;
+static uint32_t lastRun = 0;
+static float lastCounter_R, lastCounter_L = 0;
 static float errorSum_L, errorSum_R, pidout_L, pidout_R;
 static float kpL, kiL, kdL, kpR, kiR, kdR;
 
+
+void pid_init() {
+    systime_init();
+    motor_init();
+    quad_dec_init();
+}
 
 //this gives me the rotations predicted based on speed. Dunno how to calculate yet.
 float getExpectedRotations() {
     return 0.0;
 }
 
+void pid_worker() {
+    if (systime_ms() - lastRun >= 100) {
+        pid_compute();
+    }
+}
 
-void Compute() {
-    float currentCounter_L = M1_QuadDec_GetCounter();
-    float currentCounter_R = M2_QuadDec_GetCounter();
+void pid_compute() {
+    QuadDecData qd = quad_dec_get(); 
     
     //for proportional part
     float error_L = getExpectedRotations() - currentCounter_L;
@@ -56,11 +64,6 @@ void Compute() {
     motor_set(currentspeedleft * pidout_L, currentspeedright * pidout_R);
 }
 
-//prob dont need this since its always 1000
-unsigned long getTime() {
-    return timeMilli;
-}
-
 void setPIDL(float KpL, float KiL, float KdL) {
     kpL = KpL;
     kiL = KiL;
@@ -71,13 +74,4 @@ void setPIDR(float KpR, float KiR, float KdR) {
     kpR = KpR;
     kiR = KiR;
     kdR = KdR;
-}
-
-void pid_timer_init() {
-    timeMilli = 0;//prob not needed
-    lastTime = 0;//prob not needed
-    lastCounter_L = 0;
-    lastCounter_R = 0;
-    errorSum_R = 0;
-    errorSum_L = 0;
 }

@@ -15,7 +15,11 @@
 #include <cytypes.h>
 #include <stdbool.h>
 
-#define timeInterval 1000    
+#define PID_INTERVAL 100 // ms
+
+void pid_init();
+
+void pid_worker();
 
 void pid_timer_init();
 

@@ -2,7 +2,7 @@
 #include <project.h>
 
 void led_set(uint8_t state) {
-    REG_LED_Write(0x0F & state);
+    REG_LED_Write(0b00000111 & state);
 }
 
 bool btn_get() {
