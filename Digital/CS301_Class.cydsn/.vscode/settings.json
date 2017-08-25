@@ -5,6 +5,7 @@
         "cytypes.h": "c",
         "quad_dec.h": "c",
         "pid.h": "c",
-        "debug.h": "c"
+        "debug.h": "c",
+        "motor.h": "c"
     }
 }
