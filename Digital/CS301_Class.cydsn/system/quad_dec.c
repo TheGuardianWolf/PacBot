@@ -30,9 +30,12 @@ void quad_dec_init() {
 }
 
 QuadDecData quad_dec_get() {
-    QuadDecData qd;
-    qd.L = M1_QuadDec_GetCounter();// + QUADDEC_MAX * quad_dec_L_mult;
-    qd.R = M2_QuadDec_GetCounter();// + QUADDEC_MAX * quad_dec_R_mult;
+    QuadDecData qd = {
+        .L = M1_QuadDec_GetCounter(),
+        .R = M2_QuadDec_GetCounter()
+    };
+    // qd.L = M1_QuadDec_GetCounter();// + QUADDEC_MAX * quad_dec_L_mult;
+    // qd.R = M2_QuadDec_GetCounter();// + QUADDEC_MAX * quad_dec_R_mult;
     return qd;
 }
 

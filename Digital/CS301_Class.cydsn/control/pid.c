@@ -24,6 +24,15 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
     return data;
 }
 
+void pid_worker(PIDData* data) {
+    uint32_t now = systime_ms();
+    if (now - data->last_run >= data->sample_time) {
+            pid_compute(data);
+            data->last_run = now;
+        }
+    }
+}
+
 void pid_compute(PIDData* data) {    
     float error = data->setpoint - data->input;
     

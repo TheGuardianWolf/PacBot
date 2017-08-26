@@ -6,6 +6,7 @@
         "quad_dec.h": "c",
         "pid.h": "c",
         "debug.h": "c",
-        "motor.h": "c"
+        "motor.h": "c",
+        "systime.h": "c"
     }
 }
