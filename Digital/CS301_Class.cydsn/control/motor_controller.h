@@ -9,7 +9,7 @@
 
 #define MOTOR_MAX_SPEED 1 // encoder pulses per millisecond
 #define WHEEL_CIRCUMFERENCE 204 // millimeters
-#define PULSES_PER_REV 258 // Decoder x4
+#define PULSES_PER_REV 228 // Decoder x4
 
 typedef struct {
     uint32_t sample_time;
