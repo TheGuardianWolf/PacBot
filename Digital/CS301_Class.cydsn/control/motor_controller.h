@@ -3,8 +3,13 @@
 
 #include <cytypes.h>
 #include <stdbool.h>
+    
+#include "quad_dec.h"
+#include "pid.h"
 
-#define MOTOR_MAX_SPEED // encoder pulses per millisecond
+#define MOTOR_MAX_SPEED 1 // encoder pulses per millisecond
+#define WHEEL_CIRCUMFERENCE 204 // millimeters
+#define PULSES_PER_REV 258 // Decoder x4
 
 typedef struct {
     uint32_t sample_time;
@@ -17,8 +22,14 @@ typedef struct {
 
 void motor_controller_init();
 
+double motor_controller_measure_max_speed();
+
+MCData motor_controller_create();
+
 void motor_controller_worker(MCData* data);
 
-void motor_controller_run_forward(MCData* data, float t_dist_L, float t_dist_R);
+void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R);
+
+void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R);
 
 #endif /* MOTOR_CONTROLLER_H */

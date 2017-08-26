@@ -20,11 +20,11 @@ typedef struct {
     bool p_on_m;
 }  PIDData;
 
-PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time, bool p_on_m);
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time);
 
-void pid_worker(PIDdata* data);
+void pid_worker(PIDData* data);
 
-void pid_compute(PIDdata* data);
+void pid_compute(PIDData* data);
 
 void pid_set_limits(PIDData* data, float output_max, float output_min);
 

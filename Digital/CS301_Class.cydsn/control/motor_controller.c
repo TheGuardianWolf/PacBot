@@ -3,12 +3,10 @@
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
-#include "quad_dec.h"
-#include "pid.h"
 
 // mm -> pulse
-static int32_t dist2dec(float dist) {
-    // Units: mm
+static int32_t dist2dec(int32_t dist) {
+    return (int32_t) ((float) dist * WHEEL_CIRCUMFERENCE / PULSES_PER_REV);
 }
 
 // pulse/ms -> % of max
@@ -31,12 +29,20 @@ static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
 }
 
 // These need to be dynamically calculated based on the sensors controller
-static float calc_setpoint_L() {
-    return 0.2;
+static float calc_setpoint_L(bool reverse) {
+    float setpoint = 0.2;
+    if (reverse) {
+        setpoint = -setpoint;
+    }
+    return setpoint;
 }
 
-static float calc_setpoint_R() {
-    return 0.2;
+static float calc_setpoint_R(bool reverse) {
+    float setpoint = 0.2;
+    if (reverse) {
+        setpoint = -setpoint;
+    }
+    return setpoint;
 }
 
 void motor_controller_init() {
@@ -45,21 +51,33 @@ void motor_controller_init() {
     quad_dec_init();
 }
 
+double motor_controller_measure_max_speed() {
+    uint32_t curr_time = 0;
+    quad_dec_clear();
+    uint32_t start_time = systime_ms();
+    while (curr_time < start_time + 5000) {
+        curr_time = systime_ms();
+        motor_set_L(M_MAX);
+    }
+    QuadDecData qd = quad_dec_get();
+    return (double) qd.L / (double) (curr_time - start_time);
+}
+
 MCData motor_controller_create() {
     MCData data = {
         .sample_time = 50,
         .qd_dist = {
             .L = 0,
             .R = 0
-        }
-        .PID_L = pid_create(0.1, 0.1, 0.1, 0.2, 0, 100),
-        .PID_R = pid_create(0.1, 0.1, 0.1, 0.2, 0, 100),
+        },
+        .PID_L = pid_create(10, 5, 0, 0.3, 0, 100),
+        .PID_R = pid_create(10, 5, 0, 0.3, 0, 100),
         .target = {
             .L = 0,
             .R = 0
-        }
+        },
         .last_run = 0
-    }
+    };
     return data;
 }
 
@@ -89,22 +107,30 @@ void motor_controller_worker(MCData* data) {
     }
 }
 
-void motor_controller_run_forward(MCData* data, float t_dist_L, float t_dist_R) {
+void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
     data->target.L = dist2dec(t_dist_L);
     data->target.R = dist2dec(t_dist_R);
-    data->PID_L.setpoint = calc_setpoint_L();
-    data->PID_R.setpoint = calc_setpoint_R();
+    data->PID_L.setpoint = calc_setpoint_L(false);
+    data->PID_R.setpoint = calc_setpoint_R(false);
     data->qd_dist.L = 0;
     data->qd_dist.R = 0;
     quad_dec_clear();
+}
 
-    if (data->qd_dist.L < data->target.L || data->qd_dist.R < data->target.R) {
+void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
+    motor_controller_set(data, t_dist_L, t_dist_R);
+
+    bool disable_L = false;
+    bool disable_R = false;
+    while (true) {//!disable_L || !disable_R) {
         if (data->qd_dist.L >= data->target.L) {
             data->PID_L.setpoint = 0;
+            disable_L = true;
         }
 
         if (data->qd_dist.R >= data->target.R) {
             data->PID_R.setpoint = 0;
+            disable_R = true;
         }
 
         motor_controller_worker(data);

@@ -5,7 +5,7 @@
 #include "systime.h"
 
 PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time) {
-    PIDdata data = {
+    PIDData data = {
         .last_run = 0,
         .kp = kp,
         .ki = ki,
@@ -18,30 +18,29 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
         .output_max = output_max,
         .output_min = output_min,
         .sample_time = sample_time,
-        .p_on_m = false;
-    }
-    pid_set_tunings(data, kp, ki, kd, p_on_m);
+        .p_on_m = false
+    };
+    pid_set_tunings(&data, kp, ki, kd, false);
     return data;
 }
 
 void pid_worker(PIDData* data) {
     uint32_t now = systime_ms();
     if (now - data->last_run >= data->sample_time) {
-            pid_compute(data);
-            data->last_run = now;
-        }
+        pid_compute(data);
+        data->last_run = now;
     }
 }
 
 void pid_compute(PIDData* data) {    
     float error = data->setpoint - data->input;
     
-    data->input_change = data->input - data->last_input;
+    float input_change = data->input - data->last_input;
     data->output_sum += data->ki * error;
 
-    float output = 0.0
+    float output = 0.0;
     if (data->p_on_m) {
-        data->output_sum -= data->kp * data->input_change;
+        data->output_sum -= data->kp * input_change;
     }
     else {
         output = data->kp * error;
@@ -54,13 +53,13 @@ void pid_compute(PIDData* data) {
         data->output_sum = data->output_min;
     }
 
-    output += data->output_sum - data->kd * data->input_change;
+    output += data->output_sum - data->kd * input_change;
 
     if (output > data->output_max) {
-        data->output = output_max;
+        data->output = data->output_max;
     }
     else if (output < data->output_min) {
-        data->output = output_min;
+        data->output = data->output_min;
     }
     else {
         data->output = (int32_t) output;

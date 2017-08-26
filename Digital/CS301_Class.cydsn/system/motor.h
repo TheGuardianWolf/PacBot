@@ -34,6 +34,8 @@ void motor_disable_L(bool disable);
 
 void motor_disable_R(bool disable);
 
+void motor_disable(bool disable);
+
 /* [] END OF FILE */
 
 #endif /* MOTOR_H */
