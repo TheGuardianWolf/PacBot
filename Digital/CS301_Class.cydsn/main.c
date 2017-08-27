@@ -6,16 +6,15 @@
 #include "motor_controller.h"
 #include "interactive.h"
 
-// #include "systime.h"
+#include "systime.h"
 #include "quad_dec.h"
 #include "motor.h"
 
 void system_init() {
-    //motor_controller_init();
+    motor_controller_init();
     // adc_init();
     CYGlobalIntEnable;
     // adc_wait_ready();
-    quad_dec_init();
 }
 
 int main() {
@@ -28,6 +27,11 @@ int main() {
             
             while(btn_get());
             if(!btn_get()) {
+                uint32_t now = systime_ms();
+                uint32_t td = 0;
+                while (td < 2000){
+                    td = systime_ms() - now;
+                }
                 // quad_dec_clear();
                 // QuadDecData qd = quad_dec_get();
                 // QuadDecData target = {
@@ -50,7 +54,9 @@ int main() {
                 //     }
                 //     qd = quad_dec_get();
                 // }
-                motor_controller_run_forward(&mcd, 1000, 1000);
+                motor_controller_run_forward(&mcd, 1300, 1300);
+                //double max = motor_controller_measure_max_speed();
+                //max += 0;
             }
             
         }
