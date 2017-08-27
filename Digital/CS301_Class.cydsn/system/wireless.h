@@ -52,6 +52,8 @@ typedef struct data_main {
 } vtype1;    
 struct data_main system_state;
 
+void uart_init();
+
 /* [] END OF FILE */
 
 #endif /* WIRELESS_H */
