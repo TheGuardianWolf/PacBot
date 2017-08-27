@@ -11,10 +11,11 @@
 #include "motor.h"
 
 void system_init() {
-    motor_controller_init();
+    //motor_controller_init();
     // adc_init();
     CYGlobalIntEnable;
     // adc_wait_ready();
+    quad_dec_init();
 }
 
 int main() {
@@ -49,7 +50,7 @@ int main() {
                 //     }
                 //     qd = quad_dec_get();
                 // }
-                motor_controller_run_forward(&mcd, 300, 300);
+                motor_controller_run_forward(&mcd, 1000, 1000);
             }
             
         }
