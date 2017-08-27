@@ -30,7 +30,7 @@ static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
 
 // These need to be dynamically calculated based on the sensors controller
 static float calc_setpoint_L(bool reverse) {
-    float setpoint = 0.2;
+    float setpoint = 0.5;
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -38,7 +38,7 @@ static float calc_setpoint_L(bool reverse) {
 }
 
 static float calc_setpoint_R(bool reverse) {
-    float setpoint = 0.2;
+    float setpoint = 0.5;
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -55,12 +55,15 @@ double motor_controller_measure_max_speed() {
     uint32_t curr_time = 0;
     quad_dec_clear();
     uint32_t start_time = systime_ms();
-    while (curr_time < start_time + 5000) {
+    while (curr_time < start_time + 3000) {
         curr_time = systime_ms();
         motor_set_L(M_MAX);
+        motor_set_R(M_MAX);
     }
+    motor_set_L(M_DRIFT);
+    motor_set_R(M_DRIFT);
     QuadDecData qd = quad_dec_get();
-    return (double) qd.L / (double) (curr_time - start_time);
+    return (((double) qd.L / (double) (curr_time - start_time)) + ((double) qd.R / (double) (curr_time - start_time))) / 2;
 }
 
 MCData motor_controller_create() {
@@ -70,8 +73,8 @@ MCData motor_controller_create() {
             .L = 0,
             .R = 0
         },
-        .PID_L = pid_create(10, 5, 0, 0.3, 0, 100),
-        .PID_R = pid_create(10, 5, 0, 0.3, 0, 100),
+        .PID_L = pid_create(10, 5, 10, 0.99, -0.99, 100),
+        .PID_R = pid_create(10, 5, 10, 0.99, -0.99, 100),
         .target = {
             .L = 0,
             .R = 0
