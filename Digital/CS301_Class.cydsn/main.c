@@ -23,7 +23,7 @@ int main() {
     while(true) {
         if(btn_get()) {
             // Forward by 1000mm
-            led_set(0b000);
+            //led_set(0b000);
             
             while(btn_get());
             if(!btn_get()) {
@@ -63,7 +63,7 @@ int main() {
         else {
             motor_set_L(M_DRIFT);
             motor_set_R(M_DRIFT);
-            led_set(0b001);
+            //led_set(0b001);
         }  
     }
     return 0;
