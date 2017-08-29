@@ -37,6 +37,11 @@ int main() {
                 while (td < 2000){
                     td = systime_ms() - now;
                 }
+                /** PID disable if needed
+                mcd->PID_L.active = false;
+                mcd->PID_R.active = false;
+                **/
+                
                 // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
                 motor_controller_run_forward(&mcd, 1100, 1100);
                 // This function blocks intentionally, reset the robot power after reached.

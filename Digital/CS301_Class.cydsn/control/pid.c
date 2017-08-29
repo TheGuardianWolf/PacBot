@@ -18,13 +18,14 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
         .output_max = output_max,
         .output_min = output_min,
         .sample_time = sample_time,
-        .p_on_m = false
+        .p_on_m = false,
+        .active = true
     };
     pid_set_tunings(&data, kp, ki, kd, false);
     return data;
 }
 
-void pid_worker(PIDData* data) {
+void pid_worker(PIDData* data) {  
     uint32_t now = systime_ms();
     if (now - data->last_run >= data->sample_time) {
         pid_compute(data);
@@ -32,7 +33,12 @@ void pid_worker(PIDData* data) {
     }
 }
 
-void pid_compute(PIDData* data) {    
+void pid_compute(PIDData* data) {
+    if (!data->active) {
+        data->output = 0;
+        return;
+    }
+
     float error = data->setpoint - data->input;
     
     float input_change = data->input - data->last_input;
@@ -62,7 +68,7 @@ void pid_compute(PIDData* data) {
         data->output = data->output_min;
     }
     else {
-        data->output = (int32_t) output;
+        data->output = output;
     }
 }
 

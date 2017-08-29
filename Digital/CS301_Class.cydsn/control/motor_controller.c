@@ -30,7 +30,7 @@ static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
 
 // These need to be dynamically calculated based on the sensors controller
 static float calc_setpoint_L(bool reverse) {
-    float setpoint = 0.5;
+    float setpoint = 0.95; // Run at 95% max speed
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -38,7 +38,7 @@ static float calc_setpoint_L(bool reverse) {
 }
 
 static float calc_setpoint_R(bool reverse) {
-    float setpoint = 0.5;
+    float setpoint = 0.95;
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -68,13 +68,14 @@ double motor_controller_measure_max_speed() {
 
 MCData motor_controller_create() {
     MCData data = {
-        .sample_time = 50,
+        .sample_time = 25,
         .qd_dist = {
             .L = 0,
             .R = 0
         },
-        .PID_L = pid_create(10, 5, 10, 0.99, -0.99, 100),
-        .PID_R = pid_create(10, 5, 10, 0.99, -0.99, 100),
+        // Don't set any of the .95s to 1, it bugs for some reason
+        .PID_L = pid_create(0.5, 1, 1, 0.95, -0.95, 50),
+        .PID_R = pid_create(0.5, 1, 1, 0.95, -0.95, 50),
         .target = {
             .L = 0,
             .R = 0
@@ -98,11 +99,25 @@ void motor_controller_worker(MCData* data) {
         
         if (data->target.L != 0) {
             pid_worker(&(data->PID_L));
-            mspeedL = (int8_t)(data->PID_L.output * M_MAX);
+            mspeedL = (int8_t)(data->input + data->PID_L.output * M_MAX);
         }
         if (data->target.R != 0) {
             pid_worker(&(data->PID_R));
-            mspeedR = (int8_t)(data->PID_R.output * M_MAX);     
+            mspeedR = (int8_t)(data->input + data->PID_R.output * M_MAX);     
+        }
+
+        if (mspeedL > M_MAX) {
+            mspeedL = M_MAX;
+        }
+        else if (mspeedL < M_MIN) {
+            mspeedL = M_MIN;
+        }
+
+        if (mspeedR > M_MAX) {
+            mspeedR = M_MAX;
+        }
+        else if (mspeedR < M_MIN) {
+            mspeedR = M_MIN;
         }
 
         motor_set_L(mspeedL);

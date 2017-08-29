@@ -18,6 +18,7 @@ typedef struct {
     float output_min;
     uint32_t sample_time;
     bool p_on_m;
+    bool active;
 }  PIDData;
 
 PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time);
