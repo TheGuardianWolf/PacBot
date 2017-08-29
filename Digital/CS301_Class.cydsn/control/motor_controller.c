@@ -74,8 +74,8 @@ MCData motor_controller_create() {
             .R = 0
         },
         // Don't set any of the .95s to 1, it bugs for some reason
-        .PID_L = pid_create(0.5, 1, 1, 0.95, -0.95, 50),
-        .PID_R = pid_create(0.5, 1, 1, 0.95, -0.95, 50),
+        .PID_L = pid_create(0.5, 1, 0.001, 0.95, -0.95, 50),
+        .PID_R = pid_create(0.5, 1, 0.001, 0.95, -0.95, 50),
         .target = {
             .L = 0,
             .R = 0
