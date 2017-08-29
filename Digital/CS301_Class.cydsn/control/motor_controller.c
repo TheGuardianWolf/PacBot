@@ -99,11 +99,11 @@ void motor_controller_worker(MCData* data) {
         
         if (data->target.L != 0) {
             pid_worker(&(data->PID_L));
-            mspeedL = (int8_t)(data->last_run + data->PID_L.output * M_MAX);
+            mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output * M_MAX);
         }
         if (data->target.R != 0) {
             pid_worker(&(data->PID_R));
-            mspeedR = (int8_t)(data->last_run + data->PID_R.output * M_MAX);     
+            mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output * M_MAX);     
         }
 
         if (mspeedL > M_MAX) {
@@ -138,17 +138,17 @@ void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
 void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
     motor_controller_set(data, t_dist_L, t_dist_R);
 
-    bool disable_L = false;
-    bool disable_R = false;
+    // bool disable_L = false;
+    // bool disable_R = false;
     while (true) {//!disable_L || !disable_R) {
         if (data->qd_dist.L >= data->target.L) {
             data->PID_L.setpoint = 0;
-            disable_L = true;
+            // disable_L = true;
         }
 
         if (data->qd_dist.R >= data->target.R) {
             data->PID_R.setpoint = 0;
-            disable_R = true;
+            // disable_R = true;
         }
 
         motor_controller_worker(data);

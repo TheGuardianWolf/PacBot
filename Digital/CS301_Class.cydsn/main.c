@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <project.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include "adc.h"
 #include "motor_controller.h"
