@@ -99,11 +99,11 @@ void motor_controller_worker(MCData* data) {
         
         if (data->target.L != 0) {
             pid_worker(&(data->PID_L));
-            mspeedL = (int8_t)(data->input + data->PID_L.output * M_MAX);
+            mspeedL = (int8_t)(data->last_run + data->PID_L.output * M_MAX);
         }
         if (data->target.R != 0) {
             pid_worker(&(data->PID_R));
-            mspeedR = (int8_t)(data->input + data->PID_R.output * M_MAX);     
+            mspeedR = (int8_t)(data->last_run + data->PID_R.output * M_MAX);     
         }
 
         if (mspeedL > M_MAX) {

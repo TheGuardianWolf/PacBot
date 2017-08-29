@@ -5,7 +5,7 @@ static volatile uint8_t conversions_finished = 0;
 static bool conversions_ready = false;
 
 static uint16_t int162uint16(int16 i) {
-    return (uint16_t)((int32_t) i + 32768) 
+    return (uint16_t)((int32_t) i + 32768); 
 }
 
 CY_ISR(adc_seq) {
@@ -28,7 +28,7 @@ void adc_wait_ready() {
 }
 
 ADCData adc_get() {
-    p = ADC_SEQ_finalArray;
+    int16* p = ADC_SEQ_finalArray;
     // p is a pointer to the first element an array, try *(p + sizeof(*p)) if p[1] doesn't work.
     ADCData data = {
         .voltage = (float) int162uint16(p[0]) * VOLTAGE_SF,

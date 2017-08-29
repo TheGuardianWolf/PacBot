@@ -69,7 +69,7 @@ void readByte() {
                     if((Rec >> 8) == 0){
                         data2 = Rec;
                         data = (data2 << 8) | data1;//store it in int16
-                        if(data == endofpacket){//checks end of packet bytes
+                        if(data == 1){//checks end of packet bytes
                             UART_ClearRxBuffer();
                             flag_packet = 0;
                       }
