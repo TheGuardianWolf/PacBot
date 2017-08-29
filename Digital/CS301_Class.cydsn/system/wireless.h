@@ -14,9 +14,6 @@
 
 #include <stdint.h>
 
-#define USE_RF RF_BT_SELECT_Write(0);
-#define USE_BT RF_BT_SELECT_Write(1);
-
 //RF 
 #define SOP 0xaa
 #define PACKETSIZE 32    

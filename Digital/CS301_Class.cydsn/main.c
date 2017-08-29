@@ -7,14 +7,13 @@
 #include "interactive.h"
 
 #include "systime.h"
-#include "quad_dec.h"
-#include "motor.h"
+#include "usb.h"
 
 void system_init() {
     motor_controller_init();
-    // adc_init();
+    adc_init();
     CYGlobalIntEnable;
-    // adc_wait_ready();
+    adc_wait_ready();
 }
 
 int main() {
@@ -24,7 +23,6 @@ int main() {
         if(btn_get()) {
             // Forward by 1000mm
             led_set(0b000);
-            
             while(btn_get());
             if(!btn_get()) {
                 uint32_t now = systime_ms();
@@ -32,38 +30,29 @@ int main() {
                 while (td < 2000){
                     td = systime_ms() - now;
                 }
-                // quad_dec_clear();
-                // QuadDecData qd = quad_dec_get();
-                // QuadDecData target = {
-                //     .L = 300,
-                //     .R = 300
-                // };
-                // motor_set_L(20);
-                // motor_set_R(20);
-                // bool disable_L = false;
-                // bool disable_R = false;
-                // while (!disable_L || !disable_R) {
-                //     if (qd.L >= target.L) {
-                //         motor_set_L(0);
-                //         disable_L = true;
-                //     }
-            
-                //     if (qd.R >= target.R) {
-                //         motor_set_R(0);
-                //         disable_R = true;
-                //     }
-                //     qd = quad_dec_get();
-                // }
-                motor_controller_run_forward(&mcd, 1300, 1300);
-                //double max = motor_controller_measure_max_speed();
-                //max += 0;
+                motor_controller_run_forward(&mcd, 1100, 1100);
             }
             
         }
         else {
-            motor_set_L(M_DRIFT);
-            motor_set_R(M_DRIFT);
             led_set(0b001);
+            uint32_t now = systime_s();
+            uint32_t start_adc = now;
+            uint32_t start_rf = now;
+            if (now - start_adc >= 2) {
+                start_adc = now;
+                char packet[64];
+                ADCData adc_data = adc_get();
+                sprintf(packet, "V:%.3f A:%.3f", adc_data.voltage, adc_data.current);
+                usb_send_string(packet);
+            }
+            if (now - start_rf >= 1) {
+                start_rf = now;
+                char packet[64];
+                ADCData adc_data = adc_get();
+                sprintf(packet, "V:%.3u A:%.3u");
+                usb_send_string(packet);
+            }
         }  
     }
     return 0;

@@ -6,7 +6,7 @@
 
 // mm -> pulse
 static int32_t dist2dec(int32_t dist) {
-    return (int32_t) ((float) dist * WHEEL_CIRCUMFERENCE / PULSES_PER_REV);
+    return (int32_t) ((float) dist * PULSES_PER_REV / WHEEL_CIRCUMFERENCE);
 }
 
 // pulse/ms -> % of max
