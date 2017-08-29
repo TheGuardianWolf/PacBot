@@ -16,6 +16,10 @@
 #include "wireless.h"
 #include "interactive.h"
 //* ========================================
+
+// The struct for data storage is -->available already<-- in wireless.h
+// use that! (Or just tell me what you're up to here and I can optimise)
+
 int16 Rec = 0;
 int8 data1 = 0;
 int8 data2 = 0;
@@ -23,18 +27,20 @@ int16 data = 0;
 int16 ind = 0;
 datatype dataPacket;
 
-void uart_init() {
-    UART_Start();
-}
-
-CY_ISR(quad_dec_L) {
-    led_set(0b00000111);
+CY_ISR(rf_rx) {
+    // Just load byte(s) here and clear buffer, do processing outside ISR
     Rec = UART_GetByte();
     if ((Rec>>8)==0) { // checks MSB if error occured
         data = Rec; //truncates 16 bit to 8 bits keeping LSB
     }
 }
+    
+void wireless_init() {
+    UART_Start();
+    isrRF_RX_StartEx(rf_rx);
+}
 
+// SUrely the nested ifs are not nessecary...
 void readByte() {
     int i;
     for(i = 0; i < UART_GetRxBufferSize(); i++) {
@@ -75,14 +81,4 @@ void readByte() {
             }
         }
     }
-}
-
-
-CY_ISR(rf_rx) {
-
-}
-
-void wireless_init() {
-    UART_Start();
-    isrRF_RX_StartEx(rf_rx);
 }
