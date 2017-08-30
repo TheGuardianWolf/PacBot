@@ -24,7 +24,7 @@ void system_init() {
     CYGlobalIntEnable;
 
     // If system does not initialise (LED does not light up), this is likely the issue.
-//    adc_wait_ready();
+    adc_wait_ready();
 }
 
 int main() {
@@ -68,17 +68,32 @@ int main() {
 //                sprintf(packet, "V:%u A:%u\n", (int)adc_data.voltage, (int)adc_data.current);
 //                usb_send_string(packet);
 //            }
-//            if (now - start_rf >= 1) {
-//                start_rf = now;
-//                char packet[64];
-//                // Put RF formatting crap here and sprintf it into the packet
-//                //sprintf(packet, "V:%.3u A:%.3u");
-//                //usb_send_string(packet);
-//            }
+//            
+//        }
+ //       else {
+ //            RF per 1 second, ADC per 2 seconds.
+            led_set(0b001);
+            
+            now = systime_s();
+            // RF polling function can run here
+            if (now - start_adc >= 2) {
+                start_adc = now;
+                char packet[64];
+                ADCData adc_data = adc_get();
+                sprintf(packet, "V:%u A:%u \n\r", (int) adc_data.voltage, (int) adc_data.current);
+                usb_send_string(packet);
+            }
+            if (now - start_rf >= 1) {
+                start_rf = now;
+                char packet[64];
+                // Put RF formatting crap here and sprintf it into the packet
+                //sprintf(packet, "V:%.3u A:%.3u");
+                //usb_send_string(packet);
+            }
         }  
-    }
+    
     return 0;
-
+}
     // // ARM Cortex M3 supports max 3 pipelines
     // pid_t process_id = 0;
     // process_id = fork();
@@ -102,8 +117,8 @@ int main() {
     //     // Error in forking, display warning LED.
     //     led_set(0b001);
     // }
-    return 0;
-}
+//    return 0;
+//}
 
 
 /* [] END OF FILE */
