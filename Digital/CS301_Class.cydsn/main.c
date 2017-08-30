@@ -9,23 +9,29 @@
 
 #include "systime.h"
 #include "usb.h"
+int flag = 0;
 
 void system_init() {
     // Starting the IAMP opamp only. If issues are encountered, set the input
     // of IAMP to pull-down resistive.
+    systime_init();
     IAMP_Start();
-
+    usb_init();
+    isrRF_RX_Start();
     motor_controller_init();
     adc_init();
     CYGlobalIntEnable;
 
     // If system does not initialise (LED does not light up), this is likely the issue.
-    adc_wait_ready();
+//    adc_wait_ready();
 }
 
 int main() {
     system_init();
-    MCData mcd = motor_controller_create();
+//    MCData mcd = motor_controller_create();
+    uint32_t now = 0;
+    uint32_t start_adc = 0;
+    uint32_t start_rf = 0;
     while(true) {
         // Without button press, default to RF and ADC output mode
         // With button press, go to straight line test
@@ -44,7 +50,7 @@ int main() {
                 **/
                 
                 // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
-                motor_controller_run_forward(&mcd, 1100, 1100);
+//                motor_controller_run_forward(&mcd, 1100, 1100);
                 // This function blocks intentionally, reset the robot power after reached.
             }
             
@@ -52,17 +58,14 @@ int main() {
         else {
             // RF per 1 second, ADC per 2 seconds.
             led_set(0b001);
-            uint32_t now = systime_s();
-            uint32_t start_adc = now;
-            uint32_t start_rf = now;
+            
+            now = systime_s();
             // RF polling function can run here
-
-
             if (now - start_adc >= 2) {
                 start_adc = now;
                 char packet[64];
                 ADCData adc_data = adc_get();
-                sprintf(packet, "V:%.3f A:%.3f", adc_data.voltage, adc_data.current);
+                sprintf(packet, "V:%u A:%u\n", (int)adc_data.voltage, (int)adc_data.current);
                 usb_send_string(packet);
             }
             if (now - start_rf >= 1) {

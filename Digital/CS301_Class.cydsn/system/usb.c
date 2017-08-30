@@ -43,7 +43,7 @@ void usb_send_string(char *s)
 //* ========================================
 void usb_send_char(char c)
 { 
-    while (USBUART_CDCIsReady() == 0);
+    //while (USBUART_CDCIsReady() == 0);
     USBUART_PutChar(c);   
 }
 
