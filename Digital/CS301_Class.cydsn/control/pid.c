@@ -35,7 +35,7 @@ void pid_worker(PIDData* data) {
 
 void pid_compute(PIDData* data) {
     if (!data->active) {
-        data->output = 0;
+        data->output = data->setpoint - data->input;
         return;
     }
 

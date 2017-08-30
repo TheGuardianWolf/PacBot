@@ -74,8 +74,8 @@ MCData motor_controller_create() {
             .R = 0
         },
         // Don't set any of the .95s to 1, it bugs for some reason
-        .PID_L = pid_create(0.7, 1.5, 0.01, 0.95, -0.95, 50),
-        .PID_R = pid_create(0.7, 1.5, 0.01, 0.95, -0.95, 50),
+        .PID_L = pid_create(10, 5, 10, 0.95, -0.95, 100),
+        .PID_R = pid_create(10, 5, 10, 0.95, -0.95, 100),
         .target = {
             .L = 0,
             .R = 0
@@ -99,11 +99,13 @@ void motor_controller_worker(MCData* data) {
         
         if (data->target.L != 0) {
             pid_worker(&(data->PID_L));
-            mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output * M_MAX);
+            mspeedL = (int8_t)(data->PID_L.output * M_MAX);
+            //mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output * M_MAX);
         }
         if (data->target.R != 0) {
             pid_worker(&(data->PID_R));
-            mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output * M_MAX);     
+            mspeedR = (int8_t)(data->PID_R.output * M_MAX); 
+            //mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output * M_MAX);     
         }
 
         if (mspeedL > M_MAX) {
