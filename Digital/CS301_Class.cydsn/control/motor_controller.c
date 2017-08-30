@@ -25,7 +25,7 @@ static float speed2pidin (float speed) {
 
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
-    return (float) (curr - prev) / dt;
+    return (float) (curr - prev) / (float) dt;
 }
 
 // These need to be dynamically calculated based on the sensors controller
@@ -74,8 +74,8 @@ MCData motor_controller_create() {
             .R = 0
         },
         // Don't set any of the .95s to 1, it bugs for some reason
-        .PID_L = pid_create(10, 5, 10, 0.95, -0.95, 100),
-        .PID_R = pid_create(10, 5, 10, 0.95, -0.95, 100),
+        .PID_L = pid_create(1, 5, 0.1, 0.99, -0.99, 100),
+        .PID_R = pid_create(1, 5, 0.1, 0.99, -0.99, 100),
         .target = {
             .L = 0,
             .R = 0

@@ -58,7 +58,7 @@ int main() {
         else {
             // RF per 1 second, ADC per 2 seconds.
             led_set(0b001);
-//            
+            
 //            now = systime_s();
 //            // RF polling function can run here
 //            if (now - start_adc >= 2) {

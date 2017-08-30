@@ -68,7 +68,7 @@ void pid_compute(PIDData* data) {
         data->output = data->output_min;
     }
     else {
-        data->output = output;
+        data->output = (int32_t)output;
     }
 }
 
