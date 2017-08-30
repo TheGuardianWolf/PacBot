@@ -15,14 +15,17 @@
 #include "systime.h"
 #include <project.h>
 
+static bool systime_started = false;
+
 void systime_init() {
+    systime_started = true;
     SystemClock_Start();
 }
 
 uint32_t systime_ms() {
-    return ((uint32_t) SystemClock_ReadCounter() - SYSTIME_COUNTER_MAX) / 10;
+    return ((uint32_t) SYSTIME_COUNTER_MAX - SystemClock_ReadCounter()) / 10;
 }
 
 uint32_t systime_s() {
-    return ((uint32_t) SystemClock_ReadCounter() - SYSTIME_COUNTER_MAX) / 10000;
+    return ((uint32_t) SYSTIME_COUNTER_MAX - SystemClock_ReadCounter()) / 10000;
 }
