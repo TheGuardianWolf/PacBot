@@ -10,7 +10,7 @@
 
 #include "systime.h"
 #include "usb.h"
-int flag = 0;
+#include "wireless.h"
 
 void system_init() {
     // Starting the IAMP opamp only. If issues are encountered, set the input
@@ -21,6 +21,7 @@ void system_init() {
     isrRF_RX_Start();
     motor_controller_init();
     adc_init();
+    wireless_init();
     CYGlobalIntEnable;
 
     // If system does not initialise (LED does not light up), this is likely the issue.
@@ -31,13 +32,15 @@ int main() {
     system_init();
     MCData mcd = motor_controller_create();
     uint32_t now = 0;
-    uint32_t start_adc = 0;
-    uint32_t start_rf = 0;
+    uint32_t start = 0;
+    char adc_packet[64];
+    char rf_packet[64];
     while(true) {
         // Without button press, default to RF and ADC output mode
         // With button press, go to straight line test
         if(btn_get()) {
             led_set(0b000);
+            isrRF_RX_Stop();
             while(btn_get());
             if(!btn_get()) {
                 uint32_t now = systime_ms();
@@ -50,48 +53,26 @@ int main() {
                 //mcd.PID_R.active = false;
                 //
                 // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
-                motor_controller_run_forward(&mcd, 1100, 1100);
+                motor_controller_run_forward(&mcd, 1300, 1300);
                 // This function blocks intentionally, reset the robot power after reached.
             }
             
         }
-        else {
-            // RF per 1 second, ADC per 2 seconds.
-            led_set(0b001);
-            
-//            now = systime_s();
-//            // RF polling function can run here
-//            if (now - start_adc >= 2) {
-//                start_adc = now;
-//                char packet[64];
-//                ADCData adc_data = adc_get();
-//                sprintf(packet, "V:%u A:%u\n", (int)adc_data.voltage, (int)adc_data.current);
-//                usb_send_string(packet);
-//            }
-//            
-//        }
- //       else {
- //            RF per 1 second, ADC per 2 seconds.
-            led_set(0b001);
-            
+        else {            
             now = systime_s();
             // RF polling function can run here
-            if (now - start_adc >= 2) {
-                start_adc = now;
-                char packet[64];
+            if (now - start >= 2) {
+                start = now;
+                
                 ADCData adc_data = adc_get();
-                sprintf(packet, "V:%u A:%u \n\r", (int) adc_data.voltage, (int) adc_data.current);
-                usb_send_string(packet);
-            }
-            if (now - start_rf >= 1) {
-                start_rf = now;
-                char packet[64];
-                // Put RF formatting crap here and sprintf it into the packet
-                //sprintf(packet, "V:%.3u A:%.3u");
-                //usb_send_string(packet);
+                sprintf(adc_packet, "V:%u\n\r", (int) adc_data.voltage);
+                usb_send_string(adc_packet);
+//                RFData rf_data = wireless_get();
+//                sprintf(rf_packet, "RSSI:%d Index:%u\n\r", rf_data.rssi, rf_data.index);
+//                usb_send_string(rf_packet);
             }
         }  
-    
+    }
     return 0;
 }
     // // ARM Cortex M3 supports max 3 pipelines

@@ -1,20 +1,7 @@
 #include <project.h>
 #include "adc.h"
 
-static uint16_t int162uint16(int16 i) {
-    return (uint16_t)((int32_t) i + 32768); 
-}
-
-CY_ISR(adc_seq) {
-    //conversions_finished++;
-    //if (conversions_finished >= ADC_CHANNEL_MAX) {
-    //    ADC_SEQ_IRQ_Disable();
-    //    isr_ADC_SEQ_Disable();
-    //}
-}
-
 void adc_init() {
-//    isr_ADC_SEQ_StartEx(adc_seq);
     ADC_SEQ_Start();
     ADC_SEQ_StartConvert();
 }

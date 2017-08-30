@@ -21,16 +21,7 @@
 
 #define RF_UNKNOWN 10
 
-uint8_t flag_rx = 0;
-uint8_t flag_packet = 0;
-
-uint8_t dataready_flag =0;
-
-uint8_t flag_rf_transmission_active = RF_UNKNOWN; // [TRUE if receieving data, FALSE is not, UNKNOWN at startup]
-
-typedef union {
-    int16_t a[17];
-    struct{
+typedef struct{
 	    int8_t            rssi;	
         uint8_t           index;			// index number of packet. incremented number
 	    int16_t			robot_xpos;	 	// 
@@ -48,13 +39,18 @@ typedef union {
         int16_t			g2_ypos;		//
         int16_t			g2_speed;		//
         int16_t		g2_direction;	//
-    } s;
-} datatype;   
+    } RFData;
 
+typedef union {
+    int16_t a[17];
+    RFData rf_data;
+} datatype;  
 
 //struct data_main system_state;
 
-void uart_init();
+void wireless_init();
+
+RFData wireless_get();
 
 /* [] END OF FILE */
 

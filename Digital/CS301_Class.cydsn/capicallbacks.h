@@ -10,9 +10,8 @@
  * ========================================
 */
 
-#include "debug.h"
 
-#define USBFS_DISPATCH_CDC_CLASS_CDC_READ_REQUESTS_CALLBACK led_set(LED_STATE_ON);
+// #define USBFS_DISPATCH_CDC_CLASS_CDC_READ_REQUESTS_CALLBACK led_set(LED_STATE_ON);
 // #define USBFS_EP_0_ISR_ENTRY_CALLBACK (void) 0;
 
 /* [] END OF FILE */
