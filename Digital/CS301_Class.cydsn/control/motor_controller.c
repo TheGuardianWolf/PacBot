@@ -3,6 +3,7 @@
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
+#include "usb.h"
 
 // mm -> pulse
 static int32_t dist2dec(int32_t dist) {
@@ -30,7 +31,7 @@ static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
 
 // These need to be dynamically calculated based on the sensors controller
 static float calc_setpoint_L(bool reverse) {
-    float setpoint = 0.95; // Run at 95% max speed
+    float setpoint = 0.5; // Run at 95% max speed
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -38,7 +39,7 @@ static float calc_setpoint_L(bool reverse) {
 }
 
 static float calc_setpoint_R(bool reverse) {
-    float setpoint = 0.95;
+    float setpoint = 0.5;
     if (reverse) {
         setpoint = -setpoint;
     }
@@ -90,6 +91,7 @@ void motor_controller_worker(MCData* data) {
     uint32_t time_diff = now - data->last_run;
 
     if (time_diff >= data->sample_time) {
+        // Speed calculations
         int8_t mspeedL, mspeedR = 0;
 
         QuadDecData qd = quad_dec_get();
@@ -97,15 +99,19 @@ void motor_controller_worker(MCData* data) {
         data->PID_R.input = speed2pidin(calc_speed(qd.R, data->qd_dist.R, time_diff));
         data->qd_dist = qd;
         
+        // Calculate desired setpoint
+        
+
+        // Run PID algorithm
         if (data->target.L != 0) {
             pid_worker(&(data->PID_L));
-            mspeedL = (int8_t)(data->PID_L.output * M_MAX);
-            //mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output * M_MAX);
+            //mspeedL = (int8_t)(data->PID_L.output * M_MAX);
+            mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output * M_MAX);
         }
         if (data->target.R != 0) {
             pid_worker(&(data->PID_R));
-            mspeedR = (int8_t)(data->PID_R.output * M_MAX); 
-            //mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output * M_MAX);     
+            //mspeedR = (int8_t)(data->PID_R.output * M_MAX); 
+            mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output * M_MAX);     
         }
 
         if (mspeedL > M_MAX) {
@@ -140,17 +146,13 @@ void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
 void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
     motor_controller_set(data, t_dist_L, t_dist_R);
 
-    // bool disable_L = false;
-    // bool disable_R = false;
-    while (true) {//!disable_L || !disable_R) {
+    while (true) {
         if (data->qd_dist.L >= data->target.L) {
             data->PID_L.setpoint = 0;
-            // disable_L = true;
         }
 
         if (data->qd_dist.R >= data->target.R) {
             data->PID_R.setpoint = 0;
-            // disable_R = true;
         }
 
         motor_controller_worker(data);
