@@ -7,7 +7,7 @@
 #include "quad_dec.h"
 #include "pid.h"
 
-#define MOTOR_MAX_SPEED 0.9 // encoder pulses per millisecond
+#define MOTOR_MAX_SPEED 1 // encoder pulses per millisecond
 #define WHEEL_CIRCUMFERENCE 204 // millimeters
 #define PULSES_PER_REV 228 // Decoder x4
 

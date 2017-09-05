@@ -24,6 +24,8 @@
 #define HIGH_DIGIT '9'
 
 void usb_init();
+void usb_enumerate();
+char usb_get_char();
 void usb_send_string(char *s);
 void usb_send_char(char c);
 //* ========================================

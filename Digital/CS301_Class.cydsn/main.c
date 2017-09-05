@@ -33,7 +33,7 @@ int main() {
             while(btn_get());
             if(!btn_get()) {
                 td = systime_ms();
-                while (systime_ms() - td < 2000);
+                while (systime_ms() - td < 1000);
                 // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
                 motor_controller_run_forward(&mcd, 1300, 1300);
                 // This function blocks intentionally, reset the robot power after reached.
@@ -41,15 +41,15 @@ int main() {
             
         }
         else {
-            if (systime_ms() - td >= 1000){
-                td = systime_ms();
-                motor_set_L(M_MAX);
-                motor_set_R(M_MAX);
-                QuadDecData qd = quad_dec_get();
-                char buffer[64];
-                sprintf(buffer, "qd.L = %d, qd.R = %d\n", (int) qd.L, (int) qd.R);
-                usb_send_string(buffer);
-            }
+            // if (systime_ms() - td >= 1000){
+            //     td = systime_ms();
+            //     motor_set_L(M_MAX);
+            //     motor_set_R(M_MAX);
+            //     QuadDecData qd = quad_dec_get();
+            //     char buffer[64];
+            //     sprintf(buffer, "qd.L = %d, qd.R = %d\n", (int) qd.L, (int) qd.R);
+            //     usb_send_string(buffer);
+            // }
         }  
     }
     return 0;
