@@ -16,60 +16,39 @@ void system_init() {
     // Starting the IAMP opamp only. If issues are encountered, set the input
     // of IAMP to pull-down resistive.
     systime_init();
-    IAMP_Start();
     usb_init();
-    isrRF_RX_Start();
     motor_controller_init();
-    adc_init();
-    wireless_init();
     CYGlobalIntEnable;
-
-    // If system does not initialise (LED does not light up), this is likely the issue.
-    adc_wait_ready();
 }
 
 int main() {
     system_init();
     MCData mcd = motor_controller_create();
-    uint32_t now = 0;
-    uint32_t start = 0;
-    char adc_packet[64];
-    char rf_packet[64];
+    uint32_t td = 0;
     while(true) {
         // Without button press, default to RF and ADC output mode
         // With button press, go to straight line test
         if(btn_get()) {
             led_set(0b000);
-            isrRF_RX_Stop();
             while(btn_get());
             if(!btn_get()) {
-                uint32_t now = systime_ms();
-                uint32_t td = 0;
-                while (td < 2000){
-                    td = systime_ms() - now;
-                }
-                // PID disable if needed
-                //mcd.PID_L.active = false;
-                //mcd.PID_R.active = false;
-                //
+                td = systime_ms();
+                while (systime_ms() - td < 2000);
                 // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
                 motor_controller_run_forward(&mcd, 1300, 1300);
                 // This function blocks intentionally, reset the robot power after reached.
             }
             
         }
-        else {            
-            now = systime_s();
-            // RF polling function can run here
-            if (now - start >= 2) {
-                start = now;
-                
-                ADCData adc_data = adc_get();
-                sprintf(adc_packet, "V:%u\n\r", (int) adc_data.voltage);
-                usb_send_string(adc_packet);
-//                RFData rf_data = wireless_get();
-//                sprintf(rf_packet, "RSSI:%d Index:%u\n\r", rf_data.rssi, rf_data.index);
-//                usb_send_string(rf_packet);
+        else {
+            if (systime_ms() - td >= 1000){
+                td = systime_ms();
+                motor_set_L(M_MAX);
+                motor_set_R(M_MAX);
+                QuadDecData qd = quad_dec_get();
+                char buffer[64];
+                sprintf(buffer, "qd.L = %d, qd.R = %d\n", (int) qd.L, (int) qd.R);
+                usb_send_string(buffer);
             }
         }  
     }

@@ -8,6 +8,10 @@
         "debug.h": "c",
         "motor.h": "c",
         "systime.h": "c",
-        "motor_controller.h": "c"
+        "motor_controller.h": "c",
+        "stdio.h": "c",
+        "vector": "c",
+        "xstring": "c",
+        "xutility": "c"
     }
 }

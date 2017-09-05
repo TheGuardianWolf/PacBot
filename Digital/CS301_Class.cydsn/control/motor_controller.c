@@ -1,5 +1,5 @@
 #include <project.h>
-
+#include <stdio.h>
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
@@ -13,19 +13,11 @@ static int32_t dist2dec(int32_t dist) {
 // pulse/ms -> % of max
 static float speed2pidin (float speed) {
     float pidin = speed / MOTOR_MAX_SPEED;
-
-    if (pidin > 1) {
-        pidin = 1;
-    }
-    else if (pidin < -1) {
-        pidin = -1;
-    }
-
     return pidin;
 }
 
 // (s1-s0)/dt -> pulse/ms
-static float calc_speed(int32_t prev, int32_t curr, uint32_t dt) {
+static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
 }
 
@@ -69,14 +61,14 @@ double motor_controller_measure_max_speed() {
 
 MCData motor_controller_create() {
     MCData data = {
-        .sample_time = 25,
+        .sample_time = 200,
         .qd_dist = {
             .L = 0,
             .R = 0
         },
         // Don't set any of the .95s to 1, it bugs for some reason
-        .PID_L = pid_create(1, 5, 0.1, 0.99, -0.99, 100),
-        .PID_R = pid_create(1, 5, 0.1, 0.99, -0.99, 100),
+        .PID_L = pid_create(1, 5, 0.1, 1, -1, 500),
+        .PID_R = pid_create(1, 5, 0.1, 1, -1, 500),
         .target = {
             .L = 0,
             .R = 0
@@ -89,6 +81,7 @@ MCData motor_controller_create() {
 void motor_controller_worker(MCData* data) {
     uint32_t now = systime_ms();
     uint32_t time_diff = now - data->last_run;
+    static uint32_t debug = 0;
 
     if (time_diff >= data->sample_time) {
         // Speed calculations
@@ -97,8 +90,31 @@ void motor_controller_worker(MCData* data) {
         QuadDecData qd = quad_dec_get();
         data->PID_L.input = speed2pidin(calc_speed(qd.L, data->qd_dist.L, time_diff));
         data->PID_R.input = speed2pidin(calc_speed(qd.R, data->qd_dist.R, time_diff));
-        data->qd_dist = qd;
         
+        
+        if (now - debug >= 500) {
+            debug = now;
+            // Debug by output to USB
+            char buffer[64];
+            sprintf(buffer, 
+                "input: %d * 10^-2 output: %d * 10^-2 set: %d * 10^-2\n", 
+                (int) (data->PID_L.input * 100), 
+                (int) (data->PID_L.output * 100),
+                (int) (data->PID_L.setpoint * 100)
+            );
+            usb_send_string(buffer);
+            sprintf(buffer,
+                "qd.L: %d qd.R: %d qd_dist.L: %d qd_dist.R: %d\n",
+                (int) qd.L,
+                (int) qd.R,
+                (int) data->qd_dist.L,
+                (int) data->qd_dist.R
+            );
+            usb_send_string(buffer);
+        }
+
+        data->qd_dist = qd;
+          
         // Calculate desired setpoint
         
 
@@ -130,6 +146,8 @@ void motor_controller_worker(MCData* data) {
 
         motor_set_L(mspeedL);
         motor_set_R(mspeedR);
+
+        data->last_run = now;
     }
 }
 
