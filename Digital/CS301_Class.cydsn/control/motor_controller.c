@@ -61,14 +61,13 @@ double motor_controller_measure_max_speed() {
 
 MCData motor_controller_create() {
     MCData data = {
-        .sample_time = 20,
+        .sample_time = 50,
         .qd_dist = {
             .L = 0,
             .R = 0
         },
-        // Don't set any of the .95s to 1, it bugs for some reason
-        .PID_L = pid_create(1.2, 0, 0.005, 1, -1, 40),
-        .PID_R = pid_create(1.2, 0, 0.005, 1, -1, 40),
+        .PID_L = pid_create(0.05, 0.05, 0.005, 1, -1, 50, true), // kp_crit = 2
+        .PID_R = pid_create(0.05, 0.05, 0.005, 1, -1, 50, true), // set 2 1.8, 0, 5.0
         .target = {
             .L = 0,
             .R = 0
@@ -85,7 +84,7 @@ void motor_controller_worker(MCData* data) {
 
     if (time_diff >= data->sample_time) {
         // Speed calculations
-        int8_t mspeedL, mspeedR = 0;
+        float mspeedL, mspeedR = 0;
 
         QuadDecData qd = quad_dec_get();
         data->PID_L.input = speed2pidin(calc_speed(qd.L, data->qd_dist.L, time_diff));
@@ -119,15 +118,13 @@ void motor_controller_worker(MCData* data) {
         
 
         // Run PID algorithm
-        if (data->target.L != 0 && data->PID_L.input) {
-            pid_worker(&(data->PID_L));
-            //mspeedL = (int8_t)(data->PID_L.output * M_MAX);
-            mspeedL = (int8_t)(data->PID_L.input + data->PID_L.output);
+        if (data->target.L != 0) {
+            pid_compute(&(data->PID_L));
+            mspeedL = data->PID_L.input + data->PID_L.output;
         }
         if (data->target.R != 0) {
-            pid_worker(&(data->PID_R));
-            //mspeedR = (int8_t)(data->PID_R.output * M_MAX); 
-            mspeedR = (int8_t)(data->PID_R.input + data->PID_R.output);     
+            pid_compute(&(data->PID_R));
+            mspeedR = data->PID_R.input + data->PID_R.output;
         }
 
         if (mspeedL > M_MAX) {
@@ -144,8 +141,8 @@ void motor_controller_worker(MCData* data) {
             mspeedR = M_MIN;
         }
 
-        motor_set_L(mspeedL * M_MAX);
-        motor_set_R(mspeedR * M_MAX);
+        motor_set_L((int8_t) (mspeedL * (float) M_MAX));
+        motor_set_R((int8_t) (mspeedR * (float) M_MAX));
 
         data->last_run = now;
     }

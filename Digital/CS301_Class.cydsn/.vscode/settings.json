@@ -12,6 +12,8 @@
         "stdio.h": "c",
         "vector": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "interactive.h": "c",
+        "stdbool.h": "c"
     }
 }

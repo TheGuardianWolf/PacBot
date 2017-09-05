@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <project.h>
-#include <unistd.h>
+// #include <unistd.h>
 #include <stdio.h>
 
 #include "adc.h"
@@ -43,8 +43,8 @@ int main() {
         else {
             // if (systime_ms() - td >= 1000){
             //     td = systime_ms();
-            //     motor_set_L(M_MAX);
-            //     motor_set_R(M_MAX);
+                motor_set_L(M_MAX/2);
+                motor_set_R(M_MAX/2);
             //     QuadDecData qd = quad_dec_get();
             //     char buffer[64];
             //     sprintf(buffer, "qd.L = %d, qd.R = %d\n", (int) qd.L, (int) qd.R);

@@ -4,7 +4,7 @@
 #include "pid.h"
 #include "systime.h"
 
-PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time) {
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time, bool p_on_m) {
     PIDData data = {
         .last_run = 0,
         .kp = kp,
@@ -21,7 +21,7 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
         .p_on_m = false,
         .active = true
     };
-    pid_set_tunings(&data, kp, ki, kd, false);
+    pid_set_tunings(&data, kp, ki, kd, p_on_m);
     return data;
 }
 
