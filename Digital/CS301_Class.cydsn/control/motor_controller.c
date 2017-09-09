@@ -66,8 +66,8 @@ MCData motor_controller_create() {
             .L = 0,
             .R = 0
         },
-        .PID_L = pid_create(0.05, 0.05, 0.005, 1, -1, 50, true), // kp_crit = 2
-        .PID_R = pid_create(0.05, 0.05, 0.005, 1, -1, 50, true), // set 2 1.8, 0, 5.0
+        .PID_L = pid_create(0.5, 0.50, 0.025, 1, -1, 50, false), // kp_crit = 2
+        .PID_R = pid_create(0.5, 0.50, 0.025, 1, -1, 50, false), // set 2 1.8, 0, 5.0
         .target = {
             .L = 0,
             .R = 0
@@ -161,15 +161,20 @@ void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
 void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
     motor_controller_set(data, t_dist_L, t_dist_R);
 
-    while (true) {
+    bool left_finished = false, right_finished = false;
+    while (!left_finished && !right_finished) {
         if (data->qd_dist.L >= data->target.L) {
             data->PID_L.setpoint = 0;
+            left_finished = true;
         }
 
         if (data->qd_dist.R >= data->target.R) {
             data->PID_R.setpoint = 0;
+            right_finished = true;
         }
 
         motor_controller_worker(data);
     }
+    motor_set_L(0);
+    motor_set_R(0);
 }
