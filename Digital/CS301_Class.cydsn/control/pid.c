@@ -4,6 +4,16 @@
 #include "pid.h"
 #include "systime.h"
 
+static float apply_limit(float var, float min, float max) {
+    if (var > max) {
+        return max;
+    }
+    else if (var < min) {
+        return min;
+    }
+    return var;
+}
+
 PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, float dead_band, uint32_t sample_time, bool p_on_m) {
     PIDData data = {
         .last_run = 0,
@@ -34,16 +44,6 @@ void pid_worker(PIDData* data) {
     }
 }
 
-static float apply_limit(float var, float min, float max) {
-    if (var > max) {
-        return max;
-    }
-    else if (var < min) {
-        return min;
-    }
-    return var;
-}
-
 void pid_compute(PIDData* data) {
     // If not active, then ignore rest of function
     if (!data->active) {
@@ -56,38 +56,56 @@ void pid_compute(PIDData* data) {
     float input_change = data->input - data->last_input;
     data->output_sum += data->ki * error;
 
+    // Motor control PID requires summation of input and output
+    float output = data->input;
+    
     // If P on M enabled, calculate
     if (data->p_on_m) {
         data->output_sum -= data->kp * input_change;
     }
+    else {
+        output += data->kp * error;
+    }
 
     data->output_sum = apply_limit(data->output_sum, data->output_min, data->output_max);
 
-    // Apply D on M control always
-    float output = -data->kd * input_change;
+    output += data->output_sum;
 
-    // Only apply P and I control when input is outside dead zone
-    if (input > data->dead_band || input < -data->dead_band) {
-        if (!data->p_on_m) {
-            output += data->kp * error;
-        }
-
-        output += data->input + data->output_sum;
-    }
-    else {
+    // Override PID when output falls into dead band
+    if (data->output < data->dead_band && data->output > -data->dead_band) {
         if (data->setpoint > 0) {
-            if (data->setpoint > data->input) {
-                output += data->dead_band;
+            if (data->setpoint > data->output) {
+                output = data->dead_band;
+            }
+            else {
+                output = 0;
             }
         }
         else if (data->setpoint < 0) {
-            if (data->setpoint < data->input) {
-                output += -data->dead_band;
+            if (data->setpoint < data->output) {
+                output = -data->dead_band;
             }
+            else {
+                output = 0;
+            }
+        } 
+        else {
+            output = 0;
         }
     }
+    
+    // Always apply D effects
+    output += - data->kd * input_change;
 
-    data->output = apply_limit(data->output, data->output_min, data->output_max);
+    data->output = apply_limit(output, data->output_min, data->output_max);
+}
+
+void pid_set_active(PIDData* data, bool active) {
+    if(active && !data->active) {
+        data->output_sum = apply_limit(data->output, data->output_min, data->output_max);
+        data->last_input = data->input;
+    }
+   data->active = active;
 }
 
 void pid_set_limits(PIDData* data, float output_max, float output_min) {
@@ -100,7 +118,7 @@ void pid_set_limits(PIDData* data, float output_max, float output_min) {
 
     data->output = apply_limit(data->output, output_min, output_max);
 
-    data0->output_sum = apply_limit(data->output_sum, output_min, output_max);
+    data->output_sum = apply_limit(data->output_sum, output_min, output_max);
 }
 
 void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m) {

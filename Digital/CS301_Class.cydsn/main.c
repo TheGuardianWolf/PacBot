@@ -25,6 +25,7 @@ int main() {
     system_init();
     MCData mcd = motor_controller_create();
     uint32_t td = 0;
+    led_set(0b001);
     while(true) {
         // Without button press, default to RF and ADC output mode
         // With button press, go to straight line test

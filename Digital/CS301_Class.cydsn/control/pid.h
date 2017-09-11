@@ -22,7 +22,7 @@ typedef struct {
     bool active;
 }  PIDData;
 
-PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time, bool p_on_m);
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, float dead_band, uint32_t sample_time, bool p_on_m);
 
 void pid_worker(PIDData* data);
 

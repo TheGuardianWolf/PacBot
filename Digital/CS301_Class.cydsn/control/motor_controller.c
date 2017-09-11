@@ -122,7 +122,7 @@ void motor_controller_worker(MCData* data) {
         mspeedR = (int8_t) (data->PID_R.output * (float) M_MAX);
 
         motor_set_L(mspeedL);
-        motor_set_R(mspeedR;
+        motor_set_R(mspeedR);
 
         data->last_run = now;
     }
@@ -142,7 +142,7 @@ void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist
     motor_controller_set(data, t_dist_L, t_dist_R);
 
     bool left_finished = false, right_finished = false;
-    while (!left_finished && !right_finished) {
+    while (true) {
         if (data->qd_dist.L >= data->target.L) {
             data->PID_L.setpoint = 0;
             left_finished = true;
