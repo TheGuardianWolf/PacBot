@@ -15,14 +15,9 @@
 #include <cytypes.h>
 #include <stdbool.h>
 
-#define M_MAX  92// Full forward
-#define M_MIN -92  // Full reverse
+#define M_MAX  127  // Full forward
+#define M_MIN  35  // Minimum drive speed
 #define M_DRIFT 0  // Drift
-
-typedef struct {
-    int8_t L;
-    int8_t R;
-}  MotorData;
 
 void motor_init();
 

@@ -5,12 +5,13 @@ static uint8_t reg_m_d1 = 0b11;
 
 static uint8_t speed2pwm(int8_t speed) {
     if (speed < 0) {
-        return ((uint8_t) speed - 127 - 35);  // Dead zone compensation of -35
+        return ((uint8_t) speed - 129);
     }
-    else if (speed == 0) {
-        return 127;
+    else if (speed > 0) {
+        return (uint8_t) speed + 128;
     }
-    return ((uint8_t) speed + 128 + 35);  // Dead zone compensation of 36
+    return 127;
+    
 }
 
 void motor_init() {
