@@ -16,6 +16,7 @@ typedef struct {
     float output_sum;
     float output_max;
     float output_min;
+    float dead_band;
     uint32_t sample_time;
     bool p_on_m;
     bool active;

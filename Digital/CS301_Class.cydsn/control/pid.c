@@ -4,7 +4,7 @@
 #include "pid.h"
 #include "systime.h"
 
-PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, uint32_t sample_time, bool p_on_m) {
+PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, float dead_band, uint32_t sample_time, bool p_on_m) {
     PIDData data = {
         .last_run = 0,
         .kp = kp,
@@ -17,6 +17,7 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
         .output_sum = 0.0,
         .output_max = output_max,
         .output_min = output_min,
+        .dead_band = dead_band,
         .sample_time = sample_time,
         .p_on_m = false,
         .active = true
@@ -33,43 +34,60 @@ void pid_worker(PIDData* data) {
     }
 }
 
+static float apply_limit(float var, float min, float max) {
+    if (var > max) {
+        return max;
+    }
+    else if (var < min) {
+        return min;
+    }
+    return var;
+}
+
 void pid_compute(PIDData* data) {
+    // If not active, then ignore rest of function
     if (!data->active) {
-        data->output = data->setpoint - data->input;
+        data->output = data->setpoint;
         return;
     }
 
+    // Calculate error variables
     float error = data->setpoint - data->input;
-    
     float input_change = data->input - data->last_input;
     data->output_sum += data->ki * error;
 
-    float output = 0.0;
+    // If P on M enabled, calculate
     if (data->p_on_m) {
         data->output_sum -= data->kp * input_change;
     }
-    else {
-        output = data->kp * error;
-    }
 
-    if (data->output_sum > data->output_max) {
-        data->output_sum = data->output_max;
-    }
-    else if (data->output_sum < data->output_min) {
-        data->output_sum = data->output_min;
-    }
+    data->output_sum = apply_limit(data->output_sum, data->output_min, data->output_max);
 
-    output += data->output_sum - data->kd * input_change;
+    // Apply D on M control always
+    float output = -data->kd * input_change;
 
-    if (output > data->output_max) {
-        data->output = data->output_max;
-    }
-    else if (output < data->output_min) {
-        data->output = data->output_min;
+    // Only apply P and I control when input is outside dead zone
+    if (input > data->dead_band || input < -data->dead_band) {
+        if (!data->p_on_m) {
+            output += data->kp * error;
+        }
+
+        output += data->input + data->output_sum;
     }
     else {
-        data->output = output;
+        if (data->setpoint > 0) {
+            if (data->setpoint > data->input) {
+                output += data->dead_band;
+            }
+        }
+        else if (data->setpoint < 0) {
+            if (data->setpoint < data->input) {
+                output += -data->dead_band;
+            }
+        }
     }
+
+    data->output = apply_limit(data->output, data->output_min, data->output_max);
 }
 
 void pid_set_limits(PIDData* data, float output_max, float output_min) {
@@ -80,19 +98,9 @@ void pid_set_limits(PIDData* data, float output_max, float output_min) {
     data->output_max = output_max;
     data->output_min = output_min;
 
-    if (data->output > output_max) {
-        data->output = output_max;
-    }
-    else if (data->output < output_min) {
-        data->output = output_min;
-    }
+    data->output = apply_limit(data->output, output_min, output_max);
 
-    if (data->output_sum > output_max) {
-        data->output_sum= output_max;
-    }
-    else if (data->output_sum < output_min) {
-        data->output_sum= output_min;
-    }
+    data0->output_sum = apply_limit(data->output_sum, output_min, output_max);
 }
 
 void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m) {

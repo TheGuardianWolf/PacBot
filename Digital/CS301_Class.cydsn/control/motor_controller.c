@@ -60,14 +60,17 @@ double motor_controller_measure_max_speed() {
 }
 
 MCData motor_controller_create() {
+    float dead_band = (float) M_MIN / (float) M_MAX;
     MCData data = {
         .sample_time = 50,
         .qd_dist = {
             .L = 0,
             .R = 0
         },
-        .PID_L = pid_create(0.5, 0.50, 0.025, 1, -1, 50, false), // kp_crit = 2
-        .PID_R = pid_create(0.5, 0.50, 0.025, 1, -1, 50, false), // set 2 1.8, 0, 5.0
+        .PID_L = pid_create(0.5, 0.50, 0.025, 
+            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, false), // kp_crit = 2
+        .PID_R = pid_create(0.5, 0.50, 0.025, 
+            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, false), // set 2 1.8, 0, 5.0
         .target = {
             .L = 0,
             .R = 0
@@ -83,9 +86,6 @@ void motor_controller_worker(MCData* data) {
     static uint32_t debug = 0;
 
     if (time_diff >= data->sample_time) {
-        // Speed calculations
-        float mspeedL, mspeedR = 0;
-
         QuadDecData qd = quad_dec_get();
         data->PID_L.input = speed2pidin(calc_speed(qd.L, data->qd_dist.L, time_diff));
         data->PID_R.input = speed2pidin(calc_speed(qd.R, data->qd_dist.R, time_diff));
@@ -113,36 +113,16 @@ void motor_controller_worker(MCData* data) {
         // }
 
         data->qd_dist = qd;
-          
-        // Calculate desired setpoint
-        
 
+        int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
-        if (data->target.L != 0) {
-            pid_compute(&(data->PID_L));
-            mspeedL = data->PID_L.input + data->PID_L.output;
-        }
-        if (data->target.R != 0) {
-            pid_compute(&(data->PID_R));
-            mspeedR = data->PID_R.input + data->PID_R.output;
-        }
+        pid_compute(&(data->PID_L));
+        pid_compute(&(data->PID_R));
+        mspeedL = (int8_t) (data->PID_L.output * (float) M_MAX);
+        mspeedR = (int8_t) (data->PID_R.output * (float) M_MAX);
 
-        if (mspeedL > M_MAX) {
-            mspeedL = M_MAX;
-        }
-        else if (mspeedL < M_MIN) {
-            mspeedL = M_MIN;
-        }
-
-        if (mspeedR > M_MAX) {
-            mspeedR = M_MAX;
-        }
-        else if (mspeedR < M_MIN) {
-            mspeedR = M_MIN;
-        }
-
-        motor_set_L((int8_t) (mspeedL * (float) M_MAX));
-        motor_set_R((int8_t) (mspeedR * (float) M_MAX));
+        motor_set_L(mspeedL);
+        motor_set_R(mspeedR;
 
         data->last_run = now;
     }
