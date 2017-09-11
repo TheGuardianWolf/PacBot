@@ -1,5 +1,6 @@
 #include <project.h>
 #include <stdio.h>
+#include <math.h>
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
@@ -21,21 +22,19 @@ static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
 }
 
-// These need to be dynamically calculated based on the sensors controller
-static float calc_setpoint_L(bool reverse) {
-    float setpoint = 1; // Run at 95% max speed
-    if (reverse) {
-        setpoint = -setpoint;
+static float calc_setpoint(int32_t target, int32_t now) {
+    if (target > 0) {
+        if (now < target) {
+            return 0.7f;
+        }
     }
-    return setpoint;
-}
+    else {
+        if (now > target) {
+            return -0.7f;
+        }
+    }
 
-static float calc_setpoint_R(bool reverse) {
-    float setpoint = 1;
-    if (reverse) {
-        setpoint = -setpoint;
-    }
-    return setpoint;
+    return 0f;
 }
 
 void motor_controller_init() {
@@ -67,15 +66,16 @@ MCData motor_controller_create() {
             .L = 0,
             .R = 0
         },
-        .PID_L = pid_create(0.5, 0.50, 0.025, 
+        .PID_L = pid_create(0.5f, 0.50f, 0.025f, 
             MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, false), // kp_crit = 2
-        .PID_R = pid_create(0.5, 0.50, 0.025, 
+        .PID_R = pid_create(0.5f, 0.50f, 0.025f, 
             MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, false), // set 2 1.8, 0, 5.0
         .target = {
             .L = 0,
             .R = 0
         },
-        .last_run = 0
+        .last_run = 0,
+        .auto = false
     };
     return data;
 }
@@ -114,6 +114,10 @@ void motor_controller_worker(MCData* data) {
 
         data->qd_dist = qd;
 
+        // Run setpoint calculations
+        data->PID_L.setpoint = calc_setpoint(data->target.L, qd.L);
+        data->PID_R.setpoint = calc_setpoint(data->target.R, qd.R);
+
         int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
         pid_compute(&(data->PID_L));
@@ -128,33 +132,38 @@ void motor_controller_worker(MCData* data) {
     }
 }
 
-void motor_controller_set(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
-    data->target.L = dist2dec(t_dist_L);
-    data->target.R = dist2dec(t_dist_R);
-    data->PID_L.setpoint = calc_setpoint_L(false);
-    data->PID_R.setpoint = calc_setpoint_R(false);
+void motor_controller_reset(MCData* data) {
+    data->target.L = 0;
+    data->target.R = 0;
     data->qd_dist.L = 0;
     data->qd_dist.R = 0;
     quad_dec_clear();
 }
 
-void motor_controller_run_forward(MCData* data, int32_t t_dist_L, int32_t t_dist_R) {
-    motor_controller_set(data, t_dist_L, t_dist_R);
+void motor_controller_set(MCData* data, uint8_t drive_mode, int32_t arg) {
+    motor_controller_reset();
 
-    bool left_finished = false, right_finished = false;
-    while (true) {
-        if (data->qd_dist.L >= data->target.L) {
-            data->PID_L.setpoint = 0;
-            left_finished = true;
-        }
-
-        if (data->qd_dist.R >= data->target.R) {
-            data->PID_R.setpoint = 0;
-            right_finished = true;
-        }
-
-        motor_controller_worker(data);
+    if (drive_mode == 0) {
+        // Forward/Back
+        data->target.L = dist2dec(arg);
+        data->target.R = dist2dec(arg);
     }
-    motor_set_L(0);
-    motor_set_R(0);
+    else if (drive_mode == 1) {
+        // Point turn left/right
+        int32_t arc_length = 2f * M_PI * (WHEEL_DISTANCE / 2) * ((float) arg / 360f)
+        data->target.L = dist2dec(arc_length);
+        data->target.R = dist2dec(-arc_length);
+    }
+    else if (drive_mode == 2) {
+        // Arc turn left/right
+        int32_t arc_length = 2f * M_PI * WHEEL_DISTANCE * ((float) arg / 360f)
+        if (arc_length < 0f) {
+            data->target.L = dist2dec(arc_length);
+            data->target.R = 0;
+        }
+        else {
+            data->target.L = 0;
+            data->target.R = dist2dec(arc_length);
+        }
+    }
 }

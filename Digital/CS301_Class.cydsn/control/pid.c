@@ -1,4 +1,6 @@
 // Algorithm from https://github.com/br3ttb/Arduino-PID-Library/
+// Friction and backlash compensation theory from http://www.wescottdesign.com/articles/Friction/friction.pdf
+// Modifications by Jerry Fan
 
 #include <project.h>
 #include "pid.h"
@@ -20,11 +22,11 @@ PIDData pid_create(float kp, float ki, float kd, float output_max, float output_
         .kp = kp,
         .ki = ki,
         .kd = kd,
-        .setpoint = 0.0,
-        .input = 0.0,
-        .last_input = 0.0,
-        .output = 0.0,
-        .output_sum = 0.0,
+        .setpoint = 0.0f,
+        .input = 0.0f,
+        .last_input = 0.0f,
+        .output = 0.0f,
+        .output_sum = 0.0f,
         .output_max = output_max,
         .output_min = output_min,
         .dead_band = dead_band,
@@ -73,25 +75,17 @@ void pid_compute(PIDData* data) {
 
     // Override PID when output falls into dead band
     if (data->output < data->dead_band && data->output > -data->dead_band) {
-        if (data->setpoint > 0) {
+        output = 0f;
+        if (data->setpoint > 0f) {
             if (data->setpoint > data->output) {
                 output = data->dead_band;
             }
-            else {
-                output = 0;
-            }
         }
-        else if (data->setpoint < 0) {
+        else if (data->setpoint < 0f) {
             if (data->setpoint < data->output) {
                 output = -data->dead_band;
             }
-            else {
-                output = 0;
-            }
         } 
-        else {
-            output = 0;
-        }
     }
     
     // Always apply D effects
@@ -124,7 +118,7 @@ void pid_set_limits(PIDData* data, float output_max, float output_min) {
 void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m) {
     data->p_on_m = p_on_m;
 
-    float sample_time_s = ((float) data->sample_time) / 1000;
+    float sample_time_s = ((float) data->sample_time) / 1000f;
 
     data->kp = kp;
     data->ki = ki * sample_time_s;

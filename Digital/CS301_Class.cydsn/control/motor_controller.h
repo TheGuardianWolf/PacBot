@@ -10,6 +10,7 @@
 #define MOTOR_MAX_SPEED 1 // encoder pulses per millisecond
 #define WHEEL_CIRCUMFERENCE 204 // millimeters
 #define PULSES_PER_REV 228 // Decoder x4
+#define WHEEL_DISTANCE 114 // millimeter
 
 typedef struct {
     uint32_t sample_time;
@@ -18,6 +19,7 @@ typedef struct {
     PIDData PID_R;
     QuadDecData target;
     uint32_t last_run;
+    bool auto;
 } MCData;
 
 void motor_controller_init();
