@@ -42,7 +42,7 @@ typedef struct{
     } RFData;
 
 typedef union {
-    int16_t a[17];
+    uint8_t bytes[32];
     RFData rf_data;
 } datatype;  
 
