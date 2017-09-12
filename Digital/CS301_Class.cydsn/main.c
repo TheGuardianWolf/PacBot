@@ -34,10 +34,12 @@ int main() {
             while(btn_get());
             if(!btn_get()) {
                 td = systime_ms();
+                motor_controller_set(&mcd, 0, 300);
                 while (systime_ms() - td < 1000);
-                // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
-                motor_controller_run_forward(&mcd, 300, 300);
-                // This function blocks intentionally, reset the robot power after reached.
+                while (true) {
+                    // Signature is MCData, left wheel distance (mm), right wheel distance (mm)
+                    motor_controller_worker(&mcd);
+                }
             }
             
         }
@@ -55,31 +57,5 @@ int main() {
     }
     return 0;
 }
-    // // ARM Cortex M3 supports max 3 pipelines
-    // pid_t process_id = 0;
-    // process_id = fork();
-
-    // // Multiprocess task selection
-    // if (process_id == 0) {
-    //     // Child process
-    //     // Non-critical workers (etc. voltage measurements, rf)
-    //     while(true) {
-            
-    //     }
-    // } 
-    // else if (process_id > 0) {
-    //     // Parent process
-    //     // Mission critical workers only
-    //     while(true) {
-    //         motor_controller_worker();
-    //     }
-    // }
-    // else {
-    //     // Error in forking, display warning LED.
-    //     led_set(0b001);
-    // }
-//    return 0;
-//}
-
 
 /* [] END OF FILE */

@@ -14,6 +14,8 @@
         "xstring": "c",
         "xutility": "c",
         "interactive.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "math.h": "c",
+        "sensors_controller.h": "c"
     }
 }

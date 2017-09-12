@@ -75,13 +75,13 @@ void pid_compute(PIDData* data) {
 
     // Override PID when output falls into dead band
     if (data->output < data->dead_band && data->output > -data->dead_band) {
-        output = 0f;
-        if (data->setpoint > 0f) {
+        output = 0.0f;
+        if (data->setpoint > 0.0f) {
             if (data->setpoint > data->output) {
                 output = data->dead_band;
             }
         }
-        else if (data->setpoint < 0f) {
+        else if (data->setpoint < 0.0f) {
             if (data->setpoint < data->output) {
                 output = -data->dead_band;
             }
@@ -90,6 +90,8 @@ void pid_compute(PIDData* data) {
     
     // Always apply D effects
     output += - data->kd * input_change;
+
+    data->last_input = data->input;
 
     data->output = apply_limit(output, data->output_min, data->output_max);
 }
@@ -118,7 +120,7 @@ void pid_set_limits(PIDData* data, float output_max, float output_min) {
 void pid_set_tunings(PIDData* data, float kp, float ki, float kd, bool p_on_m) {
     data->p_on_m = p_on_m;
 
-    float sample_time_s = ((float) data->sample_time) / 1000f;
+    float sample_time_s = ((float) data->sample_time) / 1000.0f;
 
     data->kp = kp;
     data->ki = ki * sample_time_s;

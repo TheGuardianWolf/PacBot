@@ -23,10 +23,12 @@ typedef struct {
 }  PIDData;
 
 PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, float dead_band, uint32_t sample_time, bool p_on_m);
-
+    
 void pid_worker(PIDData* data);
 
 void pid_compute(PIDData* data);
+
+void pid_set_active(PIDData* data, bool active);
 
 void pid_set_limits(PIDData* data, float output_max, float output_min);
 
