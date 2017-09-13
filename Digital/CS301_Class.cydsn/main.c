@@ -35,7 +35,7 @@ int main() {
             while(btn_get());
             if(!btn_get()) {
                 td = systime_ms();
-                motor_controller_set(&mcd, 0, 300);
+                motor_controller_set(&mcd, 1, 90);
                 while (systime_ms() - td < 1000);
                 while (true) {
                     // Signature is MCData, left wheel distance (mm), right wheel distance (mm)

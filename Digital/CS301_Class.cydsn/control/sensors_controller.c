@@ -24,7 +24,8 @@ void sensors_controller_worker(SCData* data) {
 
     if (time_diff >= LINE_SAMPLE_RATE) {
         uint8_t line_data = sensors_line_get();
-        for (uint8_t i = 0; i < LINE_SENSORS; i++) {
+        uint8_t i;
+        for (i = 0; i < LINE_SENSORS; i++) {
             data->line_state[i] = (bool) ((line_data >> i) & 1); 
         }
     }
