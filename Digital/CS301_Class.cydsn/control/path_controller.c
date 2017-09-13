@@ -55,4 +55,7 @@ void path_controller_worker(PCData* data) {
 
     data->mc_data.bias_L = bias_L;
     data->mc_data.bias_R = bias_R;
+
+    sensors_controller_worker();
+    motor_controller_worker();
 }
