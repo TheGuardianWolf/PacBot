@@ -28,8 +28,9 @@ static volatile int16 data = 0;
 static volatile int16 ind = 0;
 static volatile datatype dataPacket;
 //uint8_t flag_rx = 0;
-static volatile uint8_t flag_packet = 0;
-volatile char the_char;
+static volatile uint8_t start_count = 0;
+static volatile uint8_t data_count = 0;
+volatile uint8_t the_char;
 
 //uint8_t dataready_flag =0;
 
@@ -37,50 +38,25 @@ volatile char the_char;
 
 static uint8_t uart_count = 0;
 CY_ISR(rf_rx) {
-    the_char = UART_GetChar();
-    usb_send_char(the_char);
-//    if (uart_count > 1) {
-//        if (flag_packet == 0) {
-//            Rec = UART_GetByte();
-//            if((Rec >> 8) == 0) {// check if byte is valid
-//                data1 = Rec; //first byte
-//                if(data1 == 0xa) { //if first byte is 0xa
-//                    Rec = UART_GetByte();
-//                    if((Rec >> 8) == 0) {
-//                        data2 = Rec;
-//                        if(data2 == 0xa) { //if the 2 bytes are 0xaa
-//                            data = (data2 << 8) | data1;//store it in uint16
-//                            flag_packet = 1;
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
-//        else {
-//            Rec = UART_GetByte();
-//            if((Rec >> 8) == 0) {// check if byte is valid
-//                data1 = Rec; //first byte
-//                Rec = UART_GetByte();
-//                if((Rec >> 8) == 0) {
-//                    data2 = Rec;
-//                    data = (data2 << 8) | data1;//store it in int16
-//                    if(ind >= 16) { //checks end of packet bytes
-//                        flag_packet = 0;
-//                        ind = 0;
-//                    }
-//                    else {
-//                        dataPacket.a[ind] = data;
-//                        ind ++;
-//                    }
-//                }
-//            }
-//        }
-//        UART_ClearRxBuffer();
-//    }
-//    else {
-//        uart_count++;
-//    }
+    the_char = UART_ReadRxData();
+    if (start_count < 2) {
+        if(the_char == SOP) {
+            start_count++;
+        }
+        else {
+            start_count = 0;
+        }
+    }
+    else {
+        dataPacket.bytes[data_count] = the_char;
+        if (data_count >= 31) {
+            start_count = 0;
+            data_count = 0;
+        }
+        else {
+            data_count++;
+        }
+    }
 }
 
 void wireless_init() {
