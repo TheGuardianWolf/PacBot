@@ -16,10 +16,6 @@
 
 //RF 
 #define SOP 0xaa
-#define PACKETSIZE 32    
-#define RXSTRINGSIZE 64 // 4+3+[4+4+4]+[4+4+4+4]+[4+4+4+4]+[4+4+4+4]+delimiters, i.e. no more than 64
-
-#define RF_UNKNOWN 10
 
 typedef struct{
 	    int8_t            rssi;	
@@ -43,8 +39,8 @@ typedef struct{
 
 typedef union {
     uint8_t bytes[32];
-    RFData rf_data;
-} datatype;  
+    RFData data;
+} RFBuffer;  
 
 //struct data_main system_state;
 

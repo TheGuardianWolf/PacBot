@@ -21,26 +21,15 @@
 // The struct for data storage is -->available already<-- in wireless.h
 // use that! (Or just tell me what you're up to here and I can optimise)
 
-static volatile int16 Rec = 0;
-static volatile int8 data1 = 0;
-static volatile int8 data2 = 0;
-static volatile int16 data = 0;
-static volatile int16 ind = 0;
-static volatile datatype dataPacket;
-//uint8_t flag_rx = 0;
+static volatile RFBuffer receive_buffer, data_buffer;
 static volatile uint8_t start_count = 0;
 static volatile uint8_t data_count = 0;
-volatile uint8_t the_char;
+volatile uint8_t data;
 
-//uint8_t dataready_flag =0;
-
-//uint8_t flag_rf_transmission_active = RF_UNKNOWN; // [TRUE if receieving data, FALSE is not, UNKNOWN at startup]
-
-static uint8_t uart_count = 0;
 CY_ISR(rf_rx) {
-    the_char = UART_ReadRxData();
+    data = UART_ReadRxData();
     if (start_count < 2) {
-        if(the_char == SOP) {
+        if(data == SOP) {
             start_count++;
         }
         else {
@@ -48,8 +37,9 @@ CY_ISR(rf_rx) {
         }
     }
     else {
-        dataPacket.bytes[data_count] = the_char;
+        receive_buffer.bytes[data_count] = data;
         if (data_count >= 31) {
+            data_buffer = receive_buffer;
             start_count = 0;
             data_count = 0;
         }
@@ -65,5 +55,5 @@ void wireless_init() {
 }
 
 RFData wireless_get() {
-    return dataPacket.rf_data;
+    return data_buffer.data;
 }

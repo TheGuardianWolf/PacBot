@@ -16,7 +16,8 @@
 #include <cytypes.h>
 #include <stdbool.h>
     
-#define SYSTIME_COUNTER_MAX 0xFFFFFFFF
+#define SYSTIME_COUNTER_MAX_32 0xFFFFFFFF      // Max count is about one century or something
+#define SYSTIME_COUNTER_MAX_24 0xFFFFFF        // Max count is about 30 minutes
 
 void systime_init();
 
