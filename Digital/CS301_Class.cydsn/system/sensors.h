@@ -4,10 +4,11 @@
 #include <cytypes.h>
 #include <stdbool.h>
 
-#define LINE_SENSORS 6
+#define SIGMUX_MAX 5
 #define LINE_INVERT 0b00011110
-#define LINE_SAMPLE_RATE 20 // ms
 
+CY_ISR_PROTO(read_line);
+    
 void sensors_init();
 
 uint8_t sensors_line_get();

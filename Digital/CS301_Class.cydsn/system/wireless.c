@@ -27,24 +27,26 @@ static volatile uint8_t data_count = 0;
 volatile uint8_t data;
 
 CY_ISR(rf_rx) {
-    data = UART_ReadRxData();
-    if (start_count < 2) {
-        if(data == SOP) {
-            start_count++;
+    while(UART_GetRxBufferSize()) {
+        data = UART_ReadRxData();
+        if (start_count < 2) {
+            if(data == SOP) {
+                start_count++;
+            }
+            else {
+                start_count = 0;
+            }
         }
         else {
-            start_count = 0;
-        }
-    }
-    else {
-        receive_buffer.bytes[data_count] = data;
-        if (data_count >= 31) {
-            data_buffer = receive_buffer;
-            start_count = 0;
-            data_count = 0;
-        }
-        else {
-            data_count++;
+            receive_buffer.bytes[data_count] = data;
+            if (data_count >= 31) {
+                data_buffer = receive_buffer;
+                start_count = 0;
+                data_count = 0;
+            }
+            else {
+                data_count++;
+            }
         }
     }
 }

@@ -23,9 +23,9 @@ void systime_init() {
 }
 
 uint32_t systime_ms() {
-    return ((uint32_t) SYSTIME_COUNTER_MAX_24 - SystemClock_ReadCounter()) / 10;
+    return ((uint32_t) SYSTIME_COUNTER_MAX_32 - SystemClock_ReadCounter()) / 10;
 }
 
 uint32_t systime_s() {
-    return ((uint32_t) SYSTIME_COUNTER_MAX_24 - SystemClock_ReadCounter()) / 10000;
+    return ((uint32_t) SYSTIME_COUNTER_MAX_32 - SystemClock_ReadCounter()) / 10000;
 }

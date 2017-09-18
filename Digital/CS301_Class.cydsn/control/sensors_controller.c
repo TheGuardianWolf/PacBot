@@ -2,7 +2,7 @@
 
 #include "sensors_controller.h"
 #include "systime.h"
-#include "sensors.h"
+
 #include "adc.h"
 
 void sensors_controller_init() {
