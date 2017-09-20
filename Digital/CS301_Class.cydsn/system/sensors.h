@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define SIGMUX_MAX 5
-#define LINE_INVERT 0b00011110
+#define LINE_INVERT 0b00000011
 
 CY_ISR_PROTO(read_line);
     

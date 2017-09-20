@@ -33,5 +33,6 @@ void sensors_init() {
 }
 
 uint8_t sensors_line_get() {
+    // Reports inverted/non-inverted sensors based on straight line model
     return line_data ^ LINE_INVERT;
 }

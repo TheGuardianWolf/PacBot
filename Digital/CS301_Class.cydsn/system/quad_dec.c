@@ -1,26 +1,15 @@
 #include <project.h>
 #include "quad_dec.h"
 
-// static volatile int8_t quad_dec_L_mult = 0;
-// static volatile int8_t quad_dec_R_mult = 0;
+// mm -> pulse
+int32_t dist2dec(int32_t dist) {
+    return (int32_t) ((float) dist * PULSES_PER_REV / WHEEL_CIRCUMFERENCE);
+}
 
-// static void events_check(uint8_t events, volatile int8_t *mult) {
-//     if ((events & QUADDEC_OVERFLOW) == QUADDEC_OVERFLOW) {
-//         (*mult)++;
-//     }
-//     else if ((events & QUADDEC_UNDERFLOW) == QUADDEC_UNDERFLOW) {
-//         (*mult)--;
-//     }
-//     led_set(LED_STATE_ON); // Debug line
-// }
-
-// CY_ISR(quad_dec_L) {
-//     events_check(M1_QuadDec_GetEvents(), &quad_dec_L_mult);
-// }
-
-// CY_ISR(quad_dec_R) {
-//     events_check(M2_QuadDec_GetEvents(), &quad_dec_R_mult);
-// }
+// pulse -> mm
+int32_t dec2dist(int32_t dec) {
+    return (int32_t) ((float) dec * WHEEL_CIRCUMFERENCE / PULSES_PER_REV);
+}
 
 void quad_dec_init() {
     // isr_M1_QuadDec_StartEx(quad_dec_L);

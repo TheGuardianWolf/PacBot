@@ -13,9 +13,11 @@
 /* [] END OF FILE */
 #include <project.h>
 //* ========================================
+#include "systime.h"
 #include "wireless.h"
 #include "interactive.h"
 #include "usb.h"
+#include "string.h"
 //* ========================================
 
 // The struct for data storage is -->available already<-- in wireless.h
@@ -40,6 +42,7 @@ CY_ISR(rf_rx) {
         else {
             receive_buffer.bytes[data_count] = data;
             if (data_count >= 31) {
+                recieve_buffer.data.timestamp = systime_ms();
                 data_buffer = receive_buffer;
                 start_count = 0;
                 data_count = 0;
@@ -54,6 +57,7 @@ CY_ISR(rf_rx) {
 void wireless_init() {
     isrRF_RX_StartEx(rf_rx);
     UART_Start();
+    memset(&data_buffer, 0, sizeof(RFBuffer));
 }
 
 RFData wireless_get() {

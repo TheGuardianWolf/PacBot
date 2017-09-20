@@ -3,12 +3,8 @@
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
-#include "usb.h"
 
-// mm -> pulse
-static int32_t dist2dec(int32_t dist) {
-    return (int32_t) ((float) dist * PULSES_PER_REV / WHEEL_CIRCUMFERENCE);
-}
+#define LINE(x) data->sc_data->line_state[x]
 
 // pulse/ms -> % of max
 static float speed2pidin (float speed) {
@@ -16,29 +12,24 @@ static float speed2pidin (float speed) {
     return pidin;
 }
 
-// (s1-s0)/dt -> pulse/ms
-static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
-    return (float) (curr - prev) / (float) dt;
-}
-
-static float calc_setpoint(int32_t target, int32_t now, float bias) {
+static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
     if (target > 0) {
         if (now < target) {
             if (target - now > 200) {
-                return 0.8f + bias;
+                return 0.3f + speed * bias;
             }
             else {
-                return 0.3f + bias;
+                return speed * (1 + bias);
             }
         }
     }
     else {
         if (now > target) {
             if (target - now < -200) {
-                return -0.8f - bias;
+                return -0.3f - speed * bias;
             }
             else {
-                return -0.3f - bias;
+                return speed * (-1 - bias);
             }
         }
     }
@@ -67,67 +58,115 @@ double motor_controller_measure_max_speed() {
     return (((double) qd.L / (double) (curr_time - start_time)) + ((double) qd.R / (double) (curr_time - start_time))) / 2;
 }
 
-MCData motor_controller_create() {
+MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
     float dead_band = (float) M_MIN / (float) M_MAX;
     MCData data = {
-        .sample_time = 50,
-        .qd_dist = {
-            .L = 0,
-            .R = 0
-        },
+        .sample_time = sample_time,
+        .sc_data = sc_data,
+        .target_speed = 0.8,
         .bias_L = 0.0f,
         .bias_R = 0.0f,
         .PID_L = pid_create(1.0f, 10.0f, 0.025f, 
-            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, true), // kp_crit = 2
+            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
         .PID_R = pid_create(1.0f, 10.0f, 0.025f, 
-            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 50, true), // set 2 1.8, 0, 5.0
-        .target = {
+            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
+        .target_dist = {
             .L = 0,
             .R = 0
         },
-        .last_run = 0,
-        .automatic = false
+        .drive_mode = 0,
+        .last_run = 0
     };
     return data;
 }
 
+static void adjust_bias(MCData* data) {
+    // Run bias calculations
+    data->bias_L = 0.0f;
+    data->bias_R = 0.0f;
+    if (data->drive_mode == 0 || data->drive_mode == 3) {
+        if (data->sc_data->use_line) {
+            switch(data->sc_data->line_curve) {
+                case 1:
+                data->bias_L += 0.2f;
+                data->bias_R += -0.2f;
+                break;
+                case 2:
+                data->bias_L += -0.2f;
+                data->bias_R += 0.2f;
+                break;
+                default:
+                break;
+            }
+            float inversion_bias = -0.05 * data->sc_data->line_inversions;
+            bias_L += inversion_bias;
+            bias_R += inversion_bias;
+        }
+        if (data->sc_data->use_wireless) {
+            if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
+                data->bias_R += (float) data->sc_data->rel_orientation / 900;
+                data->bias_L += (float) -data->sc_data->rel_orientation / 900;
+            }
+            else {
+                data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+                data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+            }
+        }
+    }
+
+    data->bias_L = apply_limit(data->bias_L, -1.0f, 1.0f);
+    data->bias_R = apply_limit(data->bias_R, -1.0f, 1.0f);
+}
+
+static void adjust_setpoint(MCData* data) {
+    bool special = false;
+    
+    // Run setpoint calculations
+    if (data->drive_mode == 0) {
+        if (data->sc_data->use_wireless) {
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+            special = true;
+        }
+    }
+    else if (data->drive_mode == 1) {
+        if (data->sc_data->use_line) {
+            if (!data->sc_data->line_end && data->sc_data->prev_intersection == data->sc_data->curr_intersection) {
+                data->PID_L.setpoint = 0.0f;
+                data->PID_L.setpoint = 0.0f;
+                special = true;
+            }
+        }
+    }
+    else if (data->drive_mode == 3) {
+        if (data->sc_data->use_line) {
+            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
+                data->PID_L.setpoint = 0.0f;
+                data->PID_L.setpoint = 0.0f;
+                special = true;
+            }
+        }
+    }
+
+    if (!special) {
+        data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist, data->target_speed, data->bias_L);
+        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist, data->target_speed, data->bias_R);  
+    }
+}
+
+
 void motor_controller_worker(MCData* data) {
     uint32_t now = systime_ms();
     uint32_t time_diff = now - data->last_run;
-    // static uint32_t debug = 0;
-
     if (time_diff >= data->sample_time) {
-        QuadDecData qd = quad_dec_get();
-        data->PID_L.input = speed2pidin(calc_speed(qd.L, data->qd_dist.L, time_diff));
-        data->PID_R.input = speed2pidin(calc_speed(qd.R, data->qd_dist.R, time_diff));
         
-        // if (now - debug >= 500) {
-        //     debug = now;
-        //     // Debug by output to USB
-        //     char buffer[64];
-        //     sprintf(buffer, 
-        //         "input: %d * 10^-2 output: %d * 10^-2 set: %d * 10^-2\n", 
-        //         (int) (data->PID_L.input * 100), 
-        //         (int) (data->PID_L.output * 100),
-        //         (int) (data->PID_L.setpoint * 100)
-        //     );
-        //     usb_send_string(buffer);
-        //     sprintf(buffer,
-        //         "qd.L: %d qd.R: %d qd_dist.L: %d qd_dist.R: %d\n",
-        //         (int) qd.L,
-        //         (int) qd.R,
-        //         (int) data->qd_dist.L,
-        //         (int) data->qd_dist.R
-        //     );
-        //     usb_send_string(buffer);
-        // }
+        data->PID_L.input = speed2pidin(*(data->curr_speed_L));
+        data->PID_R.input = speed2pidin(*(data->curr_speed_R));
 
-        data->qd_dist = qd;
+        adjust_bias(data);
 
-        // Run setpoint calculations
-        data->PID_L.setpoint = calc_setpoint(data->target.L, qd.L, data->bias_L);
-        data->PID_R.setpoint = calc_setpoint(data->target.R, qd.R, data->bias_R);
-
+        adjust_setpoint(data);
+        
         int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
         pid_compute(&(data->PID_L));
@@ -142,38 +181,36 @@ void motor_controller_worker(MCData* data) {
     }
 }
 
-void motor_controller_reset(MCData* data) {
-    data->target.L = 0;
-    data->target.R = 0;
-    data->qd_dist.L = 0;
-    data->qd_dist.R = 0;
-    quad_dec_clear();
-}
-
-void motor_controller_set(MCData* data, uint8_t drive_mode, int32_t arg) {
+void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t arg) {
     motor_controller_reset(data);
-
+    data->target_speed = speed;
+    data->drive_mode = drive_mode;
     if (drive_mode == 0) {
         // Forward/Back
-        data->target.L = dist2dec(arg);
-        data->target.R = dist2dec(arg);
+        data->target_dist.L = dist2dec(arg);
+        data->target_dist.R = dist2dec(arg);
     }
     else if (drive_mode == 1) {
         // Point turn left/right
         int32_t arc_length = M_PI * WHEEL_DISTANCE * ((float) arg / 360);
-        data->target.L = dist2dec(arc_length);
-        data->target.R = dist2dec(-arc_length);
+        data->target_dist.L = dist2dec(arc_length);
+        data->target_dist.R = dist2dec(-arc_length);
     }
     else if (drive_mode == 2) {
         // Arc turn left/right
         int32_t arc_length = M_PI * 2.0f * WHEEL_DISTANCE * ((float) arg / 360);
         if (arc_length < 0.0f) {
-            data->target.L = dist2dec(arc_length);
-            data->target.R = 0;
+            data->target_dist.L = dist2dec(arc_length);
+            data->target_dist.R = 0;
         }
         else {
-            data->target.L = 0;
-            data->target.R = dist2dec(arc_length);
+            data->target_dist.L = 0;
+            data->target_dist.R = dist2dec(arc_length);
         }
+    }
+    else if (drive_mode == 3) {
+        // Automatic
+        data->target_dist.L = 0;
+        data->target_dist.R = 0;
     }
 }

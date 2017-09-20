@@ -16,6 +16,13 @@
 
 //RF 
 #define SOP 0xaa
+#define PACKET_INTERVAL 2
+
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t orientation;
+} DiPoint;
 
 typedef struct{
 	    int8_t            rssi;	
@@ -35,12 +42,13 @@ typedef struct{
         int16_t			g2_ypos;		//
         int16_t			g2_speed;		//
         int16_t		g2_direction;	//
+        uint32_t    timestamp;
     } RFData;
 
 typedef union {
     uint8_t bytes[32];
     RFData data;
-} RFBuffer;  
+} RFBuffer;
 
 //struct data_main system_state;
 

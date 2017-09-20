@@ -4,21 +4,17 @@
 #include <cytypes.h>
 
 #define QUADDEC_MAX_16 0x7FFF  // About 30 seconds at max speed for overflow
-// #define QUADDEC_UNDERFLOW M1_QuadDec_COUNTER_UNDERFLOW
-// #define QUADDEC_OVERFLOW M1_QuadDec_COUNTER_OVERFLOW
-// #define QDL_GET() M1_QuadDec_GetCounter()
-// #define QDR_GET() M2_QuadDec_GetCounter()
-// #define QDL_SET(x) M1_QuadDec_SetCounter(x)
-// #define QDR_SET(x) M2_QuadDec_SetCounter(x)
+#define WHEEL_CIRCUMFERENCE 204 // millimeters
+#define PULSES_PER_REV 228 // Decoder x4
 
 typedef struct {
     int32_t L;
     int32_t R;
 }  QuadDecData;
 
-// CY_ISR_PROTO(quad_dec_L);
+int32_t dist2dec(int32_t dist);
 
-// CY_ISR_PROTO(quad_dec_R);
+int32_t dec2dist(int32_t dec);
 
 void quad_dec_init();
 

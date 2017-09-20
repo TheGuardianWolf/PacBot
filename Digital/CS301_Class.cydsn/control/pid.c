@@ -6,7 +6,7 @@
 #include "pid.h"
 #include "systime.h"
 
-static float apply_limit(float var, float min, float max) {
+float apply_limit(float var, float min, float max) {
     if (var > max) {
         return max;
     }
