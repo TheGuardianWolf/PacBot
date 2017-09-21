@@ -1,25 +1,18 @@
 #include <project.h>
-#include "sensors.h"
 #include "path_controller.h"
-
-static float line_bias[6][2] = {
-    {-0.2, -0.2},
-    {-0.4, 0.2},
-    {0.2, -0.4},
-    {-0.2, 0.1},
-    {0.1, -0.2},
-    {-0.5, -0.5}
-};
 
 void path_controller_init() {
     sensors_controller_init();
     motor_controller_init();
 }
 
-PCData path_controller_create(int8_t initial_heading) {
+PCData path_controller_create(int8_t initial_heading, bool use_wireless, bool use_line) {
+    SCData sc_data = sensors_controller_create(30, use_wireless, use_line);
+    MCData mc_data = motor_controller_create(30, &sc_data);
     PCData data = {
-        .mc_data = motor_controller_create(),
-        .sc_data = sensors_controller_create()
+        .sc_data = sc_data,
+        .mc_data = mc_data,
+        .heading = initial_heading
     };
     return data;
 }
