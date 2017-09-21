@@ -15,22 +15,8 @@
 
 void system_init() {
     systime_init();
-    SIGMUX_Start();
-    SIGMUX_Next();
-    SIGMUX_Next();
-    SIGMUX_Next();
-    SIGMUX_Next();
-    SIGMUX_Next();
-    SIGMUX_Next();
-    SMUX_BUF_Start();
-    SAMP_Start();
-    IAMP_Start();
-    PKAMP_Start();
-    PKCOMP_Start();
-    PKCOMP_REF_Start();
-    // SMUX_BUF_Start();
-    // sensors_controller_init();
-    // motor_controller_init();
+    sensors_controller_init();
+    motor_controller_init();
     CYGlobalIntEnable;
 }
 
@@ -56,6 +42,15 @@ int main() {
             
         }
         else {
+            //  if (systime_ms() - td >= 1000){
+            //      td = systime_ms();
+            //      RFData rf_data = wireless_get();
+            //      char buffer[64];
+            //      sprintf(buffer, "%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n", (int)rf_data.rssi, (int)rf_data.index, (int)rf_data.g0_direction, (int)rf_data.g0_speed, (int)rf_data.g0_xpos, (int)rf_data.g0_ypos, (int)rf_data.g1_speed, (int)rf_data.g1_xpos);
+            //      usb_send_string(buffer);
+            //      sprintf(buffer, "%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n%d\r\n", (int)rf_data.g1_ypos, (int)rf_data.g2_direction, (int)rf_data.g2_speed, (int)rf_data.g2_xpos, (int)rf_data.g2_ypos, (int)rf_data.robot_orientation, (int)rf_data.robot_xpos, (int)rf_data.robot_ypos, (int)rf_data.g1_direction);
+            //      usb_send_string(buffer);
+            //  }
             //  if (systime_ms() - td >= 1000){
             //      td = systime_ms();
             //      RFData rf_data = wireless_get();

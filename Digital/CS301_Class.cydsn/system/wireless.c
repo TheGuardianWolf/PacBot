@@ -57,7 +57,6 @@ CY_ISR(rf_rx) {
 void wireless_init() {
     isrRF_RX_StartEx(rf_rx);
     UART_Start();
-    memset(&data_buffer, 0, sizeof(RFBuffer));
 }
 
 RFData wireless_get() {

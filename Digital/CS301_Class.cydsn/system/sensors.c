@@ -4,9 +4,6 @@
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
 
-//static void SIGMUX_Next() {
-//};
-
 CY_ISR(read_line) {
     line_buffer |= REG_LINE_Read() << mux_selection;
     REG_DRAIN_Write(1);
@@ -20,7 +17,7 @@ CY_ISR(read_line) {
         mux_selection++;
     }
     REG_DRAIN_Write(0);
-    SIGTIMER_Start();
+    SIGTIMER_RESET_Write(1);
 }
 
 void sensors_init() {
