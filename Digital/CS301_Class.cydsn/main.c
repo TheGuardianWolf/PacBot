@@ -8,35 +8,49 @@
 #include "sensors_controller.h"
 #include "interactive.h"
 
+#include "sensors.h"
 #include "systime.h"
 #include "usb.h"
 // #include "wireless.h"
 
 void system_init() {
     systime_init();
-    sensors_controller_init();
-    motor_controller_init();
-    usb_init();
+    SIGMUX_Start();
+    SIGMUX_Next();
+    SIGMUX_Next();
+    SIGMUX_Next();
+    SIGMUX_Next();
+    SIGMUX_Next();
+    SIGMUX_Next();
+    SMUX_BUF_Start();
+    SAMP_Start();
+    IAMP_Start();
+    PKAMP_Start();
+    PKCOMP_Start();
+    PKCOMP_REF_Start();
+    // SMUX_BUF_Start();
+    // sensors_controller_init();
+    // motor_controller_init();
     CYGlobalIntEnable;
 }
 
 int main() {
     system_init();
-    SCData scd = sensors_controller_create(30, false, false);
-    MCData mcd = motor_controller_create(30, &scd);
+    // SCData scd = sensors_controller_create(30, false, false);
+    // MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
-    led_set(0b001);
+    led_set(0b111);
     while(true) {
         if(btn_get()) {
             led_set(0b000);
             while(btn_get());
             if(!btn_get()) {
                 td = systime_ms();
-                motor_controller_set(&mcd, 0.8f, 0,300);
+                // motor_controller_set(&mcd, 0.8f, 0,300);
                 while (systime_ms() - td < 1000);
                 while (true) {
-                    sensors_controller_worker(&scd);
-                    motor_controller_worker(&mcd);
+                    // sensors_controller_worker(&scd);
+                    // motor_controller_worker(&mcd);
                 }
             }
             

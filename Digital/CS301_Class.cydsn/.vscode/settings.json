@@ -16,6 +16,7 @@
         "interactive.h": "c",
         "stdbool.h": "c",
         "math.h": "c",
-        "sensors_controller.h": "c"
+        "sensors_controller.h": "c",
+        "usb.h": "c"
     }
 }
