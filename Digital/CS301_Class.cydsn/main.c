@@ -22,7 +22,7 @@ void system_init() {
 
 int main() {
     system_init();
-    SCData scd = sensors_controller_create(30);
+    SCData scd = sensors_controller_create(30, false, false);
     MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
     led_set(0b001);
@@ -32,10 +32,10 @@ int main() {
             while(btn_get());
             if(!btn_get()) {
                 td = systime_ms();
-                motor_controller_set(&mcd, 1, 90);
+                motor_controller_set(&mcd, 0.8f, 0,300);
                 while (systime_ms() - td < 1000);
                 while (true) {
-                    sensors_controller_worker(&scd)
+                    sensors_controller_worker(&scd);
                     motor_controller_worker(&mcd);
                 }
             }

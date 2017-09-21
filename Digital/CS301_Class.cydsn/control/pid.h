@@ -22,7 +22,7 @@ typedef struct {
     bool active;
 }  PIDData;
 
-float apply_limit(float var, float min, float max)
+float apply_limit(float var, float min, float max);
 
 PIDData pid_create(float kp, float ki, float kd, float output_max, float output_min, float dead_band, uint32_t sample_time, bool p_on_m);
     

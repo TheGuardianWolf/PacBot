@@ -1,5 +1,6 @@
 #include <project.h>
-#include <stdio.h>
+//#include <stdio.h>
+#include <math.h>
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
@@ -99,8 +100,8 @@ static void adjust_bias(MCData* data) {
                 break;
             }
             float inversion_bias = -0.05 * data->sc_data->line_inversions;
-            bias_L += inversion_bias;
-            bias_R += inversion_bias;
+            data->bias_L += inversion_bias;
+            data->bias_R += inversion_bias;
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
@@ -149,8 +150,8 @@ static void adjust_setpoint(MCData* data) {
     }
 
     if (!special) {
-        data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist, data->target_speed, data->bias_L);
-        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist, data->target_speed, data->bias_R);  
+        data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
+        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);  
     }
 }
 
@@ -160,8 +161,8 @@ void motor_controller_worker(MCData* data) {
     uint32_t time_diff = now - data->last_run;
     if (time_diff >= data->sample_time) {
         
-        data->PID_L.input = speed2pidin(*(data->curr_speed_L));
-        data->PID_R.input = speed2pidin(*(data->curr_speed_R));
+        data->PID_L.input = speed2pidin(data->sc_data->curr_speed_L);
+        data->PID_R.input = speed2pidin(data->sc_data->curr_speed_R);
 
         adjust_bias(data);
 
@@ -182,7 +183,6 @@ void motor_controller_worker(MCData* data) {
 }
 
 void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t arg) {
-    motor_controller_reset(data);
     data->target_speed = speed;
     data->drive_mode = drive_mode;
     if (drive_mode == 0) {
@@ -210,7 +210,7 @@ void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t
     }
     else if (drive_mode == 3) {
         // Automatic
-        data->target_dist.L = 0;
-        data->target_dist.R = 0;
+        data->target_dist.L = 0xEFFFFFFF;
+        data->target_dist.R = 0xEFFFFFFF;
     }
 }

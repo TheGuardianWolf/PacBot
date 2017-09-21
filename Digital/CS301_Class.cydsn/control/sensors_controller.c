@@ -28,7 +28,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .prev_intersection = 0,
         .curr_intersection = 0,
         .line_end = false,
-        .curve = 0,
+        .line_curve = 0,
         .line_inversions = 0,
         .loc_valid = false,
         .curr_speed_L = 0.0f,
@@ -37,15 +37,17 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
     };
 
     if (use_wireless) {
+        uint32_t now = systime_ms();
         RFData rf_data = wireless_get();
         data.loc_valid = (now - rf_data.timestamp < data.sample_time);
         while(!data.loc_valid) {
+            now = systime_ms();
             rf_data = wireless_get();
             data.loc_valid = (now - rf_data.timestamp < data.sample_time);
         }
     }
 
-    sensors_controller_reset(data);
+    sensors_controller_reset(&data);
     return data;
 }
 
@@ -81,14 +83,14 @@ void sensors_controller_worker(SCData* data) {
             data->curr_loc.orientation = rf_data.robot_orientation;
             data->rel_orientation = rf_data.robot_orientation - data->start_loc.orientation;
             if (data->rel_orientation < 0) {
-                data->rel_loc.orientation += ORIENTATION_REV;
+                data->rel_orientation += ORIENTATION_REV;
             }
 
             if (data->loc_valid) {
                 data->rel_dist = dist2dec((int32)sqrtf(powf(rf_data.robot_xpos - data->start_loc.x, 2) + powf(rf_data.robot_ypos - data->start_loc.y, 2)));
             }
             else {
-                data->rel_dist += (data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2
+                data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
             }
         }
         
@@ -98,7 +100,7 @@ void sensors_controller_worker(SCData* data) {
             data->line_inversions = 0;
             for (i = 0; i < LINE_SENSORS; i++) {
                 data->line_state[i] = (bool) ((line_data >> i) & 1);
-                if (!line_state[i]) {
+                if (!data->line_state[i]) {
                     data->line_inversions++;
                 } 
             }
@@ -106,12 +108,12 @@ void sensors_controller_worker(SCData* data) {
             if (LINE(1)) {
                 int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
                 if (intersection > 0) {
-                    data->prev_intersection = data->sc_data->curr_intersection;
+                    data->prev_intersection = data->curr_intersection;
                     data->curr_intersection = intersection;
                 }
                 
                 if (!LINE(0)) {
-                    data->curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
+                    data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
                     if (LINE(4) && LINE(5)) {
                         data->line_end = true;
                     }
@@ -132,5 +134,4 @@ void sensors_controller_reset(SCData* data) {
     data->qd_start = qd_data;
     data->qd_dist.L = 0;
     data->qd_dist.R = 0;
-    data->last_qd_loc_valid = qd_data;
 }

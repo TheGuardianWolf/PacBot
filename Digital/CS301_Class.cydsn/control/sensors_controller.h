@@ -13,6 +13,7 @@
 #define LINE_SENSORS SIGMUX_MAX + 1
 #define ORIENTATION_REV 360
 #define ORIENTATION_HREV 180
+    
 
 typedef struct {
     uint32_t sample_time;
@@ -39,7 +40,7 @@ typedef struct {
 
 void sensors_controller_init();
 
-SCData sensors_controller_create();
+SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool use_line);
 
 void sensors_controller_worker(SCData* data);
 

@@ -11,7 +11,7 @@ typedef struct {
     SCData sc_data;
     int8_t heading; // -1 - Stay, 0 - North, 1 - East, 2 - South, 3 - West
     int8_t intersection; // 0 - None, 1 - Left only, 2 - Right only, 3 - Both
-    bool path_end;
+    bool line_end;
 } PCData;
 
 void path_controller_init();
