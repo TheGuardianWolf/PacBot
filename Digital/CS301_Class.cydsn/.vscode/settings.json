@@ -17,6 +17,7 @@
         "stdbool.h": "c",
         "math.h": "c",
         "sensors_controller.h": "c",
-        "usb.h": "c"
+        "usb.h": "c",
+        "sensors.h": "c"
     }
 }
