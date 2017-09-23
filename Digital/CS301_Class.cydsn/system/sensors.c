@@ -3,36 +3,68 @@
 
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
-static volatile uint8_t drain_active = 0;
+static volatile uint8_t line_fsm_state = 0;
 
-CY_ISR(read_line) {
-    if (drain_active == 0) {
-        line_buffer |= REG_LINE_Read() << mux_selection;        
-        SIGTIMER_RESET_Write(1);
-    }
-    else if (drain_active == 1) {
-        REG_DRAIN_Write(1);
+CY_ISR(line_rise) {
+    uint8_t reading;
+    switch(line_fsm_state) {
+        case 0:
+        reading = REG_LINE_Read();
+        line_buffer |= reading << mux_selection;
+        if (mux_selection == 0) {
+            if (reading == 1) {
+                REG_LED_Write(REG_LED_Read() | 0b001);
+            }
+            else {
+                REG_LED_Write(REG_LED_Read() & 0b110);
+            }
+        }
+        else if (mux_selection == 1) {
+            if (reading == 1) {
+                REG_LED_Write(REG_LED_Read() | 0b010);
+            }
+            else {
+                REG_LED_Write(REG_LED_Read() & 0b101);
+            }
+        } 
+        else if (mux_selection == 2) {
+            if (reading == 1) {
+                REG_LED_Write(REG_LED_Read() | 0b100);
+            }
+            else {
+                REG_LED_Write(REG_LED_Read() & 0b011);
+            }
+        }
         SIGMUX_Next();
-        if (mux_selection == SIGMUX_MAX) {
+        if (mux_selection < SIGMUX_MAX) {
+            mux_selection++;
+        }
+        else {
             mux_selection = 0;
             line_data = line_buffer;
             uint8_t temp = line_data;
             line_buffer = 0;
         }
-        else {
-            mux_selection++;
-        }
-        SIGTIMER_RESET_Write(1);
+        PK_DRAIN_Write(0);
+        SAMP_DRAIN_Write(0);
+        SIGTIMER_RESET_Write(0b10);
+        line_fsm_state = 1;
+        break;
+        default:
+        break;
     }
-    else {
-        REG_DRAIN_Write(0);
-        SIGTIMER_RESET_Write(1);
-    }
-    if (drain_active < 2) {
-        drain_active++;
-    }
-    else {
-        drain_active = 0;
+}
+
+CY_ISR(line_fall) {
+    switch(line_fsm_state) {
+        case 1:
+        PK_DRAIN_Write(1);
+        SAMP_DRAIN_Write(1);
+        line_fsm_state = 0;
+        SIGTIMER_RESET_Write(0b01);
+        break;
+        default:
+        break;
     }
 }
 
@@ -45,11 +77,14 @@ void sensors_init() {
     PKAMP_Start();
     PKCOMP_Start();
     PKCOMP_REF_Start();
-    SIGTIMER_Start();
-    isr_SIGRISE_StartEx(read_line);
+    //PKCOMP_REF_SetValue()
+    isr_SIGRISE_StartEx(line_rise);
+    isr_SIGFALL_StartEx(line_fall);
+    SIGTIMER_RISE_Start();
+    SIGTIMER_FALL_Start();
 }
 
 uint8_t sensors_line_get() {
     // Reports inverted/non-inverted sensors based on straight line model
-    return line_data ^ LINE_INVERT;
+    return line_buffer; //^ LINE_INVERT;
 }

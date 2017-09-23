@@ -7,7 +7,9 @@
 #define SIGMUX_MAX 5
 #define LINE_INVERT 0b00000011
 
-CY_ISR_PROTO(read_line);
+CY_ISR_PROTO(line_rise);
+
+CY_ISR_PROTO(line_fall);
     
 void sensors_init();
 
