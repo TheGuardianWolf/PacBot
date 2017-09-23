@@ -3,7 +3,7 @@
 
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
-static volatile uint8_t drain_active = false;
+static volatile uint8_t drain_active = 0;
 
 CY_ISR(read_line) {
     if (drain_active == 0) {
