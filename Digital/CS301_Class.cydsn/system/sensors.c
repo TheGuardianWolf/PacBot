@@ -4,6 +4,7 @@
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
 static volatile uint8_t line_fsm_state = 0;
+static volatile bool line_init = false;
 
 CY_ISR(line_rise) {
     uint8_t reading;
@@ -44,6 +45,9 @@ CY_ISR(line_rise) {
             line_data = line_buffer;
             uint8_t temp = line_data;
             line_buffer = 0;
+            if (!line_init) {
+                line_init = true;
+            }
         }
         PK_DRAIN_Write(0);
         SAMP_DRAIN_Write(0);
@@ -82,6 +86,9 @@ void sensors_init() {
     isr_SIGFALL_StartEx(line_fall);
     SIGTIMER_RISE_Start();
     SIGTIMER_FALL_Start();
+
+    // Wait for first set of readings.
+    while (!line_init);
 }
 
 uint8_t sensors_line_get() {
