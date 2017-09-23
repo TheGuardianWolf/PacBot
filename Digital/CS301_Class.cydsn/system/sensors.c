@@ -3,22 +3,37 @@
 
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
+static volatile uint8_t drain_active = false;
 
 CY_ISR(read_line) {
-    uint8_t temp = line_buffer |= REG_LINE_Read() << mux_selection;
-    line_buffer = temp;//|= REG_LINE_Read() << mux_selection;
-    REG_DRAIN_Write(1);
-    SIGMUX_Next();
-    if (mux_selection == SIGMUX_MAX) {
-        mux_selection = 0;
-        line_data = line_buffer;
-        line_buffer = 0;
+    if (drain_active == 0) {
+        line_buffer |= REG_LINE_Read() << mux_selection;        
+        SIGTIMER_RESET_Write(1);
+    }
+    else if (drain_active == 1) {
+        REG_DRAIN_Write(1);
+        SIGMUX_Next();
+        if (mux_selection == SIGMUX_MAX) {
+            mux_selection = 0;
+            line_data = line_buffer;
+            uint8_t temp = line_data;
+            line_buffer = 0;
+        }
+        else {
+            mux_selection++;
+        }
+        SIGTIMER_RESET_Write(1);
     }
     else {
-        mux_selection++;
+        REG_DRAIN_Write(0);
+        SIGTIMER_RESET_Write(1);
     }
-    REG_DRAIN_Write(0);
-    SIGTIMER_RESET_Write(1);
+    if (drain_active < 2) {
+        drain_active++;
+    }
+    else {
+        drain_active = 0;
+    }
 }
 
 void sensors_init() {
