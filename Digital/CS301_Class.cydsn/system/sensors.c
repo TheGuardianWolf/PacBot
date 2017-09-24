@@ -50,7 +50,7 @@ CY_ISR(line_rise) {
             }
         }
         PK_DRAIN_Write(0);
-        // SAMP_DRAIN_Write(0);
+        SAMP_DRAIN_Write(0);
         SIGTIMER_RESET_Write(0b10);
         line_fsm_state = 1;
         break;
