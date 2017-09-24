@@ -23,7 +23,7 @@ int main() {
     // SCData scd = sensors_controller_create(30, false, false);
     // MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
-    // REG_LED_Write(0b110);
+    REG_LED_Write(0b111);
     while(true) {
         uint32_t time = systime_ms();
         if(btn_get()) {

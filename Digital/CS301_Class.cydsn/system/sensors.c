@@ -50,7 +50,7 @@ CY_ISR(line_rise) {
             }
         }
         PK_DRAIN_Write(0);
-        SAMP_DRAIN_Write(0);
+        // SAMP_DRAIN_Write(0);
         SIGTIMER_RESET_Write(0b10);
         line_fsm_state = 1;
         break;
@@ -79,16 +79,19 @@ void sensors_init() {
     SAMP_Start();
     IAMP_Start();
     PKAMP_Start();
-    PKCOMP_Start();
-    PKCOMP_REF_Start();
-    //PKCOMP_REF_SetValue()
+    PKCOMP_LOW_Start();
+    PKCOMP_HIGH_Start();
+    PKCOMP_REF_LOW_Start();
+    PKCOMP_REF_HIGH_Start();
+    PKCOMP_REF_LOW_SetValue(LINE_LOW);
+    PKCOMP_REF_HIGH_SetValue(LINE_HIGH);
     isr_SIGRISE_StartEx(line_rise);
     isr_SIGFALL_StartEx(line_fall);
     SIGTIMER_RISE_Start();
     SIGTIMER_FALL_Start();
 
     // Wait for first set of readings.
-    while (!line_init);
+    //while (!line_init);
 }
 
 uint8_t sensors_line_get() {
