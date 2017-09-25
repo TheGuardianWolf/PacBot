@@ -56,6 +56,7 @@ void sensors_controller_worker(SCData* data) {
     uint32_t time_diff = now - data->last_run;
 
     if (time_diff >= data->sample_time) {
+        data->last_run = now;
         QuadDecData qd_data = quad_dec_get();
         RFData rf_data;
         if (data->use_wireless) {
