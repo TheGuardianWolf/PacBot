@@ -5,9 +5,11 @@
 #include "sensors_controller.h"
 
 typedef struct {
+    uint32_t sample_time;
     MCData mc_data;
     SCData sc_data;
     int8_t heading; // -1 - Stay, 0 - North, 1 - East, 2 - South, 3 - West
+    uint32_t last_run;
 } PCData;
 
 void path_controller_init();

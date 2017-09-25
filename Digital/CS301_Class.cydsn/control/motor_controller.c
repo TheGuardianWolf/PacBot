@@ -91,12 +91,15 @@ static void adjust_bias(MCData* data) {
                 case 1:
                 data->bias_L += 0.2f;
                 data->bias_R += -0.2f;
+                REG_LED_Write(0b010);
                 break;
                 case 2:
                 data->bias_L += -0.2f;
                 data->bias_R += 0.2f;
+                REG_LED_Write(0b001);
                 break;
                 default:
+                REG_LED_Write(0b100);
                 break;
             }
             float inversion_bias = -0.05 * data->sc_data->line_inversions;
@@ -160,7 +163,7 @@ void motor_controller_worker(MCData* data) {
     uint32_t now = systime_ms();
     uint32_t time_diff = now - data->last_run;
     if (time_diff >= data->sample_time) {
-        
+        data->last_run = now;
         data->PID_L.input = speed2pidin(data->sc_data->curr_speed_L);
         data->PID_R.input = speed2pidin(data->sc_data->curr_speed_R);
 
@@ -177,8 +180,6 @@ void motor_controller_worker(MCData* data) {
 
         motor_set_L(mspeedL);
         motor_set_R(mspeedR);
-
-        data->last_run = now;
     }
 }
 

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define SIGMUX_MAX 5
-#define LINE_INVERT 0b00000011
+#define LINE_INVERT 0b00111100
 #define LINE_LOW 0x2D
 #define LINE_HIGH 0x35
 

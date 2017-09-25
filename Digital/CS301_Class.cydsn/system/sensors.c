@@ -12,30 +12,30 @@ CY_ISR(line_rise) {
         case 0:
         reading = REG_LINE_Read();
         line_buffer |= reading << mux_selection;
-        if (mux_selection == 0) {
-            if (reading == 1) {
-                REG_LED_Write(REG_LED_Read() | 0b001);
-            }
-            else {
-                REG_LED_Write(REG_LED_Read() & 0b110);
-            }
-        }
-        else if (mux_selection == 1) {
-            if (reading == 1) {
-                REG_LED_Write(REG_LED_Read() | 0b010);
-            }
-            else {
-                REG_LED_Write(REG_LED_Read() & 0b101);
-            }
-        } 
-        else if (mux_selection == 2) {
-            if (reading == 1) {
-                REG_LED_Write(REG_LED_Read() | 0b100);
-            }
-            else {
-                REG_LED_Write(REG_LED_Read() & 0b011);
-            }
-        }
+//        if (mux_selection == 0) {
+//            if (reading == 1) {
+//                REG_LED_Write(REG_LED_Read() | 0b001);
+//            }
+//            else {
+//                REG_LED_Write(REG_LED_Read() & 0b110);
+//            }
+//        }
+//        else if (mux_selection == 1) {
+//            if (reading == 1) {
+//                REG_LED_Write(REG_LED_Read() | 0b010);
+//            }
+//            else {
+//                REG_LED_Write(REG_LED_Read() & 0b101);
+//            }
+//        } 
+//        else if (mux_selection == 2) {
+//            if (reading == 1) {
+//                REG_LED_Write(REG_LED_Read() | 0b100);
+//            }
+//            else {
+//                REG_LED_Write(REG_LED_Read() & 0b011);
+//            }
+//        }
         SIGMUX_Next();
         if (mux_selection < SIGMUX_MAX) {
             mux_selection++;
@@ -85,8 +85,8 @@ void sensors_init() {
     PKCOMP_REF_HIGH_Start();
     PKCOMP_REF_LOW_SetValue(LINE_LOW);
     PKCOMP_REF_HIGH_SetValue(LINE_HIGH);
-    isr_SIGRISE_StartEx(line_rise);
-    isr_SIGFALL_StartEx(line_fall);
+//    isr_SIGRISE_StartEx(line_rise);
+//    isr_SIGFALL_StartEx(line_fall);
     SIGTIMER_RISE_Start();
     SIGTIMER_FALL_Start();
 
@@ -96,5 +96,5 @@ void sensors_init() {
 
 uint8_t sensors_line_get() {
     // Reports inverted/non-inverted sensors based on straight line model
-    return line_buffer; //^ LINE_INVERT;
+    return line_buffer ^ LINE_INVERT;
 }
