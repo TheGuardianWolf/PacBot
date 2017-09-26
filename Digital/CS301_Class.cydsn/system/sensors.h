@@ -5,9 +5,12 @@
 #include <stdbool.h>
 
 #define SIGMUX_MAX 5
-#define LINE_INVERT 0b00000011
 #define LINE_HIGH 0xBB
 #define LINE_LOW 0x2F
+
+typedef struct {
+    bool state[SIGMUX_MAX];
+} LineData;
 
 CY_ISR_PROTO(line_timer);
     

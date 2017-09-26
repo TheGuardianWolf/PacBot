@@ -5,7 +5,7 @@
 #include "systime.h"
 #include "adc.h"
 
-#define LINE(x) data->line_state[x]
+#define LINE(x) data->line_data.state[x]
 
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
@@ -24,7 +24,9 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .sample_time = sample_time,
         .use_wireless = use_wireless,
         .use_line = use_line,
-        .line_state = {true, false, false, false, false, true},
+        .line_data = {
+            .state = {true, false, false, false, false, true}
+        },
         .prev_intersection = 0,
         .curr_intersection = 0,
         .line_end = false,
@@ -99,8 +101,8 @@ void sensors_controller_worker(SCData* data) {
         uint8_t i;
         data->line_inversions = 0;
         for (i = 0; i < LINE_SENSORS; i++) {
-            data->line_state[i] = (bool) ((line_data >> i) & 1);
-            if (!data->line_state[i]) {
+            data->line_data.state[i] = (bool) ((line_data >> i) & 1);
+            if (!data->line_data.state[i]) {
                 data->line_inversions++;
             } 
         }

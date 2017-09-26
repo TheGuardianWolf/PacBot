@@ -19,7 +19,7 @@ typedef struct {
     uint32_t sample_time;
     bool use_wireless;
     bool use_line;
-    bool line_state[6]; // Records inversion states
+    LineData line_data; // Records inversion states
     int8_t prev_intersection;
     int8_t curr_intersection; // 0 - None, 1 - Left only, 2 - Right only, 3 - Both
     bool line_end;

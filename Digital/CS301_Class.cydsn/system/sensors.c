@@ -1,6 +1,12 @@
 #include <project.h>
 #include "sensors.h"
 
+static LineData line_invert = {
+    .state = {true, true, false, false, false, false}
+};
+static volatile LineData line_data = {
+    .state = {true, true, true, true, true, true}
+};
 static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
 static volatile uint8_t line_fsm_state = 0;
@@ -33,7 +39,8 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             isr_SIGTIMER_Disable();
             isr_SIGRISE_Disable();
             reading = REG_LINE_Read();
-            line_buffer |= reading << mux_selection;
+            line_data.state[mux_selection] = (bool) reading ^ line_invert.state[mux_selection];
+            line_new_reading = true;
             if (!(REG_DIP_Read() & 1)){
                 if (mux_selection == 0) {
                     if (reading == 1) {
@@ -62,9 +69,6 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             }
             if (mux_selection == SIGMUX_MAX) {
                 line_init = true;
-                line_new_reading = true;
-                line_data = line_buffer;
-                line_buffer = 0;
             }
             SIGMUX_Next();
             isr_SIGFALL_ClearPending();
@@ -132,13 +136,13 @@ void sensors_init() {
     //while (!line_init);
 }
 
-uint8_t sensors_line_get() {
+LineData sensors_line_get() {
     // Reports inverted/non-inverted sensors based on straight line model
-    return line_data ^ LINE_INVERT;
+    line_new_reading = false;
+    return line_data;
 }
 
 bool sensors_line_check() {
     bool ret = line_new_reading;
-    line_new_reading = false;
     return ret;
 }
