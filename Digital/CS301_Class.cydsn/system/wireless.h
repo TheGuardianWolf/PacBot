@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 //RF 
-#define SOP 0xaa
+#define SOP 0x0a
 #define PACKET_INTERVAL 2
 
 typedef struct {
@@ -26,28 +26,25 @@ typedef struct {
 } DiPoint;
 
 typedef struct{
-	    int8_t            rssi;	
-        uint8_t           index;			// index number of packet. incremented number
-	    int16_t			robot_xpos;	 	// 
-    	int16_t			robot_ypos;		//
-        int16_t         robot_orientation;
-	    int16_t			g0_xpos;		//
-    	int16_t			g0_ypos;		//
-	    int16_t			g0_speed;		//
-    	int16_t		g0_direction;	//
-    	int16_t			g1_xpos;		//
-    	int16_t			g1_ypos;		//
-	    int16_t			g1_speed;		//
-        int16_t		g1_direction;	//
-        int16_t			g2_xpos;		//
-        int16_t			g2_ypos;		//
-        int16_t			g2_speed;		//
-        int16_t		g2_direction;	//
+	    uint16_t        robot_xpos;	
+        uint16_t        robot_ypos;			
+	    uint16_t		g0_xpos;	 	// 
+    	uint16_t	    g0_ypos;	    //
+        int16_t         g0_speed;
+	    int8_t			g0_direction;   //1-up 2-down 3-right 4-left
+	    uint16_t		g1_xpos;	 	// 
+    	uint16_t	    g1_ypos;	//
+        int16_t         g1_speed;
+	    int8_t			g1_direction;		//
+	    uint16_t		g2_xpos;	 	// 
+    	uint16_t	    g2_ypos;	//
+        int16_t         g2_speed;
+	    int8_t			g2_direction;		//
         uint32_t    timestamp;
     } RFData;
 
 typedef union {
-    uint8_t bytes[32];
+    uint8_t bytes[25];
     RFData data;
 } RFBuffer;
 
