@@ -25,8 +25,10 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .prev_intersection = DI_N,
         .curr_intersection = DI_N,
         .line_end = false,
+        .line_track = DI_N,
         .line_curve = DI_N,
         .line_inversions = 0,
+        .line_lost = false,
         .loc_valid = false,
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
@@ -51,6 +53,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
 void sensors_controller_worker(SCData* data) {
     // Line section - Guard via interrupt flag
     #define LINE(x) line_data.state[x]
+    #define LINE_INV(x) !line_data.state[x]
     if (data->use_line && sensors_line_check()) {
         LineData line_data;
         line_data = sensors_line_get();
@@ -62,23 +65,51 @@ void sensors_controller_worker(SCData* data) {
             } 
         }
         
-        if (!data->line_curve > 0) {
-            if (!LINE(0)) {
-                data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
-                if (LINE(4) && LINE(5)) {
-                    data->line_end = true;
-                }
-            }
-        }
-
-        if (LINE(1)) {
-            int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
-            if (intersection > 0) {
+        // If wing sensors are inverted
+        if (LINE_INV(1) || LINE_INV(2)) {
+            // If center sensor is not inverted, it's an intersection
+            if (LINE(0)) {
+                int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
                 data->prev_intersection = data->curr_intersection;
                 data->curr_intersection = intersection;
             }
-            if (LINE(0) && data->line_curve > 0) {
-                data->line_curve = 0;
+            // Otherwise, it's a curve
+            else {
+                data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
+            }
+        }
+        // Check if lost or line has ended
+        else if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE(3) && LINE(4))) {
+            if (LINE(5) && data->line_curve == 0) {
+                data->line_end = true;
+            }
+            else if (data->line_inversions == 6) {
+                data->line_lost = true;
+            }
+            else {
+                data->line_end = false;
+                data->line_lost = false;
+            }
+        }
+        else {
+            data->line_end = false;
+            data->line_lost = false;
+        }
+        
+        // Whilst it's a curve, use feelers to track the path, and tail to restore normality
+        if (data->line_curve > 0) {
+            if (LINE(5)) {
+                data->line_curve = DI_N;
+            }
+            else {
+                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
+            }   
+        }
+            
+        // Whilst tracking, use tail and center to restore normality            
+        if (data->line_track > 0) {
+            if (LINE(5) && LINE(0)) {
+                data->line_track = DI_N;
             }
         }
 

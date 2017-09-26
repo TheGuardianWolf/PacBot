@@ -143,13 +143,13 @@ static void adjust_setpoint(MCData* data) {
         }
     }
     else if (data->drive_mode == 3) {
-//        if (data->sc_data->use_line) {
-//            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
-//                data->PID_L.setpoint = 0.0f;
-//                data->PID_L.setpoint = 0.0f;
-//                special = true;
-//            }
-//        }
+        if (data->sc_data->use_line) {
+            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
+                data->PID_L.setpoint = 0.0f;
+                data->PID_L.setpoint = 0.0f;
+                special = true;
+            }
+        }
     }
 
     if (!special) {
@@ -211,7 +211,7 @@ void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t
     }
     else if (drive_mode == 3) {
         // Automatic
-        data->target_dist.L = 9999999;
-        data->target_dist.R = 9999999;
+        data->target_dist.L = 0xEFFFFFFF;
+        data->target_dist.R = 0xEFFFFFFF;
     }
 }
