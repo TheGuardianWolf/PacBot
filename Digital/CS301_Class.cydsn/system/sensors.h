@@ -6,9 +6,11 @@
 
 #define SIGMUX_MAX 5
 #define LINE_INVERT 0b00111100
-#define LINE_LOW 0x2D
-#define LINE_HIGH 0x35
+#define LINE_HIGH 0xE1
+#define LINE_LOW 0x2F
 
+CY_ISR_PROTO(line_timer);
+    
 CY_ISR_PROTO(line_rise);
 
 CY_ISR_PROTO(line_fall);

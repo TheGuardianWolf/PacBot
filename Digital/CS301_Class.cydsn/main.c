@@ -39,20 +39,22 @@ int main() {
             }
         }
         else {
-           if (time - td >= 1000) {
-               td = time;
-               char buffer[64];
-               uint8_t line_data = sensors_line_get();
-               sprintf(buffer, "0:%d 1:%d 2:%d 3:%d 4:%d 5:%d\r\n",
-                       (int) (line_data & 1),
-                       (int) ((line_data >> 1) & 1),
-                       (int) ((line_data >> 2) & 1),
-                       (int) ((line_data >> 3) & 1),
-                       (int) ((line_data >> 4) & 1),
-                       (int) ((line_data >> 5) & 1)
-                      );
-               usb_send_string(buffer);
-           }
+            if (REG_SW_Read() >> 3 & 1) {
+                if (time - td >= 1000) {
+                    td = time;
+                    char buffer[64];
+                    uint8_t line_data = sensors_line_get();
+                    sprintf(buffer, "0:%d 1:%d 2:%d 3:%d 4:%d 5:%d\r\n",
+                            (int) (line_data & 1),
+                            (int) ((line_data >> 1) & 1),
+                            (int) ((line_data >> 2) & 1),
+                            (int) ((line_data >> 3) & 1),
+                            (int) ((line_data >> 4) & 1),
+                            (int) ((line_data >> 5) & 1)
+                            );
+                    usb_send_string(buffer);
+                }
+            }
         }
     }
     return 0;
