@@ -57,7 +57,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
                     REG_LED_Write(REG_LED_Read() & 0b011);
                 }
             }
-            if (mux_selection == SIGMUX_CHANNEL_MAX) {
+            if (mux_selection == SIGMUX_MAX) {
                 line_init = true;
             }
             SIGMUX_Next();

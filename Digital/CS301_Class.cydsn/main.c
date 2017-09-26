@@ -39,7 +39,7 @@ int main() {
             }
         }
         else {
-            if (REG_SW_Read() >> 3 & 1) {
+            if (REG_DIP_Read() >> 3 & 1) {
                 if (time - td >= 1000) {
                     td = time;
                     char buffer[64];
