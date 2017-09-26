@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 #define SIGMUX_MAX 5
-#define LINE_INVERT 0b00111100
-#define LINE_HIGH 0xE1
+#define LINE_INVERT 0b00000011
+#define LINE_HIGH 0xBB
 #define LINE_LOW 0x2F
 
 CY_ISR_PROTO(line_timer);
@@ -18,5 +18,7 @@ CY_ISR_PROTO(line_fall);
 void sensors_init();
 
 uint8_t sensors_line_get();
+
+bool sensors_line_check();
 
 #endif /* SIGNALS_H */

@@ -18,23 +18,25 @@ void system_init() {
 
 int main() {
     system_init();
-    SCData scd = sensors_controller_create(30, false, true);
+    SCData scd = sensors_controller_create(30, (REG_DIP_Read() >> 1) & 1, (REG_DIP_Read() >> 2) & 1);
     MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
     led_set(0b111);
     while(true) {
         uint32_t time = systime_ms();
         if(btn_get()) {
+            led_set(0b000);
             while(btn_get());
             if(!btn_get()) {
-                td = time;
-                led_set(0b000);
-                while(systime_ms() - td < 1){}
-                //motor_controller_set(&mcd, 0.3f, 0,1000);
-                //while (true) {
-                    //sensors_controller_worker(&scd);
-                    //motor_controller_worker(&mcd);
-                //}
+                if (REG_DIP_Read() & 1) {
+                    td = time;
+                    while(systime_ms() - td < 1){}
+                    motor_controller_set(&mcd, 0.7f, 0,2000); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
+                    while (true) {
+                        sensors_controller_worker(&scd);
+                        motor_controller_worker(&mcd);
+                    }
+                }
                 led_set(0b111);
             }
         }

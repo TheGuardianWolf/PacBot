@@ -62,10 +62,7 @@ void sensors_controller_worker(SCData* data) {
         if (data->use_wireless) {
              rf_data = wireless_get();
         }
-        uint8_t line_data;
-        if (data->use_line) {
-             line_data = sensors_line_get();
-        }
+        
 
         // QD section
         data->qd_prev = data->qd_dist;
@@ -93,34 +90,41 @@ void sensors_controller_worker(SCData* data) {
             else {
                 data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
             }
+        } 
+    }
+        // Line section
+    if (data->use_line && sensors_line_check()) {
+        uint8_t line_data;
+        line_data = sensors_line_get();
+        uint8_t i;
+        data->line_inversions = 0;
+        for (i = 0; i < LINE_SENSORS; i++) {
+            data->line_state[i] = (bool) ((line_data >> i) & 1);
+            if (!data->line_state[i]) {
+                data->line_inversions++;
+            } 
         }
         
-        // Line section
-        if (data->use_line) {
-            uint8_t i;
-            data->line_inversions = 0;
-            for (i = 0; i < LINE_SENSORS; i++) {
-                data->line_state[i] = (bool) ((line_data >> i) & 1);
-                if (!data->line_state[i]) {
-                    data->line_inversions++;
-                } 
+        if (!data->line_curve > 0) {
+            if (!LINE(0)) {
+                data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
+                if (LINE(4) && LINE(5)) {
+                    data->line_end = true;
+                }
             }
+        }
 
-            if (LINE(1)) {
-                int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
-                if (intersection > 0) {
-                    data->prev_intersection = data->curr_intersection;
-                    data->curr_intersection = intersection;
-                }
-                
-                if (!LINE(0)) {
-                    data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
-                    if (LINE(4) && LINE(5)) {
-                        data->line_end = true;
-                    }
-                }
+        if (LINE(1)) {
+            int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
+            if (intersection > 0) {
+                data->prev_intersection = data->curr_intersection;
+                data->curr_intersection = intersection;
             }
-        }   
+            if (LINE(0) && data->line_curve > 0) {
+                data->line_curve = 0;
+            }
+        }
+
     }
 }
 

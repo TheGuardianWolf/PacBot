@@ -16,22 +16,22 @@ static float speed2pidin (float speed) {
 static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
     if (target > 0) {
         if (now < target) {
-            if (target - now > 200) {
-                return 0.3f + speed * bias;
-            }
-            else {
+//            if (target - now > 200) {
+//                return 0.3f* (speed * bias);
+//            }
+//            else {
                 return speed * (1 + bias);
-            }
+//            }
         }
     }
     else {
         if (now > target) {
-            if (target - now < -200) {
-                return -0.3f - speed * bias;
-            }
-            else {
+//            if (target - now < -200) {
+//                return 0.3f* (- speed * bias);
+//            }
+//            else {
                 return speed * (-1 - bias);
-            }
+//            }
         }
     }
 
@@ -89,20 +89,20 @@ static void adjust_bias(MCData* data) {
         if (data->sc_data->use_line) {
             switch(data->sc_data->line_curve) {
                 case 1:
-                data->bias_L += 0.2f;
-                data->bias_R += -0.2f;
+                data->bias_L += -0.5f;
+                data->bias_R += 0.8f;
                 REG_LED_Write(0b010);
                 break;
                 case 2:
-                data->bias_L += -0.2f;
-                data->bias_R += 0.2f;
+                data->bias_L += 0.8f;
+                data->bias_R += -0.5f;
                 REG_LED_Write(0b001);
                 break;
                 default:
                 REG_LED_Write(0b100);
                 break;
             }
-            float inversion_bias = -0.05 * data->sc_data->line_inversions;
+            float inversion_bias = -0.02 * data->sc_data->line_inversions;
             data->bias_L += inversion_bias;
             data->bias_R += inversion_bias;
         }
@@ -143,13 +143,13 @@ static void adjust_setpoint(MCData* data) {
         }
     }
     else if (data->drive_mode == 3) {
-        if (data->sc_data->use_line) {
-            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
-                data->PID_L.setpoint = 0.0f;
-                data->PID_L.setpoint = 0.0f;
-                special = true;
-            }
-        }
+//        if (data->sc_data->use_line) {
+//            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
+//                data->PID_L.setpoint = 0.0f;
+//                data->PID_L.setpoint = 0.0f;
+//                special = true;
+//            }
+//        }
     }
 
     if (!special) {
@@ -211,7 +211,7 @@ void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t
     }
     else if (drive_mode == 3) {
         // Automatic
-        data->target_dist.L = 0xEFFFFFFF;
-        data->target_dist.R = 0xEFFFFFFF;
+        data->target_dist.L = 9999999;
+        data->target_dist.R = 9999999;
     }
 }
