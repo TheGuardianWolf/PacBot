@@ -13,13 +13,16 @@
 #define LINE_SENSORS SIGMUX_MAX + 1
 #define ORIENTATION_REV 360
 #define ORIENTATION_HREV 180
+#define DI_N 0
+#define DI_L 1
+#define DI_R 2
+#define DI_LR 3
     
 
 typedef struct {
     uint32_t sample_time;
     bool use_wireless;
     bool use_line;
-    LineData line_data; // Records inversion states
     int8_t prev_intersection;
     int8_t curr_intersection; // 0 - None, 1 - Left only, 2 - Right only, 3 - Both
     bool line_end;

@@ -18,7 +18,7 @@ void system_init() {
 
 int main() {
     system_init();
-    SCData scd = sensors_controller_create(30, (REG_DIP_Read() >> 1) & 1, (REG_DIP_Read() >> 2) & 1);
+    SCData scd = sensors_controller_create(30, dipsw_get(1), dipsw_get(2));
     MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
     led_set(0b111);
@@ -28,7 +28,7 @@ int main() {
             led_set(0b000);
             while(btn_get());
             if(!btn_get()) {
-                if (REG_DIP_Read() & 1) {
+                if (dipsw_get(0)) {
                     td = time;
                     while(systime_ms() - td < 1){}
                     motor_controller_set(&mcd, 0.7f, 0,2000); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
@@ -41,18 +41,18 @@ int main() {
             }
         }
         else {
-            if (REG_DIP_Read() >> 3 & 1) {
+            if (dipsw_get(3)) {
                 if (time - td >= 1000) {
                     td = time;
                     char buffer[64];
-                    uint8_t line_data = sensors_line_get();
+                    LineData line_data = sensors_line_get();
                     sprintf(buffer, "0:%d 1:%d 2:%d 3:%d 4:%d 5:%d\r\n",
-                            (int) (line_data & 1),
-                            (int) ((line_data >> 1) & 1),
-                            (int) ((line_data >> 2) & 1),
-                            (int) ((line_data >> 3) & 1),
-                            (int) ((line_data >> 4) & 1),
-                            (int) ((line_data >> 5) & 1)
+                            (int) (line_data.state[0]),
+                            (int) (line_data.state[1]),
+                            (int) (line_data.state[2]),
+                            (int) (line_data.state[3]),
+                            (int) (line_data.state[4]),
+                            (int) (line_data.state[5])
                             );
                     usb_send_string(buffer);
                 }

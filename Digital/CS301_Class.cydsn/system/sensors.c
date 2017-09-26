@@ -7,7 +7,6 @@ static LineData line_invert = {
 static volatile LineData line_data = {
     .state = {true, true, true, true, true, true}
 };
-static volatile uint8_t line_buffer, line_data = 0;
 static volatile int8_t mux_selection = 0;
 static volatile uint8_t line_fsm_state = 0;
 static volatile bool line_init = false;

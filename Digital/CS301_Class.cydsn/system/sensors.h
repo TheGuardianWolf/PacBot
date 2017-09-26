@@ -9,7 +9,7 @@
 #define LINE_LOW 0x2F
 
 typedef struct {
-    bool state[SIGMUX_MAX];
+    bool state[SIGMUX_MAX + 1];
 } LineData;
 
 CY_ISR_PROTO(line_timer);
@@ -20,7 +20,7 @@ CY_ISR_PROTO(line_fall);
     
 void sensors_init();
 
-uint8_t sensors_line_get();
+LineData sensors_line_get();
 
 bool sensors_line_check();
 

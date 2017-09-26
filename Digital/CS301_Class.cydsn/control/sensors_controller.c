@@ -5,8 +5,6 @@
 #include "systime.h"
 #include "adc.h"
 
-#define LINE(x) data->line_data.state[x]
-
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
@@ -24,13 +22,10 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .sample_time = sample_time,
         .use_wireless = use_wireless,
         .use_line = use_line,
-        .line_data = {
-            .state = {true, false, false, false, false, true}
-        },
-        .prev_intersection = 0,
-        .curr_intersection = 0,
+        .prev_intersection = DI_N,
+        .curr_intersection = DI_N,
         .line_end = false,
-        .line_curve = 0,
+        .line_curve = DI_N,
         .line_inversions = 0,
         .loc_valid = false,
         .curr_speed_L = 0.0f,
@@ -54,6 +49,42 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
 }
 
 void sensors_controller_worker(SCData* data) {
+    // Line section - Guard via interrupt flag
+    #define LINE(x) line_data.state[x]
+    if (data->use_line && sensors_line_check()) {
+        LineData line_data;
+        line_data = sensors_line_get();
+        uint8_t i;
+        data->line_inversions = 0;
+        for (i = 0; i < LINE_SENSORS; i++) {
+            if (!LINE(i)) {
+                data->line_inversions++;
+            } 
+        }
+        
+        if (!data->line_curve > 0) {
+            if (!LINE(0)) {
+                data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
+                if (LINE(4) && LINE(5)) {
+                    data->line_end = true;
+                }
+            }
+        }
+
+        if (LINE(1)) {
+            int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
+            if (intersection > 0) {
+                data->prev_intersection = data->curr_intersection;
+                data->curr_intersection = intersection;
+            }
+            if (LINE(0) && data->line_curve > 0) {
+                data->line_curve = 0;
+            }
+        }
+
+    }
+    
+    // Time guarded section
     uint32_t now = systime_ms();
     uint32_t time_diff = now - data->last_run;
 
@@ -64,7 +95,6 @@ void sensors_controller_worker(SCData* data) {
         if (data->use_wireless) {
              rf_data = wireless_get();
         }
-        
 
         // QD section
         data->qd_prev = data->qd_dist;
@@ -93,40 +123,6 @@ void sensors_controller_worker(SCData* data) {
                 data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
             }
         } 
-    }
-        // Line section
-    if (data->use_line && sensors_line_check()) {
-        uint8_t line_data;
-        line_data = sensors_line_get();
-        uint8_t i;
-        data->line_inversions = 0;
-        for (i = 0; i < LINE_SENSORS; i++) {
-            data->line_data.state[i] = (bool) ((line_data >> i) & 1);
-            if (!data->line_data.state[i]) {
-                data->line_inversions++;
-            } 
-        }
-        
-        if (!data->line_curve > 0) {
-            if (!LINE(0)) {
-                data->line_curve = (int8_t) !LINE(4) + ((int8_t) !LINE(5)) * 2;
-                if (LINE(4) && LINE(5)) {
-                    data->line_end = true;
-                }
-            }
-        }
-
-        if (LINE(1)) {
-            int8_t intersection = (int8_t) !LINE(2) + (int8_t) !LINE(3) * 2;
-            if (intersection > 0) {
-                data->prev_intersection = data->curr_intersection;
-                data->curr_intersection = intersection;
-            }
-            if (LINE(0) && data->line_curve > 0) {
-                data->line_curve = 0;
-            }
-        }
-
     }
 }
 

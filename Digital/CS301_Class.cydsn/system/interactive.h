@@ -5,5 +5,5 @@ void led_set(uint8_t state);
 
 bool btn_get();
 
-uint8_t dipsw_get();
+bool dipsw_get(uint8_t s);
 

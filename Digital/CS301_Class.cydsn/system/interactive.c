@@ -9,6 +9,6 @@ bool btn_get() {
     return (bool) REG_BTN_Read();
 }
 
-uint8_t dipsw_get() {
-    return REG_DIP_Read();
+bool dipsw_get(uint8_t s) {
+    return (bool) ((REG_DIP_Read() << s) & 1);
 }
