@@ -1,5 +1,6 @@
 #include <project.h>
 #include <math.h>
+#include <string.h>
 
 #include "sensors_controller.h"
 #include "systime.h"
@@ -51,6 +52,25 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
 }
 
 void sensors_controller_worker(SCData* data) {
+    // Time guarded section
+    uint32_t now = systime_ms();
+    uint32_t time_diff = now - data->last_run;
+
+    if (time_diff >= data->sample_time) {
+        data->last_run = now;
+        QuadDecData qd_data = quad_dec_get();
+        
+
+        // QD section
+        data->qd_prev = data->qd_dist;
+        data->qd_dist.L = qd_data.L - data->qd_start.L;
+        data->qd_dist.R = qd_data.R - data->qd_start.R;
+
+        data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
+        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);        
+    }
+    
+    
     // Line section - Guard via interrupt flag
     #define LINE(x) line_data.state[x]
     #define LINE_INV(x) !line_data.state[x]
@@ -82,6 +102,7 @@ void sensors_controller_worker(SCData* data) {
         else if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE(3) && LINE(4))) {
             if (LINE(5) && data->line_curve == 0) {
                 data->line_end = true;
+                data->line_tracking = true;
             }
             else if (data->line_inversions == 6) {
                 data->line_lost = true;
@@ -96,64 +117,50 @@ void sensors_controller_worker(SCData* data) {
             data->line_lost = false;
         }
         
-        // Whilst it's a curve, use feelers to track the path, and tail to restore normality
+        // Use tail to restore normality whilst curving
         if (data->line_curve > 0) {
+            
             if (LINE(5)) {
                 data->line_curve = DI_N;
             }
             else {
-                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
-            }   
+                data->line_tracking = true;
+            }
+        }
+
+        // Use feelers for line tracking
+        if (LINE_INV(5)) {
+            data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
         }
             
         // Whilst tracking, use tail and center to restore normality            
         if (data->line_track > 0) {
             if (LINE(5) && LINE(0)) {
                 data->line_track = DI_N;
+                data->line_tracking = false;
             }
         }
-
     }
     
-    // Time guarded section
-    uint32_t now = systime_ms();
-    uint32_t time_diff = now - data->last_run;
+    // Wireless fusion section - Guard via interrupt flag
+    if (data->use_wireless && wireless_check()) {
+        RFData rf_data = wireless_get();
+        data->loc_valid = (now - rf_data.timestamp < data->sample_time);
 
-    if (time_diff >= data->sample_time) {
-        data->last_run = now;
-        QuadDecData qd_data = quad_dec_get();
-        RFData rf_data;
-        if (data->use_wireless) {
-             rf_data = wireless_get();
+        data->curr_loc.x = rf_data.robot_xpos;
+        data->curr_loc.y = rf_data.robot_ypos;
+        data->curr_loc.orientation = rf_data.robot_orientation;
+        data->rel_orientation = rf_data.robot_orientation - data->start_loc.orientation;
+        if (data->rel_orientation < 0) {
+            data->rel_orientation += ORIENTATION_REV;
         }
 
-        // QD section
-        data->qd_prev = data->qd_dist;
-        data->qd_dist.L = qd_data.L - data->qd_start.L;
-        data->qd_dist.R = qd_data.R - data->qd_start.R;
-
-        data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
-        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);        
-
-        // Wireless fusion section
-        if (data->use_wireless) {
-            data->loc_valid = (now - rf_data.timestamp < data->sample_time);
-
-            data->curr_loc.x = rf_data.robot_xpos;
-            data->curr_loc.y = rf_data.robot_ypos;
-            data->curr_loc.orientation = rf_data.robot_orientation;
-            data->rel_orientation = rf_data.robot_orientation - data->start_loc.orientation;
-            if (data->rel_orientation < 0) {
-                data->rel_orientation += ORIENTATION_REV;
-            }
-
-            if (data->loc_valid) {
-                data->rel_dist = dist2dec((int32)sqrtf(powf(rf_data.robot_xpos - data->start_loc.x, 2) + powf(rf_data.robot_ypos - data->start_loc.y, 2)));
-            }
-            else {
-                data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
-            }
-        } 
+        if (data->loc_valid) {
+            data->rel_dist = dist2dec((int32)sqrtf(powf(rf_data.robot_xpos - data->start_loc.x, 2) + powf(rf_data.robot_ypos - data->start_loc.y, 2)));
+        }
+        else {
+            data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
+        }
     }
 }
 

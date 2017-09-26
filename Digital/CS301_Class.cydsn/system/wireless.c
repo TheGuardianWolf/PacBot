@@ -26,11 +26,11 @@
 static volatile RFBuffer receive_buffer, data_buffer;
 static volatile uint8_t start_count = 0;
 static volatile uint8_t data_count = 0;
-volatile uint8_t data;
+static volatile bool rf_new = false;
 
 CY_ISR(rf_rx) {
     while(UART_GetRxBufferSize()) {
-        data = UART_ReadRxData();
+        uint8_t data = UART_ReadRxData();
         if (start_count < 2) {
             if(data == SOP) {
                 start_count++;
@@ -46,6 +46,7 @@ CY_ISR(rf_rx) {
                 data_buffer = receive_buffer;
                 start_count = 0;
                 data_count = 0;
+                rf_new = true;
             }
             else {
                 data_count++;
@@ -60,5 +61,10 @@ void wireless_init() {
 }
 
 RFData wireless_get() {
+    rf_new = false;
     return data_buffer.data;
+}
+
+bool wireless_check() {
+    return rf_new;
 }

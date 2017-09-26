@@ -87,24 +87,40 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
     if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
+            float inversion_bias = -0.05 * data->sc_data->line_inversions;
+            data->bias_L += inversion_bias;
+            data->bias_R += inversion_bias;
             switch(data->sc_data->line_curve) {
-                case 1:
-                data->bias_L += -0.5f;
-                data->bias_R += 0.8f;
+                case DI_N:
+                if (data->sc_data->line_tracking) {
+                    switch(data->sc_data->line_track) {
+                        case DI_L:
+                        data->bias_L += 0.2f;
+                        data->bias_R += -0.8f;
+                        break;
+                        case DI_R:
+                        data->bias_L += -0.8f;
+                        data->bias_R += 0.2f;
+                        break;
+                        default:
+                        break;
+                    }
+                }
+                REG_LED_Write(0b100);
+                break;
+                case DI_L:
+                data->bias_L += 0.5f;
+                data->bias_R += -1.0f;
                 REG_LED_Write(0b010);
                 break;
-                case 2:
-                data->bias_L += 0.8f;
-                data->bias_R += -0.5f;
+                case DI_R:
+                data->bias_L += -1.0f;
+                data->bias_R += 0.5f;
                 REG_LED_Write(0b001);
                 break;
                 default:
-                REG_LED_Write(0b100);
                 break;
             }
-            float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            data->bias_L += inversion_bias;
-            data->bias_R += inversion_bias;
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
@@ -211,7 +227,7 @@ void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t
     }
     else if (drive_mode == 3) {
         // Automatic
-        data->target_dist.L = 0xEFFFFFFF;
-        data->target_dist.R = 0xEFFFFFFF;
+        data->target_dist.L = 0x0FFFFFFF;
+        data->target_dist.R = 0x0FFFFFFF;
     }
 }

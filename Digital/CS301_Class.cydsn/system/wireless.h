@@ -13,6 +13,7 @@
 */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 //RF 
 #define SOP 0xaa
@@ -55,6 +56,8 @@ typedef union {
 void wireless_init();
 
 RFData wireless_get();
+
+bool wireless_check();
 
 /* [] END OF FILE */
 
