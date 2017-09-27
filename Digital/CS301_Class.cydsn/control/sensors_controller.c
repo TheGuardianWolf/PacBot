@@ -12,6 +12,56 @@ static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
 }
 
+static void calculate_orientation(SCData* data, RFData* rf_data) {
+    if (data->use_wireless) {
+        int16_t x_change, y_change;
+        float orientation_buffer = 0.0f;
+            
+        x_change = rf_data->robot_xpos - data->start_loc.x; 
+        y_change = rf_data->robot_ypos - data->start_loc.y;
+        
+        x_change = abs(x_change);
+        y_change = abs(y_change);
+        
+        if(x_change != 0) {
+            orientation_buffer = atanf((float)y_change/x_change);
+            //4th quadrant
+            if(y_change > 0 && x_change > 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer = 360 - orientation_buffer;
+            }
+            //1st quadrant
+                else if(y_change < 0 && x_change > 0){
+                orientation_buffer *= 180/PI;
+            }
+            //2nd quadrant
+            else if( y_change < 0 && x_change < 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer = 180 - orientation_buffer;
+            }
+            //3rd quadrant
+            else if( y_change > 0 && x_change < 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer += 180;
+            }
+            else if(x_change > 0) {
+                orientation_buffer = 0;
+            }
+            else if(x_change < 0) {
+                orientation_buffer = 180;
+            }
+        }
+        else if (y_change > 0) {
+            orientation_buffer = 270;
+        }
+        else if (y_change < 0){
+           orientation_buffer = 90;
+        }
+    data->curr_loc.orientation = (int16_t)orientation_buffer;
+    }
+    return;
+}
+
 void sensors_controller_init() {
     systime_init();
     wireless_init();
@@ -88,34 +138,50 @@ void sensors_controller_worker(SCData* data) {
             } 
         }
         
-        // If front tip sensors are inverted
+        // If wing sensors are inverted, check for intersection or curve
         if (LINE_INV(1) || LINE_INV(2)) {
-            // If center sensor is not inverted, it's a curve
-            if (LINE(0)) {
+            // Is curve if center is inverted
+            if (LINE_INV(0) && LINE(5)) {
+                data->line_tracking = true;
+                int8_t line_curve_prev = data->line_curve;
+                data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
+                if (data->line_curve == DI_LR) {
+                    data->line_curve = line_curve_prev;
+                }
+            }
+
+            // Otherwise intersection
+            if (LINE(0) && LINE(5)) {
                 int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;                
                 data->prev_intersection = data->curr_intersection;
                 data->curr_intersection = intersection;
             }
-            // Otherwise, it's a curve
-            else {
-                if (!data->line_tracking || data->line_track == 0) {
-                    int8_t line_curve_prev = data->line_curve;
-                    data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
-                    if (data->line_curve == DI_LR) {
-                        data->line_curve = line_curve_prev;
-                    }
-                }
-                else {
-                    data->line_curve = DI_N;
-                }
+        }
+
+        if (LINE(3) || LINE(4)) {
+            data->line_track_centered = true;
+        }
+        else {
+            data->line_track_centered = false;
+        }
+
+        // If front tip sensors are inverted and robot curve detecting, activate tracking
+        if (LINE_INV(3) || LINE_INV(4)) {
+            data->line_tracking = true;
+            int8_t line_track_prev = data->line_track;
+            data->line_track = (int8_t) LINE_INV(3) * DI_R + (int8_t) LINE_INV(4) * DI_L;
+            if (data->line_track == DI_LR) {
+                data->line_track = line_track_prev;
             }
         }
+        else {
+            data->line_tracking = false;
+        }
+        
         // Check if lost or line has ended
-        else if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE(3) && LINE(4))) {
-            if (LINE(5) && data->line_curve == 0) {
+        if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE_INV(3) && LINE_INV(4))) {
+            if (LINE(5) && data->line_curve == 0 && data->line_track == 0) {
                 data->line_end = true;
-                data->line_tracking = true;
-                data->line_track_centered = false;
             }
             else if (data->line_inversions == 6) {
                 data->line_lost = true;
@@ -135,38 +201,6 @@ void sensors_controller_worker(SCData* data) {
             if (LINE(0)) {
                 data->line_curve = DI_N;
             }
-            else {
-                data->line_tracking = true;
-                data->line_track_centered = false;
-            }
-        }
-        //REG_LED_Write(data->line_curve);
-        // Use feelers for line tracking
-        if (LINE_INV(5)) {
-            int8_t line_track_prev = data->line_track;
-            data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
-//            if (!data->line_track_centered) {
-//                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
-////                if (data->line_track != line_track_prev && (data->line_track == DI_L || data->line_track == DI_R)) {
-////                    data->line_track_centered = true;
-//                }
-//            }
-//            else {
-//                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
-//            }
-            if (data->line_track == DI_LR) {
-                data->line_track = line_track_prev;
-            }
-            
-        }
-            
-        // Whilst tracking, use tail and center to restore normality            
-        if (data->line_track > 0) {
-            data->line_curve = DI_N;
-            if (LINE(5) && LINE(0)) {
-                data->line_track = DI_N;
-                data->line_tracking = false;
-            }
         }
     }
     
@@ -177,7 +211,7 @@ void sensors_controller_worker(SCData* data) {
 
         data->curr_loc.x = rf_data.robot_xpos;
         data->curr_loc.y = rf_data.robot_ypos;
-        calculateOrientation(data, &rf_data);
+        calculate_orientation(data, &rf_data);
         data->rel_orientation = data->curr_loc.orientation - data->start_loc.orientation;
         if (data->rel_orientation < 0) {
             data->rel_orientation += ORIENTATION_REV;
@@ -198,60 +232,10 @@ void sensors_controller_reset(SCData* data) {
     QuadDecData qd_data = quad_dec_get();
     data->start_loc.x = rf_data.robot_xpos;
     data->start_loc.y = rf_data.robot_ypos;
-    calculateOrientation(data, &rf_data);
+    calculate_orientation(data, &rf_data);
     data->start_loc.orientation = data->curr_loc.orientation;
     data->curr_loc = data->start_loc; 
     data->qd_start = qd_data;
     data->qd_dist.L = 0;
     data->qd_dist.R = 0;
-}
-
-void calculateOrientation(SCData* data, RFData* rf_data) {
-    if (data->use_wireless) {
-        uint16 x_change, y_change;
-        double orientation_buffer;
-            
-        x_change = rf_data->robot_xpos - data->start_loc.x; 
-        y_change = rf_data->robot_ypos - data->start_loc.y;
-        
-        x_change = abs((int)x_change);
-        y_change = abs((int)y_change);
-        
-        if(x_change != 0) {
-            orientation_buffer = atan((double)y_change/x_change);
-            //4th quadrant
-            if(y_change > 0 && x_change > 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer = 360 - orientation_buffer;
-            }
-            //1st quadrant
-                else if(y_change < 0 && x_change > 0){
-                orientation_buffer *= 180/PI;
-            }
-            //2nd quadrant
-            else if( y_change < 0 && x_change < 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer = 180 - orientation_buffer;
-            }
-            //3rd quadrant
-            else if( y_change > 0 && x_change < 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer += 180;
-            }
-            else if(x_change > 0) {
-                orientation_buffer = 0;
-            }
-            else if(x_change < 0) {
-                orientation_buffer = 180;
-            }
-        }
-        else if (y_change > 0) {
-            orientation_buffer = 270;
-        }
-        else if (y_change < 0){
-           orientation_buffer = 90;
-        }
-    data->curr_loc.orientation = (int16_t)orientation_buffer;
-    }
-    return;
 }

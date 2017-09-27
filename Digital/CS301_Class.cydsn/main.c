@@ -31,7 +31,7 @@ int main() {
                 if (dipsw_get(0)) {
                     td = time;
                     while(systime_ms() - td < 1){}
-                    motor_controller_set(&mcd, 0.5f, 0, 2000); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
+                    motor_controller_set(&mcd, 0.7f, 0, 2000); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
                     while (true) {
                         sensors_controller_worker(&scd);
                         motor_controller_worker(&mcd);

@@ -87,46 +87,51 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
     if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
+            bool use_tracking = false;
+            if (!data->sc_data->line_track_centered) {
+                switch(data->sc_data->line_curve) {
+                    case DI_N:
+                    REG_LED_Write(0b100);
+                    use_tracking = true;
+                    break;
+                    case DI_L:
+                    data->bias_L += -1.5f;
+                    data->bias_R += -0.5f;
+                    REG_LED_Write(0b010);
+                    break;
+                    case DI_R:
+                    data->bias_L += -0.5f;
+                    data->bias_R += -1.5f;
+                    REG_LED_Write(0b001);
+                    break;
+                    default:
+                    break;
+                }
+            }
+            else {
+                use_tracking = true;
+            }
+            if (use_tracking && data->sc_data->line_tracking) {
+                switch(data->sc_data->line_track) {
+                    case DI_L:
+                    data->bias_L += -0.4f;
+                    data->bias_R += -0.3f;
+                    break;
+                    case DI_R:
+                    data->bias_L += -0.4f;
+                    data->bias_R += -0.3f;
+                    break;
+                    case DI_LR:
+                    data->bias_L += 0.0f;
+                    data->bias_R += 0.0f;
+                    default:
+                    break;
+                }
+            }
+
             float inversion_bias = -0.02 * data->sc_data->line_inversions;
             data->bias_L += inversion_bias;
             data->bias_R += inversion_bias;
-            switch(data->sc_data->line_curve) {
-                case DI_N:
-                if (data->sc_data->line_tracking) {
-                    REG_LED_Write(0b111);
-                    switch(data->sc_data->line_track) {
-                        case DI_L:
-                        data->bias_L += -0.3f;
-                        data->bias_R += -0.2f;
-                        break;
-                        case DI_R:
-                        data->bias_L += -0.2f;
-                        data->bias_R += -0.3f;
-                        break;
-                        case DI_LR:
-                        data->bias_L += 0.0f;
-                        data->bias_R += 0.0f;
-                        default:
-                        break;
-                    }
-                }
-                else {
-                    REG_LED_Write(0b100);
-                }
-                break;
-                case DI_L:
-                data->bias_L += -1.7f;
-                data->bias_R += -0.3f;
-                REG_LED_Write(0b010);
-                break;
-                case DI_R:
-                data->bias_L += -0.3f;
-                data->bias_R += -1.7f;
-                REG_LED_Write(0b001);
-                break;
-                default:
-                break;
-            }
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
