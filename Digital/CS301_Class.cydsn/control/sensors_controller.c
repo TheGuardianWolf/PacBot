@@ -1,6 +1,7 @@
 #include <project.h>
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "sensors_controller.h"
 #include "systime.h"
@@ -176,8 +177,8 @@ void sensors_controller_worker(SCData* data) {
 
         data->curr_loc.x = rf_data.robot_xpos;
         data->curr_loc.y = rf_data.robot_ypos;
-        data->curr_loc.orientation = rf_data.robot_orientation;
-        data->rel_orientation = rf_data.robot_orientation - data->start_loc.orientation;
+        calculateOrientation(data, &rf_data);
+        data->rel_orientation = data->curr_loc.orientation - data->start_loc.orientation;
         if (data->rel_orientation < 0) {
             data->rel_orientation += ORIENTATION_REV;
         }
@@ -197,9 +198,60 @@ void sensors_controller_reset(SCData* data) {
     QuadDecData qd_data = quad_dec_get();
     data->start_loc.x = rf_data.robot_xpos;
     data->start_loc.y = rf_data.robot_ypos;
-    data->start_loc.orientation = rf_data.robot_orientation;
+    calculateOrientation(data, &rf_data);
+    data->start_loc.orientation = data->curr_loc.orientation;
     data->curr_loc = data->start_loc; 
     data->qd_start = qd_data;
     data->qd_dist.L = 0;
     data->qd_dist.R = 0;
+}
+
+void calculateOrientation(SCData* data, RFData* rf_data) {
+    if (data->use_wireless) {
+        uint16 x_change, y_change;
+        double orientation_buffer;
+            
+        x_change = rf_data->robot_xpos - data->start_loc.x; 
+        y_change = rf_data->robot_ypos - data->start_loc.y;
+        
+        x_change = abs((int)x_change);
+        y_change = abs((int)y_change);
+        
+        if(x_change != 0) {
+            orientation_buffer = atan((double)y_change/x_change);
+            //4th quadrant
+            if(y_change > 0 && x_change > 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer = 360 - orientation_buffer;
+            }
+            //1st quadrant
+                else if(y_change < 0 && x_change > 0){
+                orientation_buffer *= 180/PI;
+            }
+            //2nd quadrant
+            else if( y_change < 0 && x_change < 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer = 180 - orientation_buffer;
+            }
+            //3rd quadrant
+            else if( y_change > 0 && x_change < 0){
+                orientation_buffer *= 180/PI;
+                orientation_buffer += 180;
+            }
+            else if(x_change > 0) {
+                orientation_buffer = 0;
+            }
+            else if(x_change < 0) {
+                orientation_buffer = 180;
+            }
+        }
+        else if (y_change > 0) {
+            orientation_buffer = 270;
+        }
+        else if (y_change < 0){
+           orientation_buffer = 90;
+        }
+    data->curr_loc.orientation = (int16_t)orientation_buffer;
+    }
+    return;
 }

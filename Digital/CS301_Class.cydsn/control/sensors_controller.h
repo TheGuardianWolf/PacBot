@@ -17,7 +17,7 @@
 #define DI_L 1
 #define DI_R 2
 #define DI_LR 3
-    
+#define PI 3.14159265358979
 
 typedef struct {
     uint32_t sample_time;
