@@ -14,7 +14,7 @@ PCData path_controller_create(int8_t initial_heading, bool use_wireless, bool us
         .sample_time = 30,
         .sc_data = sc_data,
         .mc_data = mc_data,
-        .line_intersect = DI_N,
+        .line_intersect = DI_N, // This is redundant
         .line_intersect_prev = DI_N,
         .prev_heading = initial_heading,
         .heading = initial_heading,
@@ -73,6 +73,7 @@ void path_controller_worker(PCData* data) {
         }
     }
     
+    // This is also redundant
     #define LINE(x) line_data.state[x]
     #define LINE_INV(x) !line_data.state[x]
     if (data->sc_data.use_line && sensors_line_check()) {
