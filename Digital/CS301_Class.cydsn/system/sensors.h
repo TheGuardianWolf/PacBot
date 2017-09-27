@@ -24,4 +24,8 @@ LineData sensors_line_get();
 
 bool sensors_line_check();
 
+void sensors_line_disable(uint8_t index);
+
+void sensors_line_enable(uint8_t index);
+
 #endif /* SIGNALS_H */

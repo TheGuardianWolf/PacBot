@@ -1,6 +1,9 @@
 #include <project.h>
 #include "sensors.h"
 
+static LineData line_sample_enable = {
+    .state = {false, false, false, true, true, false}
+};
 static LineData line_invert = {
     .state = {true, false, false, true, true, true}
 };
@@ -12,12 +15,28 @@ static volatile uint8_t line_fsm_state = 0;
 static volatile bool line_init = false;
 static volatile bool line_new_reading = false;
 
+static int8_t next_mux() {
+    int8_t selection = mux_selection + 1;
+    do {
+        if (selection < SIGMUX_MAX) {
+            selection++;
+        }
+        else {
+            selection = 0;
+        }
+    } while(!line_sample_enable.state[selection]);
+    return selection;
+}
+
 static void line_fsm_start() {
     REG_DRAIN_Write(0b11);
-    SIGTIMER_RESET_Write(0b1);
-    isr_SIGTIMER_ClearPending();
-    isr_SIGTIMER_Enable();
-    mux_selection = SIGMUX_GetChannel();
+    SIGTIMER_RESET_Write(0b01);
+    isr_SIGTIMER_RISE_ClearPending();
+    isr_SIGTIMER_RISE_Enable();
+    while (!line_sample_enable.state[mux_selection]) {
+        mux_selection++;
+    }
+    SIGMUX_FastSelect(mux_selection);
 }
 
 static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2 for line_fall
@@ -25,17 +44,18 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
     switch(line_fsm_state) {
         case 0:
         if (trigger == 0) {
+            isr_SIGTIMER_RISE_Disable();
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
-            SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
+            SIGTIMER_RESET_Write(0b01);
+            isr_SIGTIMER_RISE_ClearPending();
+            isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
         case 1:
         if (trigger == 0 || trigger == 1) {
-            isr_SIGTIMER_Disable();
+            isr_SIGTIMER_RISE_Disable();
             isr_SIGRISE_Disable();
             reading = REG_LINE_Read();
             line_data.state[mux_selection] = (bool) reading ^ line_invert.state[mux_selection];
@@ -68,28 +88,30 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             }
             if (mux_selection == SIGMUX_MAX) {
                 line_init = true;
+                mux_selection++;
+                while(!line_sample_enable.state[mux_selection]) {
+                }
             }
-            SIGMUX_Next();
+            SIGMUX_FastSelect(next_mux());
             isr_SIGFALL_ClearPending();
             isr_SIGFALL_Enable();
             REG_DRAIN_Write(0b11);
-            SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
+            SIGTIMER_RESET_Write(0b10);
+            isr_SIGTIMER_FALL_ClearPending();
+            isr_SIGTIMER_FALL_Enable();
             line_fsm_state = 2;
         }
         break;
         case 2:
         if (trigger == 0 || trigger == 2) {
-            isr_SIGTIMER_Disable();
+            isr_SIGTIMER_FALL_Disable();
             isr_SIGFALL_Disable();
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
-            SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
-            mux_selection = SIGMUX_GetChannel();
+            SIGTIMER_RESET_Write(0b01);
+            isr_SIGTIMER_RISE_ClearPending();
+            isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
         break;
@@ -112,7 +134,6 @@ CY_ISR(line_fall) {
 
 void sensors_init() {
     SIGMUX_Start();
-    SIGMUX_Next();
     SMUX_BUF_Start();
     SAMP_Start();
     IAMP_Start();
@@ -123,13 +144,16 @@ void sensors_init() {
     PKCOMP_REF_HIGH_Start();
     PKCOMP_REF_LOW_SetValue(LINE_LOW);
     PKCOMP_REF_HIGH_SetValue(LINE_HIGH);
-    isr_SIGTIMER_StartEx(line_timer);
-    isr_SIGTIMER_Disable();
+    isr_SIGTIMER_RISE_StartEx(line_timer);
+    isr_SIGTIMER_RISE_Disable();
+    isr_SIGTIMER_FALL_StartEx(line_timer);
+    isr_SIGTIMER_FALL_Disable();
     isr_SIGRISE_StartEx(line_rise);
     isr_SIGRISE_Disable();
     isr_SIGFALL_StartEx(line_fall);
     isr_SIGFALL_Disable();
-    SIGTIMER_Start();
+    SIGTIMER_RISE_Start();
+    SIGTIMER_FALL_Start();
     line_fsm_start();
     // Wait for first set of readings.
     //while (!line_init);
@@ -144,4 +168,13 @@ LineData sensors_line_get() {
 bool sensors_line_check() {
     bool ret = line_new_reading;
     return ret;
+}
+
+void sensors_line_disable(uint8_t index) {
+    line_sample_enable.state[index] = false;
+    line_data.state[index] = true;
+}
+
+void sensors_line_enable(uint8_t index) {
+    line_sample_enable.state[index] = true;
 }
