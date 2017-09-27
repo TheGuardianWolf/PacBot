@@ -2,7 +2,7 @@
 #include "sensors.h"
 
 static LineData line_invert = {
-    .state = {true, true, false, false, false, false}
+    .state = {true, false, false, true, true, true}
 };
 static volatile LineData line_data = {
     .state = {true, true, true, true, true, true}
@@ -40,32 +40,32 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             reading = REG_LINE_Read();
             line_data.state[mux_selection] = (bool) reading ^ line_invert.state[mux_selection];
             line_new_reading = true;
-            if (!(REG_DIP_Read() & 1)){
-                if (mux_selection == 0) {
-                    if (reading == 1) {
-                        REG_LED_Write(REG_LED_Read() | 0b001);
-                    }
-                    else {
-                        REG_LED_Write(REG_LED_Read() & 0b110);
-                    }
-                }
-                else if (mux_selection == 1) {
-                    if (reading == 1) {
-                        REG_LED_Write(REG_LED_Read() | 0b010);
-                    }
-                    else {
-                        REG_LED_Write(REG_LED_Read() & 0b101);
-                    }
-                } 
-                else if (mux_selection == 2) {
-                    if (reading == 1) {
-                        REG_LED_Write(REG_LED_Read() | 0b100);
-                    }
-                    else {
-                        REG_LED_Write(REG_LED_Read() & 0b011);
-                    }
-                }
-            }
+//            if (!(REG_DIP_Read() & 1)){
+//                if (mux_selection == 0) {
+//                    if (reading == 1) {
+//                        REG_LED_Write(REG_LED_Read() | 0b001);
+//                    }
+//                    else {
+//                        REG_LED_Write(REG_LED_Read() & 0b110);
+//                    }
+//                }
+//                else if (mux_selection == 1) {
+//                    if (reading == 1) {
+//                        REG_LED_Write(REG_LED_Read() | 0b010);
+//                    }
+//                    else {
+//                        REG_LED_Write(REG_LED_Read() & 0b101);
+//                    }
+//                } 
+//                else if (mux_selection == 2) {
+//                    if (reading == 1) {
+//                        REG_LED_Write(REG_LED_Read() | 0b100);
+//                    }
+//                    else {
+//                        REG_LED_Write(REG_LED_Read() & 0b011);
+//                    }
+//                }
+//            }
             if (mux_selection == SIGMUX_MAX) {
                 line_init = true;
             }

@@ -27,6 +27,8 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .curr_intersection = DI_N,
         .line_end = false,
         .line_track = DI_N,
+        .line_tracking = false,
+        .line_track_centered = true,
         .line_curve = DI_N,
         .line_inversions = 0,
         .line_lost = false,
@@ -85,17 +87,26 @@ void sensors_controller_worker(SCData* data) {
             } 
         }
         
-        // If wing sensors are inverted
+        // If front tip sensors are inverted
         if (LINE_INV(1) || LINE_INV(2)) {
-            // If center sensor is not inverted, it's an intersection
+            // If center sensor is not inverted, it's a curve
             if (LINE(0)) {
-                int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
+                int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;                
                 data->prev_intersection = data->curr_intersection;
                 data->curr_intersection = intersection;
             }
             // Otherwise, it's a curve
             else {
-                data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
+                if (!data->line_tracking || data->line_track == 0) {
+                    int8_t line_curve_prev = data->line_curve;
+                    data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
+                    if (data->line_curve == DI_LR) {
+                        data->line_curve = line_curve_prev;
+                    }
+                }
+                else {
+                    data->line_curve = DI_N;
+                }
             }
         }
         // Check if lost or line has ended
@@ -103,6 +114,7 @@ void sensors_controller_worker(SCData* data) {
             if (LINE(5) && data->line_curve == 0) {
                 data->line_end = true;
                 data->line_tracking = true;
+                data->line_track_centered = false;
             }
             else if (data->line_inversions == 6) {
                 data->line_lost = true;
@@ -117,24 +129,39 @@ void sensors_controller_worker(SCData* data) {
             data->line_lost = false;
         }
         
-        // Use tail to restore normality whilst curving
+        // Use center to restore normality whilst curving
         if (data->line_curve > 0) {
-            
-            if (LINE(5)) {
+            if (LINE(0)) {
                 data->line_curve = DI_N;
             }
             else {
                 data->line_tracking = true;
+                data->line_track_centered = false;
             }
         }
-
+        //REG_LED_Write(data->line_curve);
         // Use feelers for line tracking
         if (LINE_INV(5)) {
+            int8_t line_track_prev = data->line_track;
             data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
+//            if (!data->line_track_centered) {
+//                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
+////                if (data->line_track != line_track_prev && (data->line_track == DI_L || data->line_track == DI_R)) {
+////                    data->line_track_centered = true;
+//                }
+//            }
+//            else {
+//                data->line_track = (int8_t) LINE_INV(3) * DI_L + (int8_t) LINE_INV(4) * DI_R;
+//            }
+            if (data->line_track == DI_LR) {
+                data->line_track = line_track_prev;
+            }
+            
         }
             
         // Whilst tracking, use tail and center to restore normality            
         if (data->line_track > 0) {
+            data->line_curve = DI_N;
             if (LINE(5) && LINE(0)) {
                 data->line_track = DI_N;
                 data->line_tracking = false;
