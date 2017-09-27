@@ -2,7 +2,7 @@
 #include "sensors.h"
 
 static LineData line_sample_enable = {
-    .state = {false, false, false, true, true, false}
+    .state = {true, true, true, true, true, true}
 };
 static LineData line_invert = {
     .state = {true, false, false, true, true, true}
@@ -23,6 +23,7 @@ static int8_t next_mux() {
         }
         else {
             selection = 0;
+            line_init = true;
         }
     } while(!line_sample_enable.state[selection]);
     return selection;
@@ -84,12 +85,6 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
                     else {
                         REG_LED_Write(REG_LED_Read() & 0b011);
                     }
-                }
-            }
-            if (mux_selection == SIGMUX_MAX) {
-                line_init = true;
-                mux_selection++;
-                while(!line_sample_enable.state[mux_selection]) {
                 }
             }
             SIGMUX_FastSelect(next_mux());

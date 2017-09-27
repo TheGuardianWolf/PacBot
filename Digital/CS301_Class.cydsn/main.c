@@ -8,7 +8,9 @@
 #include "systime.h"
 #include "usb.h"
 
-void system_init() {
+#define MAX_CMPS 70
+
+static void system_init() {
     systime_init();
     sensors_controller_init();
     motor_controller_init();
@@ -16,26 +18,52 @@ void system_init() {
     CYGlobalIntEnable;
 }
 
+static float straight_line_speed(float cmps) {
+    return 0.01149265 * cmps + 0.0021600519;
+}
+
 int main() {
     system_init();
-    SCData scd = sensors_controller_create(30, false, false);
-    MCData mcd = motor_controller_create(30, &scd);
     uint32_t td = 0;
     led_set(0b111);
     while(true) {
         uint32_t time = systime_ms();
         if(btn_get()) {
             led_set(0b000);
-            while(btn_get());
             if(!btn_get()) {
-                if (dipsw_get(0)) {
-                    td = time;
-                    while(systime_ms() - td < 1){}
-                    motor_controller_set(&mcd, 0.7f, 0, 2000); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
-                    while (true) {
-                        sensors_controller_worker(&scd);
-                        motor_controller_worker(&mcd);
-                    }
+                uint32_t time = systime_s();
+                while(systime_s() - time <= 2);
+                uint8_t run_mode = REG_SW_Read() >> 2 & 0b11;
+                bool use_wireless = dipsw_get(2);
+                bool use_line = dipsw_get(3); 
+                SCData scd;
+                MCData mcd;
+                PCData pcd;
+                switch(run_mode) {
+                    case 0:
+                    // Curves
+                    scd = sensors_controller_create(30, use_wireless, use_line);
+                    mcd = motor_controller_create(30, &scd);
+                    motor_controller_set(&mcd, 0.15f, 0, 0xEFFFFFF); //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
+                    break;
+                    case 1:
+                    // Intersections
+                    pcd = path_controller_create(0, use_wireless, use_line);
+                    break;
+                    case 2:
+                    // Straight line
+                    scd = sensors_controller_create(30, use_wireless, use_line);
+                    mcd = motor_controller_create(30, &scd);
+                    motor_controller_set(&mcd, straight_line_speed(50), 0, 0xEFFFFFF);
+                    break;
+                    case 3:
+                    break;
+                    default:
+                    break;
+                }
+                while (true) {
+                    sensors_controller_worker(&scd);
+                    motor_controller_worker(&mcd);
                 }
                 led_set(0b111);
             }
