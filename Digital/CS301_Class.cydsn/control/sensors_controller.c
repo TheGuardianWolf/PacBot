@@ -141,7 +141,7 @@ void sensors_controller_worker(SCData* data) {
         // If wing sensors are inverted, check for intersection or curve
         if (LINE_INV(1) || LINE_INV(2)) {
             // Is curve if center is inverted
-            if (LINE_INV(0) && LINE(5)) {
+            if (LINE_INV(0)) {
                 data->line_tracking = true;
                 int8_t line_curve_prev = data->line_curve;
                 data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
@@ -176,6 +176,7 @@ void sensors_controller_worker(SCData* data) {
         }
         else {
             data->line_tracking = false;
+            data->line_track = DI_N;
         }
         
         // Check if lost or line has ended
@@ -204,21 +205,21 @@ void sensors_controller_worker(SCData* data) {
         }
 
         // Automatic sensor enable/disable for higher switching speed
-        // if (LINE(0)) {
-        //     sensors_line_disable(5);
-        // }
-        // else {
-        //     sensors_line_enable(5);
-        // }
+         if (LINE(0)) {
+             sensors_line_disable(5);
+         }
+         else {
+             sensors_line_enable(5);
+         }
 
-        // if (LINE(3) || LINE(4)) {
-        //     sensors_line_disable(1);
-        //     sensors_line_disable(2);
-        // }
-        // else {
-        //     sensors_line_enable(1);
-        //     sensors_line_enable(2);
-        // }
+         if (LINE(3) || LINE(4)) {
+             sensors_line_disable(1);
+             sensors_line_disable(2);
+         }
+         else {
+             sensors_line_enable(1);
+             sensors_line_enable(2);
+         }
     }
     
     // Wireless fusion section - Guard via interrupt flag

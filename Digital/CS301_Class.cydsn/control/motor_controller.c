@@ -113,25 +113,31 @@ static void adjust_bias(MCData* data) {
             }
             if (use_tracking && data->sc_data->line_tracking) {
                 switch(data->sc_data->line_track) {
+                    case DI_N:
+                    REG_LED_Write(0b100);
+                    break;
                     case DI_L:
-                    data->bias_L += -0.4f;
+                    data->bias_L += -0.8f;
                     data->bias_R += -0.3f;
+                    REG_LED_Write(0b010);
                     break;
                     case DI_R:
-                    data->bias_L += -0.4f;
+                    data->bias_L += -0.8f;
                     data->bias_R += -0.3f;
+                    REG_LED_Write(0b001);
                     break;
                     case DI_LR:
                     data->bias_L += 0.0f;
                     data->bias_R += 0.0f;
+                    REG_LED_Write(0b111);
                     default:
                     break;
                 }
             }
 
-            float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            data->bias_L += inversion_bias;
-            data->bias_R += inversion_bias;
+            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
+            //data->bias_L += inversion_bias;
+            //data->bias_R += inversion_bias;
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
