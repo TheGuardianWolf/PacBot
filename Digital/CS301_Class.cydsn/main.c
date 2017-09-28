@@ -10,7 +10,7 @@
 #include "usb.h"
 
 #define MAX_CMPS 70
-#define STRAIGHT_LINE_SPEED 40
+#define STRAIGHT_LINE_SPEED 70
 #define STRAIGHT_LINE_DISTANCE 1000
 
 static SCData scd;
@@ -105,26 +105,17 @@ int main() {
             led_set(0b000);
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
-            curved_line_tracking();
-
-            switch(run_mode) {
-            case 1:
-                // Curves
+            if (dipsw_get(1)) {
+                led_set(0b001);
                 curved_line_tracking();
-                break;
-            case 2:
-                // Intersections
-                line_intersections();
-                break;
-            case 3:
-                // Straight line
-                straight_line();
-                break;
-            case 4:
+            }
+            else if (dipsw_get(2)) {
+                led_set(0b010);
+                straight_line(); 
+            }
+            else if (dipsw_get(3)) {
+                led_set(0b100);
                 straight_line_no_line();
-                break;
-            default:
-                break;
             }
             led_set(0b111);
         }
