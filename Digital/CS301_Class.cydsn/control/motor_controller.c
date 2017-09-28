@@ -87,9 +87,9 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
     if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
+            REG_LED_Write(data->sc_data->line_tracking & data->sc_data->line_tracking_aggressive << 2);
             switch(data->sc_data->line_tracking) {
             case DI_L:
-                REG_LED_Write(0b010);
                 if (data->sc_data->line_tracking_aggressive) {
                     data->bias_L += -1.5f;
                     data->bias_R += -0.5f;
@@ -100,7 +100,6 @@ static void adjust_bias(MCData* data) {
                 }
                 break;
             case DI_R:
-                REG_LED_Write(0b001);
                 if (data->sc_data->line_tracking_aggressive) {
                     data->bias_L += -0.5f;
                     data->bias_R += -1.5f;
@@ -111,7 +110,6 @@ static void adjust_bias(MCData* data) {
                 }
                 break;
             default:
-                REG_LED_Write(0b100);
                 break;
             }
             //float inversion_bias = -0.02 * data->sc_data->line_inversions;

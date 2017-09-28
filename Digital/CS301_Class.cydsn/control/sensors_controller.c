@@ -148,9 +148,8 @@ void sensors_controller_worker(SCData* data) {
         bool line_tracking_aggressive = false;
 
         if (LINE_INV(3) || LINE_INV(4)) {
-            uint8_t line_tracking_prev = line_tracking;
+            uint8_t line_tracking_prev = data->line_tracking;
             line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
-            line_tracking_aggressive = false;
             if (line_tracking == DI_LR) {
                 line_tracking = line_tracking_prev;
                 data->line_front_lost = true;
@@ -160,7 +159,7 @@ void sensors_controller_worker(SCData* data) {
         if (data->line_front_lost) {
             line_tracking_aggressive = true;
             if (LINE_INV(1) || LINE_INV(2)) {
-                uint8_t line_tracking_prev = line_tracking;
+                uint8_t line_tracking_prev = data->line_tracking;
                 line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
                 if (line_tracking == DI_LR) {
                     line_tracking = line_tracking_prev;
@@ -174,6 +173,10 @@ void sensors_controller_worker(SCData* data) {
                 } 
                 data->line_intersection = line_intersection;
             }
+        }
+        
+        if (LINE(3) || LINE(4)) {
+            line_tracking_aggressive = false;
         }
 
         data->line_tracking = line_tracking;
