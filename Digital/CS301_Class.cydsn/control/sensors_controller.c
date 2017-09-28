@@ -158,7 +158,7 @@ void sensors_controller_worker(SCData* data) {
             }
         }
 
-        if (LINE(3) || LINE(4)) {
+        if (LINE(3) && LINE(4)) {
             data->line_track_centered = true;
         }
         else {
@@ -197,9 +197,9 @@ void sensors_controller_worker(SCData* data) {
             data->line_lost = false;
         }
         
-        // Use center to restore normality whilst curving
+        // Use center and front to restore normality whilst curving
         if (data->line_curve > 0) {
-            if (LINE(0)) {
+            if (LINE(0) || (LINE(3) || LINE(4))) {
                 data->line_curve = DI_N;
             }
         }

@@ -91,18 +91,18 @@ static void adjust_bias(MCData* data) {
             if (!data->sc_data->line_track_centered) {
                 switch(data->sc_data->line_curve) {
                     case DI_N:
-                    REG_LED_Write(0b100);
+                    //REG_LED_Write(0b100);
                     use_tracking = true;
                     break;
                     case DI_L:
                     data->bias_L += -1.5f;
                     data->bias_R += -0.5f;
-                    REG_LED_Write(0b010);
+                    //REG_LED_Write(0b010);
                     break;
                     case DI_R:
                     data->bias_L += -0.5f;
                     data->bias_R += -1.5f;
-                    REG_LED_Write(0b001);
+                    //REG_LED_Write(0b001);
                     break;
                     default:
                     break;
@@ -122,8 +122,8 @@ static void adjust_bias(MCData* data) {
                     REG_LED_Write(0b010);
                     break;
                     case DI_R:
-                    data->bias_L += -0.8f;
-                    data->bias_R += -0.3f;
+                    data->bias_L += -0.3f;
+                    data->bias_R += -0.8f;
                     REG_LED_Write(0b001);
                     break;
                     case DI_LR:
@@ -133,6 +133,9 @@ static void adjust_bias(MCData* data) {
                     default:
                     break;
                 }
+            }
+            else {
+                REG_LED_Write(0b000);
             }
 
             //float inversion_bias = -0.02 * data->sc_data->line_inversions;
