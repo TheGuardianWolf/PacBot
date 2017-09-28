@@ -10,6 +10,8 @@
 #include "usb.h"
 
 #define MAX_CMPS 70
+#define STRAIGHT_LINE_SPEED 40
+#define STRAIGHT_LINE_DISTANCE 1000
 
 static SCData scd;
 static MCData mcd;
@@ -40,7 +42,17 @@ static void curved_line_tracking() {
 static void straight_line() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    motor_controller_set(&mcd, straight_line_speed(30/*cms^-1*/), 0, 1000/*mm*/);
+    motor_controller_set(&mcd, straight_line_speed(STRAIGHT_LINE_SPEED/*cms^-1*/), 0, STRAIGHT_LINE_DISTANCE/*mm*/);
+    while (true) {
+        sensors_controller_worker(&scd);
+        motor_controller_worker(&mcd);
+    }
+}
+
+static void straight_line_no_line() {
+    scd = sensors_controller_create(30, false, false);
+    mcd = motor_controller_create(30, &scd);
+    motor_controller_set(&mcd, straight_line_speed(STRAIGHT_LINE_SPEED/*cms^-1*/), 0, STRAIGHT_LINE_DISTANCE/*mm*/);
     while (true) {
         sensors_controller_worker(&scd);
         motor_controller_worker(&mcd);
@@ -107,6 +119,9 @@ int main() {
             case 3:
                 // Straight line
                 straight_line();
+                break;
+            case 4:
+                straight_line_no_line();
                 break;
             default:
                 break;
