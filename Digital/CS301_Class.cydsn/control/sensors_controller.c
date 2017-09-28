@@ -142,14 +142,14 @@ void sensors_controller_worker(SCData* data) {
         // If wing sensors are inverted, check for intersection or curve
         if (LINE_INV(1) || LINE_INV(2)) {
             // Is curve if center is inverted
-            //if (LINE_INV(0)) {
+            if (LINE_INV(0)) {
                 data->line_tracking = true;
                 int8_t line_curve_prev = data->line_curve;
                 data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
                 if (data->line_curve == DI_LR) {
                     data->line_curve = line_curve_prev;
                 }
-            //}
+            }
 
             // Otherwise intersection
             if (LINE(0) /*&& LINE(5)*/) {
