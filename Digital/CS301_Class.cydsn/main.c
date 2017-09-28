@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "motor_controller.h"
 #include "sensors_controller.h"
+#include "path_controller.h"
 #include "interactive.h"
 #include "systime.h"
 #include "usb.h"
@@ -24,16 +25,14 @@ static float straight_line_speed(float cmps) {
 
 int main() {
     system_init();
-    uint32_t td = 0;
     led_set(0b111);
     while(true) {
-        uint32_t time = systime_ms();
         if(btn_get()) {
             led_set(0b000);
             if(!btn_get()) {
                 uint32_t time = systime_s();
                 while(systime_s() - time <= 2);
-                uint8_t run_mode = REG_SW_Read() >> 2 & 0b11;
+                uint8_t run_mode = REG_DIP_Read() >> 2 & 0b11;
                 bool use_wireless = dipsw_get(2);
                 bool use_line = dipsw_get(3); 
                 SCData scd;
@@ -69,22 +68,22 @@ int main() {
             }
         }
         else {
-            if (dipsw_get(3)) {
-                if (time - td >= 1000) {
-                    td = time;
-                    char buffer[64];
-                    LineData line_data = sensors_line_get();
-                    sprintf(buffer, "0:%d 1:%d 2:%d 3:%d 4:%d 5:%d\r\n",
-                            (int) (line_data.state[0]),
-                            (int) (line_data.state[1]),
-                            (int) (line_data.state[2]),
-                            (int) (line_data.state[3]),
-                            (int) (line_data.state[4]),
-                            (int) (line_data.state[5])
-                            );
-                    usb_send_string(buffer);
-                }
-            }
+//            if (dipsw_get(3)) {
+//                if (time - td >= 1000) {
+//                    td = time;
+//                    char buffer[64];
+//                    LineData line_data = sensors_line_get();
+//                    sprintf(buffer, "0:%d 1:%d 2:%d 3:%d 4:%d 5:%d\r\n",
+//                            (int) (line_data.state[0]),
+//                            (int) (line_data.state[1]),
+//                            (int) (line_data.state[2]),
+//                            (int) (line_data.state[3]),
+//                            (int) (line_data.state[4]),
+//                            (int) (line_data.state[5])
+//                            );
+//                    usb_send_string(buffer);
+//                }
+//            }
         }
     }
     return 0;
