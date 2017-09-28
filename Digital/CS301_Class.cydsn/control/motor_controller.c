@@ -113,29 +113,21 @@ static void adjust_bias(MCData* data) {
             }
             if (use_tracking && data->sc_data->line_tracking) {
                 switch(data->sc_data->line_track) {
-                    case DI_N:
-                    REG_LED_Write(0b100);
                     break;
                     case DI_L:
-                    data->bias_L += -0.8f;
-                    data->bias_R += -0.3f;
-                    REG_LED_Write(0b010);
+                    data->bias_L += -0.9f;
+                    data->bias_R += 0.8f;
                     break;
                     case DI_R:
-                    data->bias_L += -0.3f;
-                    data->bias_R += -0.8f;
-                    REG_LED_Write(0b001);
+                    data->bias_L += 0.8f;
+                    data->bias_R += -0.9f;
                     break;
                     case DI_LR:
                     data->bias_L += 0.0f;
                     data->bias_R += 0.0f;
-                    REG_LED_Write(0b111);
                     default:
                     break;
                 }
-            }
-            else {
-                REG_LED_Write(0b000);
             }
 
             //float inversion_bias = -0.02 * data->sc_data->line_inversions;
@@ -171,7 +163,7 @@ static void adjust_setpoint(MCData* data) {
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
-            if (!data->sc_data->line_end && data->sc_data->prev_intersection == data->sc_data->curr_intersection) {
+            if (data->sc_data->line_track_centered) {
                 data->PID_L.setpoint = 0.0f;
                 data->PID_L.setpoint = 0.0f;
                 special = true;

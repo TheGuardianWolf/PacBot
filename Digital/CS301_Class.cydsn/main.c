@@ -37,7 +37,8 @@ int main() {
                 bool use_line = true; 
                 SCData scd;
                 MCData mcd;
-                //PCData pcd;
+                PCData pcd;
+                // pcd = path_controller_create(30, use_wireless, use_line);
                 scd = sensors_controller_create(30, use_wireless, use_line);
                 mcd = motor_controller_create(30, &scd);
                 motor_controller_set(&mcd, 0.15f, 0, 0xEFFFFFF); 
@@ -63,9 +64,41 @@ int main() {
 //                    default:
 //                    break;
 //                }
+                uint32_t last_run = 0;
                 while (true) {
                     sensors_controller_worker(&scd);
+                    // scd.line_curve = false;
+                    // scd.line_curve = 0;
+                    // uint32_t now = systime_ms();
+                    // uint32_t time_diff = now - last_run;
+                    // if (time_diff >= 30) {
+                    //     if (scd.line_curve == 0 && scd.line_front_lost && scd.curr_intersection > 0 && mcd.drive_mode != 1) {
+                    //         switch (scd.curr_intersection) {
+                    //             case DI_L:
+                    //             REG_LED_Write(0b010);
+                    //             motor_controller_set(&mcd, 0.2f, 1, -90);
+                    //             break;
+                    //             case DI_R:
+                    //             REG_LED_Write(0b001);
+                    //             motor_controller_set(&mcd, 0.2f, 1, 90);
+                    //             break;
+                    //             case DI_LR:
+                    //             motor_controller_set(&mcd, 0.15f, 0, 100);
+                    //             REG_LED_Write(0b111);
+                    //             break;
+                    //             default:
+                    //             REG_LED_Write(0b100);
+                    //             break;
+                    //         }
+                    //     }
+                    //     else {
+                    //         //REG_LED_Write(0b101);
+                    //         motor_controller_set(&mcd, 0.15f, 0, 0xFFFF);
+                    //     }
+                    // }
+
                     motor_controller_worker(&mcd);
+                    // path_controller_worker(&pcd);
                 }
                 led_set(0b111);
             }

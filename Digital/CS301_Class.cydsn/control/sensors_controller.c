@@ -80,6 +80,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .line_track = DI_N,
         .line_tracking = false,
         .line_track_centered = true,
+        .line_front_lost = false,
         .line_curve = DI_N,
         .line_inversions = 0,
         .line_lost = false,
@@ -141,17 +142,17 @@ void sensors_controller_worker(SCData* data) {
         // If wing sensors are inverted, check for intersection or curve
         if (LINE_INV(1) || LINE_INV(2)) {
             // Is curve if center is inverted
-            if (LINE_INV(0)) {
+            //if (LINE_INV(0)) {
                 data->line_tracking = true;
                 int8_t line_curve_prev = data->line_curve;
                 data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
                 if (data->line_curve == DI_LR) {
                     data->line_curve = line_curve_prev;
                 }
-            }
+            //}
 
             // Otherwise intersection
-            if (LINE(0) && LINE(5)) {
+            if (LINE(0) /*&& LINE(5)*/) {
                 int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;                
                 data->prev_intersection = data->curr_intersection;
                 data->curr_intersection = intersection;
@@ -171,7 +172,11 @@ void sensors_controller_worker(SCData* data) {
             int8_t line_track_prev = data->line_track;
             data->line_track = (int8_t) LINE_INV(3) * DI_R + (int8_t) LINE_INV(4) * DI_L;
             if (data->line_track == DI_LR) {
+                data->line_front_lost = true;
                 data->line_track = line_track_prev;
+            }
+            else {
+                data->line_front_lost = false;
             }
         }
         else {
@@ -209,6 +214,9 @@ void sensors_controller_worker(SCData* data) {
              sensors_line_disable(5);
          }
          else {
+             if (data->curr_intersection > 0) {
+                sensors_line_enable(5);
+             }
              sensors_line_enable(5);
          }
 

@@ -27,6 +27,7 @@ typedef struct {
     int8_t curr_intersection; // 0 - None, 1 - Left only, 2 - Right only, 3 - Both
     bool line_end;
     bool line_tracking;
+    bool line_front_lost;
     bool line_track_centered;
     int8_t line_track;
     int8_t line_curve; // 0 - None, 1 - Left, 2 - Right
