@@ -20,7 +20,7 @@ static float calc_setpoint(int32_t target, int32_t now, float speed, float bias)
 //                return 0.3f* (speed * bias);
 //            }
 //            else {
-                return speed * (1 + bias);
+            return speed * (1 + bias);
 //            }
         }
     }
@@ -30,7 +30,7 @@ static float calc_setpoint(int32_t target, int32_t now, float speed, float bias)
 //                return 0.3f* (- speed * bias);
 //            }
 //            else {
-                return speed * (-1 - bias);
+            return speed * (-1 - bias);
 //            }
         }
     }
@@ -67,10 +67,10 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
         .target_speed = 0.8,
         .bias_L = 0.0f,
         .bias_R = 0.0f,
-        .PID_L = pid_create(1.0f, 10.0f, 0.025f, 
-            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
-        .PID_R = pid_create(1.0f, 10.0f, 0.025f, 
-            MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
+        .PID_L = pid_create(1.0f, 10.0f, 0.025f,
+        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
+        .PID_R = pid_create(1.0f, 10.0f, 0.025f,
+        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
         .target_dist = {
             .L = 0,
             .R = 0
@@ -87,49 +87,33 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
     if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
-            bool use_tracking = false;
-            if (!data->sc_data->line_track_centered) {
-                switch(data->sc_data->line_curve) {
-                    case DI_N:
-                    //REG_LED_Write(0b100);
-                    use_tracking = true;
-                    break;
-                    case DI_L:
+            switch(data->sc_data->line_tracking) {
+            case DI_L:
+                REG_LED_Write(0b010);
+                if (data->sc_data->line_tracking_aggressive) {
                     data->bias_L += -1.5f;
                     data->bias_R += -0.5f;
-                    //REG_LED_Write(0b010);
-                    break;
-                    case DI_R:
+                }
+                else {
+                    data->bias_L += -0.8f;
+                    data->bias_R += 0.0f;
+                }
+                break;
+            case DI_R:
+                REG_LED_Write(0b001);
+                if (data->sc_data->line_tracking_aggressive) {
                     data->bias_L += -0.5f;
                     data->bias_R += -1.5f;
-                    //REG_LED_Write(0b001);
-                    break;
-                    default:
-                    break;
                 }
-            }
-            else {
-                use_tracking = true;
-            }
-            if (use_tracking && data->sc_data->line_tracking) {
-                switch(data->sc_data->line_track) {
-                    break;
-                    case DI_L:
-                    data->bias_L += -0.9f;
-                    data->bias_R += 0.8f;
-                    break;
-                    case DI_R:
-                    data->bias_L += 0.8f;
-                    data->bias_R += -0.9f;
-                    break;
-                    case DI_LR:
+                else {
                     data->bias_L += 0.0f;
-                    data->bias_R += 0.0f;
-                    default:
-                    break;
+                    data->bias_R += -0.8f;
                 }
+                break;
+            default:
+                REG_LED_Write(0b100);
+                break;
             }
-
             //float inversion_bias = -0.02 * data->sc_data->line_inversions;
             //data->bias_L += inversion_bias;
             //data->bias_R += inversion_bias;
@@ -152,7 +136,7 @@ static void adjust_bias(MCData* data) {
 
 static void adjust_setpoint(MCData* data) {
     bool special = false;
-    
+
     // Run setpoint calculations
     if (data->drive_mode == 0) {
         if (data->sc_data->use_wireless) {
@@ -163,7 +147,7 @@ static void adjust_setpoint(MCData* data) {
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
-            if (data->sc_data->line_track_centered) {
+            if (!data->sc_data->line_front_lost) {
                 data->PID_L.setpoint = 0.0f;
                 data->PID_L.setpoint = 0.0f;
                 special = true;
@@ -172,7 +156,7 @@ static void adjust_setpoint(MCData* data) {
     }
     else if (data->drive_mode == 3) {
         if (data->sc_data->use_line) {
-            if (data->sc_data->line_end && data->sc_data->curr_intersection == 0) {
+            if (data->sc_data->line_end && data->sc_data->line_intersection == 0) {
                 data->PID_L.setpoint = 0.0f;
                 data->PID_L.setpoint = 0.0f;
                 special = true;
@@ -182,7 +166,7 @@ static void adjust_setpoint(MCData* data) {
 
     if (!special) {
         data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
-        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);  
+        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
     }
 }
 
@@ -198,7 +182,7 @@ void motor_controller_worker(MCData* data) {
         adjust_bias(data);
 
         adjust_setpoint(data);
-        
+
         int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
         pid_compute(&(data->PID_L));

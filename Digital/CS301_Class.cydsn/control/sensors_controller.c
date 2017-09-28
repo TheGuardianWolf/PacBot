@@ -74,16 +74,14 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .sample_time = sample_time,
         .use_wireless = use_wireless,
         .use_line = use_line,
-        .prev_intersection = DI_N,
-        .curr_intersection = DI_N,
-        .line_end = false,
-        .line_track = DI_N,
-        .line_tracking = false,
-        .line_track_centered = true,
+        .line_tracking = DI_N,
+        .line_tracking_aggressive = false,
+        .line_intersection = DI_N,
+        .line_intersection_prev = DI_N,
         .line_front_lost = false,
-        .line_curve = DI_N,
-        .line_inversions = 0,
+        .line_end = false,
         .line_lost = false,
+        .line_inversions = 0,
         .loc_valid = false,
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
@@ -138,75 +136,61 @@ void sensors_controller_worker(SCData* data) {
                 data->line_inversions++;
             } 
         }
-        
-        // If wing sensors are inverted, check for intersection or curve
-        if (LINE_INV(1) || LINE_INV(2)) {
-            // Is curve if center is inverted
-            if (LINE_INV(0)) {
-                data->line_tracking = true;
-                int8_t line_curve_prev = data->line_curve;
-                data->line_curve = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;
-                if (data->line_curve == DI_LR) {
-                    data->line_curve = line_curve_prev;
+
+        if (LINE_INV(3) && LINE_INV(4)) {
+            data->line_front_lost = true;
+        }
+        else {
+            data->line_front_lost = false;
+        }
+
+        uint8_t line_tracking = DI_N;
+        bool line_tracking_aggressive = false;
+
+        if (LINE_INV(3) || LINE_INV(4)) {
+            uint8_t line_tracking_prev = line_tracking;
+            line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
+            line_tracking_aggressive = false;
+            if (line_tracking == DI_LR) {
+                line_tracking = line_tracking_prev;
+                data->line_front_lost = true;
+            }
+        }
+
+        if (data->line_front_lost) {
+            line_tracking_aggressive = true;
+            if (LINE_INV(1) || LINE_INV(2)) {
+                uint8_t line_tracking_prev = line_tracking;
+                line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
+                if (line_tracking == DI_LR) {
+                    line_tracking = line_tracking_prev;
                 }
             }
-
-            // Otherwise intersection
-            if (LINE(0) /*&& LINE(5)*/) {
-                int8_t intersection = (int8_t) LINE_INV(1) * DI_L + (int8_t) LINE_INV(2) * DI_R;                
-                data->prev_intersection = data->curr_intersection;
-                data->curr_intersection = intersection;
+        } else if (LINE_INV(0)) {
+            if (LINE_INV(1) || LINE_INV(2)) {
+                uint8_t line_intersection = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
+                if (line_intersection > 0) {
+                    data->line_intersection_prev = data->line_intersection;
+                } 
+                data->line_intersection = line_intersection;
             }
         }
 
-        if (LINE(3) && LINE(4)) {
-            data->line_track_centered = true;
-        }
-        else {
-            data->line_track_centered = false;
-        }
-
-        // If front tip sensors are inverted and robot curve detecting, activate tracking
-        if (LINE_INV(3) || LINE_INV(4)) {
-            data->line_tracking = true;
-            int8_t line_track_prev = data->line_track;
-            data->line_track = (int8_t) LINE_INV(3) * DI_R + (int8_t) LINE_INV(4) * DI_L;
-            if (data->line_track == DI_LR) {
-                data->line_front_lost = true;
-                data->line_track = line_track_prev;
-            }
-            else {
-                data->line_front_lost = false;
-            }
-        }
-        else {
-            data->line_tracking = false;
-            data->line_track = DI_N;
-        }
+        data->line_tracking = line_tracking;
+        data->line_tracking_aggressive = line_tracking_aggressive;
         
         // Check if lost or line has ended
-        if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE_INV(3) && LINE_INV(4))) {
-            if (LINE(5) && data->line_curve == 0 && data->line_track == 0) {
+        if ((LINE_INV(0) && LINE_INV(1) && LINE_INV(2) && LINE_INV(3) && LINE_INV(4))) {
+            if (LINE(5)) {
                 data->line_end = true;
             }
-            else if (data->line_inversions == 6) {
-                data->line_lost = true;
-            }
             else {
-                data->line_end = false;
-                data->line_lost = false;
+                data->line_lost = true;
             }
         }
         else {
             data->line_end = false;
             data->line_lost = false;
-        }
-        
-        // Use center and front to restore normality whilst curving
-        if (data->line_curve > 0) {
-            if (LINE(0) || (LINE(3) || LINE(4))) {
-                data->line_curve = DI_N;
-            }
         }
 
         // Automatic sensor enable/disable for higher switching speed
@@ -214,9 +198,6 @@ void sensors_controller_worker(SCData* data) {
              sensors_line_disable(5);
          }
          else {
-             if (data->curr_intersection > 0) {
-                sensors_line_enable(5);
-             }
              sensors_line_enable(5);
          }
 

@@ -23,16 +23,14 @@ typedef struct {
     uint32_t sample_time;
     bool use_wireless;
     bool use_line;
-    int8_t prev_intersection;
-    int8_t curr_intersection; // 0 - None, 1 - Left only, 2 - Right only, 3 - Both
+    uint8_t line_tracking;
+    bool line_tracking_aggressive;
+    uint8_t line_intersection;
+    uint8_t line_intersection_prev;
     bool line_end;
-    bool line_tracking;
-    bool line_front_lost;
-    bool line_track_centered;
-    int8_t line_track;
-    int8_t line_curve; // 0 - None, 1 - Left, 2 - Right
-    uint8_t line_inversions;
     bool line_lost;
+    uint8_t line_inversions;
+    bool line_front_lost;
     DiPoint start_loc;
     DiPoint curr_loc;
     bool loc_valid;
