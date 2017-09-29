@@ -9,8 +9,8 @@
 #include "systime.h"
 #include "usb.h"
 
-#define MAX_CMPS 70
-#define STRAIGHT_LINE_SPEED 70
+#define MAX_CMPS 60
+#define STRAIGHT_LINE_SPEED 50
 #define STRAIGHT_LINE_DISTANCE 1000
 
 static SCData scd;

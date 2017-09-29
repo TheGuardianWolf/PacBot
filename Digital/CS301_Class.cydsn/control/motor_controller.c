@@ -96,7 +96,7 @@ static void adjust_bias(MCData* data) {
                 }
                 else {
                     data->bias_L += -0.8f;
-                    data->bias_R += 0.0f;
+                    data->bias_R += -0.2f;
                 }
                 break;
             case DI_R:
@@ -105,7 +105,7 @@ static void adjust_bias(MCData* data) {
                     data->bias_R += -1.5f;
                 }
                 else {
-                    data->bias_L += 0.0f;
+                    data->bias_L += -0.2f;
                     data->bias_R += -0.8f;
                 }
                 break;
