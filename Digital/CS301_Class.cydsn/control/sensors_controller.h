@@ -34,6 +34,7 @@ typedef struct {
     DiPoint start_loc;
     DiPoint curr_loc;
     bool loc_valid;
+    int32_t qd_differential;
     QuadDecData qd_start;
     QuadDecData qd_dist;
     QuadDecData qd_prev;

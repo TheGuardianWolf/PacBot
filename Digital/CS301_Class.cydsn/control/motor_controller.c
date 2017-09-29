@@ -126,6 +126,12 @@ static void adjust_bias(MCData* data) {
                 data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
             }
         }
+
+        if (data->bias_L == 0 && data->bias_R == 0) {
+            // Quad Dec Differential P Bias
+            data->bias_L += -0.01 * data->qd_differential;
+            data->bias_R += 0.01 * data->qd_differential;
+        }
     }
 
     //data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);

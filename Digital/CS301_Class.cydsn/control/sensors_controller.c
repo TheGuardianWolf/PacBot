@@ -12,56 +12,6 @@ static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
 }
 
-static void calculate_orientation(SCData* data, RFData* rf_data) {
-    if (data->use_wireless) {
-        int16_t x_change, y_change;
-        float orientation_buffer = 0.0f;
-            
-        x_change = rf_data->robot_xpos - data->start_loc.x; 
-        y_change = rf_data->robot_ypos - data->start_loc.y;
-        
-        x_change = abs(x_change);
-        y_change = abs(y_change);
-        
-        if(x_change != 0) {
-            orientation_buffer = atanf((float)y_change/x_change);
-            //4th quadrant
-            if(y_change > 0 && x_change > 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer = 360 - orientation_buffer;
-            }
-            //1st quadrant
-                else if(y_change < 0 && x_change > 0){
-                orientation_buffer *= 180/PI;
-            }
-            //2nd quadrant
-            else if( y_change < 0 && x_change < 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer = 180 - orientation_buffer;
-            }
-            //3rd quadrant
-            else if( y_change > 0 && x_change < 0){
-                orientation_buffer *= 180/PI;
-                orientation_buffer += 180;
-            }
-            else if(x_change > 0) {
-                orientation_buffer = 0;
-            }
-            else if(x_change < 0) {
-                orientation_buffer = 180;
-            }
-        }
-        else if (y_change > 0) {
-            orientation_buffer = 270;
-        }
-        else if (y_change < 0){
-           orientation_buffer = 90;
-        }
-    data->curr_loc.orientation = (int16_t)orientation_buffer;
-    }
-    return;
-}
-
 void sensors_controller_init() {
     systime_init();
     wireless_init();
@@ -83,6 +33,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .line_lost = false,
         .line_inversions = 0,
         .loc_valid = false,
+        .qd_differential = 0,
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
         .last_run = 0
@@ -111,7 +62,6 @@ void sensors_controller_worker(SCData* data) {
     if (time_diff >= data->sample_time) {
         data->last_run = now;
         QuadDecData qd_data = quad_dec_get();
-        
 
         // QD section
         data->qd_prev = data->qd_dist;
@@ -119,7 +69,9 @@ void sensors_controller_worker(SCData* data) {
         data->qd_dist.R = qd_data.R - data->qd_start.R;
 
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
-        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);        
+        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);     
+        
+        data->qd_differential = qd_data.L - qd_data.R;
     }
     
     
@@ -221,7 +173,6 @@ void sensors_controller_worker(SCData* data) {
 
         data->curr_loc.x = rf_data.robot_xpos;
         data->curr_loc.y = rf_data.robot_ypos;
-        calculate_orientation(data, &rf_data);
         data->rel_orientation = data->curr_loc.orientation - data->start_loc.orientation;
         if (data->rel_orientation < 0) {
             data->rel_orientation += ORIENTATION_REV;

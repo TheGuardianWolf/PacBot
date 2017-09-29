@@ -19,6 +19,7 @@ typedef struct {
     float bias_R;
     PIDData PID_L;
     PIDData PID_R;
+    PIDData PID_LR;
     QuadDecData target_dist;
     int8_t drive_mode;
     uint32_t last_run;
