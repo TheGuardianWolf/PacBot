@@ -179,7 +179,7 @@ void sensors_controller_worker(SCData* data) {
         }
 
         if (data->loc_valid) {
-            data->rel_dist = dist2dec((int32)sqrtf(powf(rf_data.robot_xpos - data->start_loc.x, 2) + powf(rf_data.robot_ypos - data->start_loc.y, 2)));
+            data->rel_dist = (int32) dist2dec(2.5 * sqrtf(powf(rf_data.robot_xpos - data->start_loc.x, 2) + powf(rf_data.robot_ypos - data->start_loc.y, 2)));
         }
         else {
             data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
