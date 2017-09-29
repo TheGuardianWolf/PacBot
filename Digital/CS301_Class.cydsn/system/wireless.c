@@ -41,7 +41,7 @@ CY_ISR(rf_rx) {
         }
         else {
             receive_buffer.bytes[data_count] = data;
-            if (data_count >= 24) {
+            if (data_count >= 31) {
                 receive_buffer.data.timestamp = systime_ms();
                 data_buffer = receive_buffer;
                 start_count = 0;

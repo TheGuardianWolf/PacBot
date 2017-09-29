@@ -10,7 +10,7 @@
 #include "usb.h"
 
 #define MAX_CMPS 60
-#define STRAIGHT_LINE_SPEED 50
+#define STRAIGHT_LINE_SPEED 48
 #define STRAIGHT_LINE_DISTANCE 1000
 
 static SCData scd;
@@ -40,7 +40,7 @@ static void curved_line_tracking() {
 }
 
 static void straight_line() {
-    scd = sensors_controller_create(30, false, true);
+    scd = sensors_controller_create(30, true, false);
     mcd = motor_controller_create(30, &scd);
     motor_controller_set(&mcd, straight_line_speed(STRAIGHT_LINE_SPEED/*cms^-1*/), 0, STRAIGHT_LINE_DISTANCE/*mm*/);
     while (true) {

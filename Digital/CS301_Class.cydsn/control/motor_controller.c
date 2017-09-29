@@ -95,7 +95,7 @@ static void adjust_bias(MCData* data) {
                     data->bias_R += -0.5f;
                 }
                 else {
-                    data->bias_L += -0.8f;
+                    data->bias_L += -0.2f;
                     data->bias_R += 0.0f;
                 }
                 break;
@@ -106,7 +106,7 @@ static void adjust_bias(MCData* data) {
                 }
                 else {
                     data->bias_L += 0.0f;
-                    data->bias_R += -0.8f;
+                    data->bias_R += -0.2f;
                 }
                 break;
             default:
@@ -129,8 +129,8 @@ static void adjust_bias(MCData* data) {
 
         if (data->bias_L == 0 && data->bias_R == 0) {
             // Quad Dec Differential P Bias
-            data->bias_L += -0.001 * data->sc_data->qd_differential;
-            data->bias_R += 0.001 * data->sc_data->qd_differential;
+            data->bias_L += -0.0 * data->sc_data->qd_differential;
+            data->bias_R += 0.0 * data->sc_data->qd_differential;
         }
     }
 
