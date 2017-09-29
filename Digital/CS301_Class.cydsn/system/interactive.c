@@ -10,5 +10,5 @@ bool btn_get() {
 }
 
 bool dipsw_get(uint8_t s) {
-    return (bool) ((REG_DIP_Read() << s) & 1);
+    return (bool) ((REG_DIP_Read() >> s) & 1);
 }
