@@ -193,7 +193,6 @@ void sensors_controller_reset(SCData* data) {
     QuadDecData qd_data = quad_dec_get();
     data->start_loc.x = rf_data.robot_xpos;
     data->start_loc.y = rf_data.robot_ypos;
-    calculate_orientation(data, &rf_data);
     data->start_loc.orientation = data->curr_loc.orientation;
     data->curr_loc = data->start_loc; 
     data->qd_start = qd_data;
