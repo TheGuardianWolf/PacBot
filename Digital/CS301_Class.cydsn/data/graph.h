@@ -18,17 +18,17 @@
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
-    int16_t** data;
-    int16_t size;
-} graph;
+    Node** data;
+    size_t size;
+} Graph;
 
-graph create_graph (node* n);
+Graph create_graph (size_t size);
 
-void change_arc (graph* g, uint8_t ind1, uint8_t ind2, int16_t length);
+void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length);
 
-void add_node (graph* g, node* node_to_add);
+void add_node (Graph* g, Node* node_to_add);
 
 //returns arc length between 2 nodes, if not connected return -1
-int16_t check_length (graph* g, uint8_t ind1, uint8_t ind2);
+int16_t check_length (Graph* g, uint8_t ind1, uint8_t ind2);
 
-void delete_graph (graph* g);
+void delete_graph (Graph* g);

@@ -12,24 +12,20 @@
 
 #include "graph.h"
 
-graph create_graph (node* n) {
-    int16_t ** matrix;
-    matrix = malloc(sizeof(int16_t *));
+graph create_graph (size_t size) {
+    Graph graph;
+    graph->data = malloc(sizeof(Node*) * size);
+    graph->size = size;
     
-    matrix[0] = malloc(sizeof(int16_t));
+    size_t i;
+    for (i = 0; i < size; i++) {
+        graph->data[i] = calloc(sizeof(Node*) * size);
+    }
     
-    n->index = 0;
-    
-    matrix[0][0] = -1;
-    
-    graph newGraph = {
-        .data = matrix,
-        .size = 1,
-    };
-    return newGraph;
+    return graph;
 }
 
-void add_node (graph* g, node* node_to_add){
+void add_node (Graph* g, node* Node_to_add){
     int16_t ** new_matrix = realloc(g->data, (g->size + 1) * sizeof(uint16_t *));
     node_to_add->index = g->size;
     if(new_matrix != NULL) {
@@ -49,17 +45,17 @@ void add_node (graph* g, node* node_to_add){
 
 }
 
-void change_arc (graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
+void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
     g->data[ind1][ind2] = length;
 }
 
 
 //returns arc length between 2 nodes, if not connected or same node return -1
-int16_t check_length (graph* g, uint8_t ind1, uint8_t ind2) {
+int16_t check_length (Graph* g, uint8_t ind1, uint8_t ind2) {
     return g->data[ind1][ind2];
 }
 
-void delete_graph (graph* g) {
+void delete_graph (Graph* g) {
     int16_t s = g->size;
     for (int i = 0; i < s; ++i) {
         free(g->data[i]);

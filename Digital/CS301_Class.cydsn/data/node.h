@@ -11,13 +11,13 @@
 */
 
 /* [] END OF FILE */
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "node.h"
+typedef struct {
+    int16_t pos_x;
+    int16_t pos_y;
+    int8_t index;
+} Node;
 
-node create_node(int16_t x, int16_t y) {
-    node newNode = {
-        .pos_x = x,
-        .pos_y = y,
-    };
-    return newNode;
-}
+Node create_node(int16_t x, int16_t y);
