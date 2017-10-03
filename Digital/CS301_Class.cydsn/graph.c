@@ -58,3 +58,12 @@ void change_arc (graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
 int16_t check_length (graph* g, uint8_t ind1, uint8_t ind2) {
     return g->data[ind1][ind2];
 }
+
+void delete_graph (graph* g) {
+    int16_t s = g->size;
+    for (int i = 0; i < s; ++i) {
+        free(g->data[i]);
+    }
+    
+    free(g->data);
+}
