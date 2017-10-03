@@ -12,11 +12,11 @@
 
 #include "graph.h"
 
-graph create_graph (size_t size) {
+Graph create_graph (size_t size) {
     Graph graph;
     graph->data = malloc(sizeof(Node*) * size);
     graph->size = size;
-    
+
     size_t i;
     for (i = 0; i < size; i++) {
         graph->data[i] = calloc(sizeof(Node*) * size);

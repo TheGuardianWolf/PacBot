@@ -1,3 +1,5 @@
+#ifndef NODE_H
+#define NODE_H
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -21,3 +23,5 @@ typedef struct {
 } Node;
 
 Node create_node(int16_t x, int16_t y);
+
+#endif /* NODE_H */

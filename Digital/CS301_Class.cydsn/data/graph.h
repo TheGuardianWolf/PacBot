@@ -1,3 +1,5 @@
+#ifndef GRAPH_H
+#define GRAPH_H
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -32,3 +34,5 @@ void add_node (Graph* g, Node* node_to_add);
 int16_t check_length (Graph* g, uint8_t ind1, uint8_t ind2);
 
 void delete_graph (Graph* g);
+
+#endif /* GRAPH_H */
