@@ -14,11 +14,10 @@
 
 #include "node.h"
 
-node create_node(int16_t x, int16_t y, int8_t i) {
+node create_node(int16_t x, int16_t y) {
     node newNode = {
         .pos_x = x,
         .pos_y = y,
-        .index = i
     };
     return newNode;
 }

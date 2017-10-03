@@ -12,8 +12,6 @@
 
 #include "graph.h"
 
-
-/* [] END OF FILE */
 graph create_graph (node* n) {
     int16_t ** matrix;
     matrix = malloc(sizeof(int16_t *));
@@ -51,7 +49,7 @@ void add_node (graph* g, node* node_to_add){
 
 }
 
-void add_arc (graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
+void change_arc (graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
     g->data[ind1][ind2] = length;
 }
 
