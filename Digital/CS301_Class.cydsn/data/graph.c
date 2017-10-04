@@ -14,45 +14,53 @@
 
 Graph create_graph (size_t size) {
     Graph graph;
-    graph->data = malloc(sizeof(Node*) * size);
+    graph->data = malloc(sizeof(int8_t*) * size);
+    graph->nodes = malloc(sizeof(Node*) * size);
     graph->size = size;
 
     size_t i;
     for (i = 0; i < size; i++) {
-        graph->data[i] = calloc(sizeof(Node*) * size);
+        graph->data[i] = calloc(sizeof(int8_t) * size);
     }
     
     return graph;
 }
 
-void add_node (Graph* g, node* Node_to_add){
-    int16_t ** new_matrix = realloc(g->data, (g->size + 1) * sizeof(uint16_t *));
-    node_to_add->index = g->size;
-    if(new_matrix != NULL) {
-        g->size ++;
-    }
+void add_node (Graph* g, node* Node_to_add, uint8_t ind){
+    g->nodes[ind] = Node_to_add;
     
-    for(int i = 0; i < (g->size - 1); i++) {
-        new_matrix[i] = realloc(g->data[i], (g->size) * sizeof(uint16_t));
-        g->data[i] = new_matrix[i];
-        g->data[i][g->size-1] = -1;
-    }
-    
-    g->data = new_matrix;
-    
-    new_matrix[g->size] = malloc(g->size * sizeof(node));
-    
-
+//    int16_t ** new_matrix = realloc(g->data, (g->size + 1) * sizeof(uint16_t *));
+//    node_to_add->index = g->size;
+//    if(new_matrix != NULL) {
+//        g->size ++;
+//    }
+//    
+//    for(int i = 0; i < (g->size - 1); i++) {
+//        new_matrix[i] = realloc(g->data[i], (g->size) * sizeof(uint16_t));
+//        g->data[i] = new_matrix[i];
+//        g->data[i][g->size-1] = -1;
+//    }
+//    
+//    g->data = new_matrix;
+//    
+//    new_matrix[g->size] = malloc(g->size * sizeof(node));
+//    
 }
 
 void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
+    if (g->node[ind1]!= NULL && g->node[ind2] != NULL) {
     g->data[ind1][ind2] = length;
+    }
 }
 
 
 //returns arc length between 2 nodes, if not connected or same node return -1
-int16_t check_length (Graph* g, uint8_t ind1, uint8_t ind2) {
+int8_t get_arc (Graph* g, uint8_t ind1, uint8_t ind2) {
     return g->data[ind1][ind2];
+}
+
+Node* get_node (Graph* g, uint8_t ind) {
+    return g->nodes[ind];
 }
 
 void delete_graph (Graph* g) {
