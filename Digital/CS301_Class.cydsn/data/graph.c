@@ -14,19 +14,19 @@
 
 Graph create_graph (size_t size) {
     Graph graph;
-    graph->data = malloc(sizeof(int8_t*) * size);
-    graph->nodes = malloc(sizeof(Node*) * size);
-    graph->size = size;
+    graph.data = malloc(sizeof(int8_t*) * size);
+    graph.nodes = malloc(sizeof(Node*) * size);
+    graph.size = size;
 
     size_t i;
     for (i = 0; i < size; i++) {
-        graph->data[i] = calloc(sizeof(int8_t) * size);
+        graph.data[i] = calloc(size, sizeof(int8_t));
     }
     
     return graph;
 }
 
-void add_node (Graph* g, node* Node_to_add, uint8_t ind){
+void add_node (Graph* g, Node* Node_to_add, uint8_t ind){
     g->nodes[ind] = Node_to_add;
     
 //    int16_t ** new_matrix = realloc(g->data, (g->size + 1) * sizeof(uint16_t *));
@@ -48,7 +48,7 @@ void add_node (Graph* g, node* Node_to_add, uint8_t ind){
 }
 
 void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length){
-    if (g->node[ind1]!= NULL && g->node[ind2] != NULL) {
+    if (g->nodes[ind1]!= NULL && g->nodes[ind2] != NULL) {
     g->data[ind1][ind2] = length;
     }
 }

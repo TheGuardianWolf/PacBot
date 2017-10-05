@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef LISTGRAPH_H
+#define LISTGRAPH_H
 /* ========================================
  *
  * Copyright YOUR COMPANY, THE YEAR
@@ -18,25 +18,30 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+    
+#define N 1;
+#define E 2;
+#define S 3;
+#define W 4;
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
     Node** nodes;
-    int8_t** data;
+    Arc** data;
     size_t size;
-} Graph;
+} List;
 
-Graph create_graph (size_t size);
+List create_list (size_t size);
 
-void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length);
+void add_arc (List* l, uint8_t node_ind, int8_t direction, Arc* a);
 
-void add_node (Graph* g, Node* Node_to_add, uint8_t ind);
+void add_node (List* l, Node* Node_to_add, uint8_t ind);
 
-Node* get_node (Graph* g, uint8_t ind);
+Node* get_node (List* l, uint8_t ind);
 
 //returns arc length between 2 nodes, if not connected return -1
-int8_t get_arc (Graph* g, uint8_t ind1, uint8_t ind2);
+int8_t get_arc (List* l, uint8_t ind1, uint8_t ind2);
 
-void delete_graph (Graph* g);
+void delete_graph (List* l);
 
 #endif /* GRAPH_H */
