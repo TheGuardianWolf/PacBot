@@ -1,11 +1,10 @@
 function [map] = map_convert( mapfile )
 
+
 %% Read map file and construct a matrix
 % '1' is where robot cannot go, '0' is where it can
-fid = fopen(mapfile);
-t1=textscan(fid,'%s');
-fclose(fid);
-[r,~]=size(t1);
+t1=textread(mapfile,'%s');
+[r,c]=size(t1);
 
 %map dimensions
 rows = r;
@@ -18,6 +17,8 @@ for i=1:r,
       map(i,j) = line(j)-'0';
   end;
 end
+
+
 
 end
 
