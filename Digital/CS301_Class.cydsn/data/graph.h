@@ -1,23 +1,27 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-/* ========================================
- *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
- *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
- * ========================================
-*/
 
-/* [] END OF FILE */
-#include "node.h"
-#include "arc.h"
+#include "point.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
+
+typedef struct {
+    pointu16_t pos_real;
+    pointu16_t pos_grid;
+} GraphNode;
+
+typedef struct {
+    int8_t cost;
+    uint8_t food;
+    uint16_t destination;
+} GraphArc;
+
+typedef struct {
+    union {
+        GraphArc n, s, w, e;
+        GraphArc arcs[4];
+    }
+} GraphCons;
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
