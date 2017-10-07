@@ -7,7 +7,7 @@
 % plotmap(m,s) 
 
 % write your own function for the DFS algorithm.
-function [retmap,retvisited,retsteps] = dfs( mapfile,startlocation,targetlocation)
+function [retmap,retvisited,retsteps] = pathfinder( mapfile,startlocation,targetlocation)
     % Preprocessing
     start = mat2graphid(startlocation);
     target = mat2graphid(targetlocation);
