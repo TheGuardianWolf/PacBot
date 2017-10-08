@@ -3,38 +3,48 @@ function [ path, search_steps ] = graph_djs( graph, start, target )
 %   Detailed explanation goes here
     max_queue_size = 0;
     frontier = PriorityQueue(floor(length(graph.nodes) / 2));
-    frontier.add(start);
+    frontier.put(0, start, 0);
     search_steps = start;
+    cost_so_far = NaN(1, length(graph.nodes));
+    cost_so_far(start) = 0;
     came_from = zeros(1, length(graph.nodes));
     came_from(start) = NaN;
     
-    while frontier.size() ~= 0
-        current = frontier.remove();
-        edges = graph.edges{current};
+    while ~frontier.empty()
+        current = frontier.get();
         
         if current == target   
             break
         end
         
+        edges = graph.edges{current};
         for i=1:length(edges)
             if edges{i}.a1(1) == current
                 next = graph.nodes{edges{i}.a2(1)}.id;
             else
                 next = graph.nodes{edges{i}.a1(1)}.id;
             end
-            if came_from(next) == 0;
+            
+            new_cost = cost_so_far(current) + 1; % Edge travel cost is here as '1'
+            
+            if isnan(cost_so_far(next)) || new_cost < cost_so_far(next)
                 search_steps(end + 1) = next; %#ok<AGROW>
+                cost_so_far(next) = new_cost;
+                frontier.put(new_cost, next, 0);
                 came_from(next) = current;
-                frontier.add(next);
+            end
+            
+            if frontier.size > max_queue_size
+                max_queue_size = frontier.size;
             end
         end
     end
     
+    current = target;
     path = current;
-    backtrace = current;
-    while ~isnan(came_from(backtrace))
-        backtrace = came_from(backtrace);
-        path(end + 1) = backtrace; %#ok<AGROW>
+    while path(end) ~= start
+        current = came_from(current);
+        path(end + 1) = current; %#ok<AGROW>
     end
     
     path = fliplr(path);

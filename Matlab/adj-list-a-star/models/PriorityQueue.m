@@ -83,11 +83,17 @@ classdef PriorityQueue < handle
             self.perc_up(self.size);
         end
         
-        function r = get(self)
-            r = self.heap{1}{2};
+        function [priority, item] = getp(self)
+            priority = self.heap{1}{1};
+            item = self.heap{1}{2};
             self.heap{1} = self.heap{self.size};
             self.size = self.size - 1;
             self.perc_down(1);
+        end
+        
+        function r = get(self)
+            [~, item] = self.getp();
+            r = item;
         end
         
         function r = empty(self)

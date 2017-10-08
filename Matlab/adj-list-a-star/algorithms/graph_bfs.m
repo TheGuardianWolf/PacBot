@@ -29,11 +29,11 @@ function [ path, search_steps ] = graph_bfs( graph, start, target )
         end
     end
     
+    current = target;
     path = current;
-    backtrace = current;
-    while ~isnan(came_from(backtrace))
-        backtrace = came_from(backtrace);
-        path(end + 1) = backtrace; %#ok<AGROW>
+    while path(end) ~= start
+        current = came_from(current);
+        path(end + 1) = current; %#ok<AGROW>
     end
     
     path = fliplr(path);

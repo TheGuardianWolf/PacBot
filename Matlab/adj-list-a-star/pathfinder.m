@@ -15,7 +15,7 @@ function [retmap,retvisited,retsteps] = pathfinder( mapfile,startlocation,target
     target = graph.grid2nodeid(targetlocation(2), targetlocation(1));
     
     % Processing  
-    [path, search_steps] = graph_bfs(graph, start, target);
+    [path, search_steps] = graph_astar_inertia(graph, start, target);
     
     % Postprocessing
     retmap = map;
