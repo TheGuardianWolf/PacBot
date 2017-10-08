@@ -107,6 +107,12 @@ classdef Graph < handle
                 end
             end
         end
+        
+        function [x, y] = nodeid2grid(self, id)
+            pos = self.nodes{id}.pos_grid;
+            x = pos(1);
+            y = pos(2);
+        end
     end
     
 end
