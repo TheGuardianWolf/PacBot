@@ -2,7 +2,7 @@ function [ path, search_steps ] = graph_astar( graph, start, target )
 %GRAPH_DJS Summary of this function goes here
 %   Detailed explanation goes here
     max_queue_size = 0;
-    frontier = PriorityQueue(floor(length(graph.nodes) / 2));
+    frontier = PriorityQueue(floor(sqrt(length(graph.nodes))));
     frontier.put(0, start, 0);
     search_steps = start;
     cost_so_far = NaN(1, length(graph.nodes));
