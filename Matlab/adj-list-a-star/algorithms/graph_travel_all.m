@@ -8,8 +8,13 @@ function [ path ] = graph_travel_all( graph, start )
     end
 end
 
-function make_acyclic(graph, start)
+function visited = make_acyclic(graph, start)
     % Modified DFS to break cyclic branches at immediate root
+    % Holy crap, this is so inefficient but it works, wow.
+    node_orders = zeros(1, length(graph.nodes));
+    for i = 1:length(graph.nodes);
+        node_orders(i) = graph.node_order(graph.nodes{i}.id);
+    end
     frontier = java.util.LinkedList;
     frontier.push(start);
     search_steps_size = 1;
@@ -29,33 +34,31 @@ function make_acyclic(graph, start)
                 came_from{next} = edges{i};
                 frontier.push(next);
                 break
-%             else
-%                 backtrace_edge = came_from{current};
-%                 backtrace = backtrace_edge.get_arc_from(current);
-%                 if (backtrace ~= next)
-%                     search_steps_size = search_steps_size - 1;
-%                     came_from{current} = [];
-%                     while (backtrace ~= start && graph.node_order(backtrace) < 3)
-%                         search_steps_size = search_steps_size - 1;
-%                         backtrace_edge = came_from{backtrace};
-%                         came_from{backtrace} = [];
-%                         backtrace = backtrace_edge.get_arc_from(backtrace);
-%                     end
-%                     graph.edge_remove(backtrace_edge);
-%                     break;
-%                 end
+            else
+                if (current ~= start) % It can never be a cycle if you're on start, it's always a cycle if you're going to start, unless you came from start
+                    if (came_from{current}.get_arc_from(current) ~= next) && (next == start || came_from{next}.get_arc_from(next) ~= current)
+                        if (node_orders(frontier.peek()) >= 3)
+                            backtrack_edge = edges{i};
+                            graph.edge_remove(backtrack_edge);
+                        else
+                            while(node_orders(frontier.peek()) < 3)
+                                search_steps_size = search_steps_size - 1;
+                                backtrack = frontier.pop();
+                                backtrack_edge = came_from{backtrack};
+                                came_from{backtrack} = [];
+                            end
+                            graph.edge_remove(backtrack_edge);
+                            break
+                        end               
+                    end
+                end
             end
             if i == length(edges)
                 frontier.pop();
             end
         end
     end
-    retvisited = zeros(search_steps_size, 2);
-    for i = 1:search_steps_size
-        [v_x, v_y] = graph.nodeid2grid(search_steps(i));
-        retvisited(i, :) = [v_y, v_x];
-    end
-    plotmap(map_convert('map_8.txt'), retvisited);
+    visited = search_steps;
 end
 
 function path = make_path(graph, start)

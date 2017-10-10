@@ -155,6 +155,15 @@ classdef Graph < handle
                 end
             end
         end
+        
+        function view(self, mapfile)
+            retvisited = zeros(length(self.nodes), 2);
+            for i = 1:length(self.nodes)
+                [v_x, v_y] = self.nodeid2grid(self.nodes{i}.id);
+                retvisited(i, :) = [v_y, v_x];
+            end
+            plotmap(map_convert(mapfile), retvisited);
+        end
     end
     
 end
