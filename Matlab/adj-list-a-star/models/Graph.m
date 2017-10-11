@@ -144,16 +144,18 @@ classdef Graph < handle
                     new_edges_size = new_edges_size + 1;
                     new_edges{new_edges_size} = self.edges{n}{j-1};
                 end
+                self.edges{n} = new_edges;
             end
             
             new_detatched_edges_size = 0;
-            new_detatched_edges = cell(1, length(self.detatched_edges));
+            new_detatched_edges = cell(1, length(self.detatched_edges) - 1);
             for i = 1:length(self.detatched_edges)
                 if self.detatched_edges{i}{2}.id ~= detatched_edge{2}.id
                     new_detatched_edges_size = new_detatched_edges_size + 1;
                     new_detatched_edges{new_detatched_edges_size} = self.detatched_edges{i};
                 end
             end
+            self.detatched_edges = new_detatched_edges;
         end
         
         function view(self, mapfile)
