@@ -4,6 +4,7 @@
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
+#include "interactive.h"
 
 #define LINE(x) data->sc_data->line_state[x]
 
@@ -91,22 +92,24 @@ static void adjust_bias(MCData* data) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
                 if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -1.5f;
-                    data->bias_R += -0.5f;
+                    data->bias_L += -1.3f;
+                    data->bias_R += -0.7f;
+                    led_set(111);
                 }
                 else {
-                    data->bias_L += -0.2f;
-                    data->bias_R += 0.0f;
+                    data->bias_L += -0.5f;
+                    data->bias_R += -0.45f;
                 }
                 break;
             case DI_R:
                 if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -0.5f;
-                    data->bias_R += -1.5f;
+                    data->bias_L += -0.7f;
+                    data->bias_R += -1.3f;
+                    led_set(111);
                 }
                 else {
-                    data->bias_L += 0.0f;
-                    data->bias_R += -0.2f;
+                    data->bias_L += -0.45f;
+                    data->bias_R += -0.5f;
                 }
                 break;
             default:

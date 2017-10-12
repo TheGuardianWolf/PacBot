@@ -32,7 +32,7 @@ static float straight_line_speed(float cmps) {
 static void curved_line_tracking() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    motor_controller_set(&mcd, 0.15f, 0, 0xEFFFFFF);
+    motor_controller_set(&mcd, 0.3f, 0, 0xEFFFFFF);
     while (true) {
         sensors_controller_worker(&scd);
         motor_controller_worker(&mcd);
@@ -120,7 +120,10 @@ int main() {
             led_set(0b111);
         }
     }
-    return 0;
+    return 0; 
 }
 
 /* [] END OF FILE */
+
+//0.15f 0.1 straight bias and 0
+//

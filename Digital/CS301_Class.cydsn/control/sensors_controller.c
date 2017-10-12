@@ -36,7 +36,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .qd_differential = 0,
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
-        .last_run = 0
+        .last_run = 0,
     };
 
     if (use_wireless) {
@@ -99,7 +99,7 @@ void sensors_controller_worker(SCData* data) {
         uint8_t line_tracking = DI_N;
         bool line_tracking_aggressive = false;
 
-        if (LINE_INV(3) || LINE_INV(4)) {
+        if ((LINE_INV(3) || LINE_INV(4))) {
             uint8_t line_tracking_prev = data->line_tracking;
             line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
             if (line_tracking == DI_LR) {
@@ -107,6 +107,7 @@ void sensors_controller_worker(SCData* data) {
                 data->line_front_lost = true;
             }
         }
+       
 
         if (data->line_front_lost) {
             line_tracking_aggressive = true;
@@ -127,7 +128,7 @@ void sensors_controller_worker(SCData* data) {
             }
         }
         
-        if (LINE(3) || LINE(4)) {
+        if ((LINE(3) || LINE(4)) && (LINE(0) && LINE(5))) {
             line_tracking_aggressive = false;
         }
 
@@ -150,9 +151,9 @@ void sensors_controller_worker(SCData* data) {
 
         // Automatic sensor enable/disable for higher switching speed
          if (LINE(0)) {
-             sensors_line_disable(5);
-         }
-         else {
+//             sensors_line_disable(5);
+//         }
+//         else {
              sensors_line_enable(5);
          }
 
