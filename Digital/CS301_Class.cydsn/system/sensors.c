@@ -102,7 +102,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             isr_SIGRISE_Enable();
             SIGTIMER_RESET_Write(0b1);
             isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
+            isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
         break;
@@ -111,13 +111,13 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
     }
 }
 
-CY_ISR(line_timer) {
+CY_ISR(line_timer_rise) {
     line_fsm(0);
 }
 
-//CY_ISR(line_timer_fall) {
-//    line_fsm(0);
-//}
+CY_ISR(line_timer_fall) {
+   line_fsm(0);
+}
 
 CY_ISR(line_rise) {
     line_fsm(1);
@@ -139,16 +139,21 @@ void sensors_init() {
     PKCOMP_REF_HIGH_Start();
     PKCOMP_REF_LOW_SetValue(LINE_LOW);
     PKCOMP_REF_HIGH_SetValue(LINE_HIGH);
-    isr_SIGTIMER_StartEx(line_timer);
-    isr_SIGTIMER_Disable();
+    isr_SIGTIMER_RISE_StartEx(line_timer_rise);
+    isr_SIGTIMER_RISE_Disable();
+    isr_SIGTIMER_FALL_StartEx(line_timer_fall);
+    isr_SIGTIMER_FALL_Disable();
     isr_SIGRISE_StartEx(line_rise);
     isr_SIGRISE_Disable();
     isr_SIGFALL_StartEx(line_fall);
     isr_SIGFALL_Disable();
     SIGTIMER_Start();
     line_fsm_start();
+}
+
+bool sensors_ready() {
     // Wait for first set of readings.
-    //while (!line_init);
+    return line_init;
 }
 
 LineData sensors_line_get() {
