@@ -32,26 +32,27 @@ static void line_fsm_start() {
     next_mux();
     SIGMUX_FastSelect(mux_selection);
     SIGTIMER_RESET_Write(0b1);
-    isr_SIGTIMER_ClearPending();
-    isr_SIGTIMER_Enable();
+    isr_SIGTIMER_FALL_ClearPending();
+    isr_SIGTIMER_FALL_Enable();
 }
 
 static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2 for line_fall
     uint8_t reading;
     switch(line_fsm_state) {
         case 0:
-        if (trigger == 0) {
+        if (trigger == 1) {
+            isr_SIGTIMER_FALL_Disable();
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
             SIGTIMER_RESET_Write(0b1);
             isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
+            isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
         case 1:
-        if (trigger == 0 || trigger == 1) {
-            isr_SIGTIMER_Disable();
+        if (trigger == 0 || trigger == 2) {
+            isr_SIGTIMER_RISE_Disable();
             isr_SIGRISE_Disable();
             reading = REG_LINE_Read();
             line_data.state[mux_selection] = (bool) reading ^ line_invert.state[mux_selection];
@@ -88,20 +89,20 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             isr_SIGFALL_Enable();
             REG_DRAIN_Write(0b11);
             SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
-            isr_SIGTIMER_Enable();
+            isr_SIGTIMER_FALL_ClearPending();
+            isr_SIGTIMER_FALL_Enable();
             line_fsm_state = 2;
         }
         break;
         case 2:
-        if (trigger == 0 || trigger == 2) {
-            isr_SIGTIMER_Disable();
+        if (trigger == 1 || trigger == 3) {
+            isr_SIGTIMER_FALL_Disable();
             isr_SIGFALL_Disable();
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
             SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
+            isr_SIGTIMER_RISE_ClearPending();
             isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
@@ -116,15 +117,15 @@ CY_ISR(line_timer_rise) {
 }
 
 CY_ISR(line_timer_fall) {
-   line_fsm(0);
+   line_fsm(1);
 }
 
 CY_ISR(line_rise) {
-    line_fsm(1);
+    line_fsm(2);
 }
 
 CY_ISR(line_fall) {
-    line_fsm(2);
+    line_fsm(3);
 }
 
 void sensors_init() {
