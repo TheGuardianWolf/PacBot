@@ -92,24 +92,26 @@ static void adjust_bias(MCData* data) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
                 if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -1.3f;
+                    data->bias_L += -1.35f;
                     data->bias_R += -0.7f;
                     led_set(111);
                 }
                 else {
-                    data->bias_L += -0.5f;
-                    data->bias_R += -0.45f;
+                    data->bias_L += -0.1f;
+                    data->bias_R += 0.1f;
+                    led_set(001);
                 }
                 break;
             case DI_R:
                 if (data->sc_data->line_tracking_aggressive) {
                     data->bias_L += -0.7f;
-                    data->bias_R += -1.3f;
+                    data->bias_R += -1.35f;
                     led_set(111);
                 }
                 else {
-                    data->bias_L += -0.45f;
-                    data->bias_R += -0.5f;
+                    data->bias_L += 0.1f;
+                    data->bias_R += -0.1f;
+                    led_set(001);
                 }
                 break;
             default:

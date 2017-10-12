@@ -37,6 +37,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
         .last_run = 0,
+        .right_turn = 0,
     };
 
     if (use_wireless) {
@@ -120,6 +121,7 @@ void sensors_controller_worker(SCData* data) {
             }
         } else if (LINE_INV(0)) {
             if (LINE_INV(1) || LINE_INV(2)) {
+                data->right_turn = 1;
                 uint8_t line_intersection = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
                 if (line_intersection > 0) {
                     data->line_intersection_prev = data->line_intersection;
@@ -128,7 +130,15 @@ void sensors_controller_worker(SCData* data) {
             }
         }
         
-        if ((LINE(3) || LINE(4)) && (LINE(0) && LINE(5))) {
+        if ((LINE(3) || LINE(4)) && (LINE(0) || LINE(5))) {
+            line_tracking_aggressive = false;
+        }
+        
+        if (LINE(3) || LINE(4)) {
+            data->right_turn = 0;
+        }
+        
+        if (data->right_turn == 0) {
             line_tracking_aggressive = false;
         }
 

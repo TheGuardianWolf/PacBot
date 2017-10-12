@@ -43,6 +43,7 @@ typedef struct {
     float curr_speed_L;
     float curr_speed_R;
     uint32_t last_run;
+    bool right_turn;
 }  SCData;
 
 void sensors_controller_init();
