@@ -111,7 +111,7 @@ void sensors_controller_worker(SCData* data) {
        
 
         if (data->line_front_lost) {
-            if ((LINE_INV(1) || LINE_INV(2)) && LINE(0)) {
+            if (LINE_INV(1) || LINE_INV(2)) {
                 line_tracking_aggressive = true;
                 data->right_turn = 1;
                 uint8_t line_tracking_prev = data->line_tracking;
@@ -174,14 +174,10 @@ void sensors_controller_worker(SCData* data) {
          }
 
          if (LINE(3) || LINE(4)) {
-             sensors_line_disable(1);
-             sensors_line_disable(2);
              sensors_line_disable(0);
              sensors_line_disable(5);
          }
          else {
-             sensors_line_enable(1);
-             sensors_line_enable(2);
              sensors_line_enable(0);
              sensors_line_enable(5);
          }
