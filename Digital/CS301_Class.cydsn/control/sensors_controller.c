@@ -98,9 +98,9 @@ void sensors_controller_worker(SCData* data) {
         }
 
         uint8_t line_tracking = DI_N;
-        bool line_tracking_aggressive = false;
+        bool line_tracking_aggressive = true;
 
-        if ((LINE_INV(3) || LINE_INV(4))) {
+        if ((LINE_INV(3) || LINE_INV(4)) && (LINE(1) && LINE(2))) {
             uint8_t line_tracking_prev = data->line_tracking;
             line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
             if (line_tracking == DI_LR) {
@@ -111,37 +111,29 @@ void sensors_controller_worker(SCData* data) {
        
 
         if (data->line_front_lost) {
-            line_tracking_aggressive = true;
-            if (LINE_INV(1) || LINE_INV(2)) {
+            if ((LINE_INV(1) || LINE_INV(2)) && LINE(0)) {
+                line_tracking_aggressive = true;
+                data->right_turn = 1;
                 uint8_t line_tracking_prev = data->line_tracking;
                 line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
                 if (line_tracking == DI_LR) {
                     line_tracking = line_tracking_prev;
                 }
             }
-        } else if (LINE_INV(0)) {
-            if (LINE_INV(1) || LINE_INV(2)) {
-                data->right_turn = 1;
-                uint8_t line_intersection = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
-                if (line_intersection > 0) {
-                    data->line_intersection_prev = data->line_intersection;
-                } 
-                data->line_intersection = line_intersection;
-            }
-        }
+        } 
         
-        if ((LINE(3) || LINE(4)) && (LINE(0) || LINE(5))) {
-            line_tracking_aggressive = false;
-        }
-        
+
         if (LINE(3) || LINE(4)) {
             data->right_turn = 0;
         }
-        
+        else if(LINE(3) && LINE(4)) {
+            line_tracking = DI_N;
+        }
+//        
         if (data->right_turn == 0) {
             line_tracking_aggressive = false;
         }
-
+        
         data->line_tracking = line_tracking;
         data->line_tracking_aggressive = line_tracking_aggressive;
         
@@ -160,9 +152,23 @@ void sensors_controller_worker(SCData* data) {
         }
 
         // Automatic sensor enable/disable for higher switching speed
-         if (LINE(0)) {
+        
+        if(data->right_turn == 1) {
+             sensors_line_disable(0);
+             sensors_line_disable(5);
+             sensors_line_disable(1);
+             sensors_line_disable(2);
+        }
+        else {
+             sensors_line_enable(0);
+             sensors_line_enable(5);
+             sensors_line_enable(1);
+             sensors_line_enable(2);
+        }
+        
+        if (LINE(0)) {
 //             sensors_line_disable(5);
-//         }
+//        }
 //         else {
              sensors_line_enable(5);
          }
@@ -170,10 +176,14 @@ void sensors_controller_worker(SCData* data) {
          if (LINE(3) || LINE(4)) {
              sensors_line_disable(1);
              sensors_line_disable(2);
+             sensors_line_disable(0);
+             sensors_line_disable(5);
          }
          else {
              sensors_line_enable(1);
              sensors_line_enable(2);
+             sensors_line_enable(0);
+             sensors_line_enable(5);
          }
     }
     
