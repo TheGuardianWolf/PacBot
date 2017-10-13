@@ -60,20 +60,14 @@ classdef Graph < handle
                     v = vect(j, :);
                     i_test = self.nodes{i}.pos_grid(2) + v(1);
                     j_test = self.nodes{i}.pos_grid(1) + v(2);
-                    try
+                    if i_test <= rows && i_test > 0 && j_test <= cols && j_test > 0: 
                         s = map(i_test, j_test);
-                    catch err
-                        if (strcmp(err.identifier,'MATLAB:badsubscript'))
-                            break
-                        else
-                            rethrow(err)
+                        if ~isnan(s)
+                            edge = GraphEdge(edge_id, i, j, s, j - 2);
+                            self.edges{i}{end + 1} = edge;
+                            self.edges{s}{end + 1} = edge;
+                            edge_id = edge_id + 1;
                         end
-                    end
-                    if ~isnan(s)
-                        edge = GraphEdge(edge_id, i, j, s, j - 2);
-                        self.edges{i}{end + 1} = edge;
-                        self.edges{s}{end + 1} = edge;
-                        edge_id = edge_id + 1;
                     end
                 end
             end

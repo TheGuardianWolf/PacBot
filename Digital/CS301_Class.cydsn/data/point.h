@@ -6,16 +6,16 @@
 typedef struct {
     uint8_t x;
     uint8_t y;
-} pointu8_t;
+} point_uint8_t;
 
 typedef struct {
     uint16_t x;
     uint16_t y;
-} pointu16_t;
+} point_uint16_t;
 
 typedef struct {
     float x;
     float y;
-} pointf;
+} point_f;
 
 #endif /* POINT_H */

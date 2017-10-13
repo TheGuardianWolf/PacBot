@@ -1,46 +1,44 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "point.h"
 #include <stdint.h>
-#include <stdbool.h>
+#include "point.h"
+#include "vector.h"
+
+typedef graph_size_t uint8_t;
 
 typedef struct {
-    pointu16_t pos_real;
-    pointu16_t pos_grid;
+    graph_size_t a1[2]; // Arc 1
+    graph_size_t a2[2]; // Arc 2
+} GraphEdge;
+
+typedef struct {
+    graph_size_t node_edge_index[2];
+    GraphEdge* edge;
+} GraphDetatchedEdge
+
+typedef struct {
+    point_uint8_t pos_grid;
+    vector_t* edges;
 } GraphNode;
-
-typedef struct {
-    int8_t cost;
-    uint8_t food;
-    uint16_t destination;
-} GraphArc;
-
-typedef struct {
-    union {
-        GraphArc n, s, w, e;
-        GraphArc arcs[4];
-    }
-} GraphCons;
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
-    Node** nodes;
-    int8_t** data;
-    size_t size;
+    vector_t* nodes;
+    vector_t* detatched_edges;
+    graph_size_t unique_edges;
 } Graph;
 
-Graph create_graph (size_t size);
+Graph graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_width);
 
-void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length);
+graph_size_t graph_grid2nodeid(const Graph* graph, point_uint8_t pos_grid);
 
-void add_node (Graph* g, Node* Node_to_add, uint8_t ind);
+point_uint8_t graph_nodeid2grid(const Graph* graph, graph_size_t node_id);
 
-Node* get_node (Graph* g, uint8_t ind);
+graph_size_t graph_node_order(const Graph* graph, graph_size_t node_id);
 
-//returns arc length between 2 nodes, if not connected return -1
-int8_t get_arc (Graph* g, uint8_t ind1, uint8_t ind2);
+void graph_edge_remove(const Graph* graph, const GraphEdge* edge);
 
-void delete_graph (Graph* g);
+void graph_edge_attach(const Graph* graph, const GraphDetatchedEdge* detatched_edge);
 
 #endif /* GRAPH_H */
