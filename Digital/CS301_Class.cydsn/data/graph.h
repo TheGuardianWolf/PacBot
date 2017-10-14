@@ -5,6 +5,12 @@
 #include "point.h"
 #include "vector.h"
 
+#define NODE_INVALID 0xFFFF
+#define G_N 1
+#define G_W 2
+#define G_S 3
+#define G_E 4
+
 typedef graph_size_t uint8_t;
 
 typedef struct {
@@ -19,17 +25,17 @@ typedef struct {
 
 typedef struct {
     point_uint8_t pos_grid;
-    vector_t* edges;
+    Vector* edges;
 } GraphNode;
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
-    vector_t* nodes;
-    vector_t* detatched_edges;
+    Vector* nodes;
+    Vector* detatched_edges;
     graph_size_t unique_edges;
 } Graph;
 
-Graph graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_width);
+Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_width);
 
 graph_size_t graph_grid2nodeid(const Graph* graph, point_uint8_t pos_grid);
 

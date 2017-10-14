@@ -2,8 +2,7 @@
 #include "graph.h"
 #include "point.h"
 
-void pathfinder(
-    const vector_t* node_path
+Vector* pathfinder(
     const Graph* graph,
     const void* path_fn,
     const point_uint8_t* start,
@@ -12,5 +11,5 @@ void pathfinder(
         uint16_t start_node = grid2nodeid(start);
         uint16_t target_node = grid2nodeid(target);
         // Processing
-        (&path_fn)(node_path, graph, start, target)
+        return (&path_fn)(graph, start, target)
 }

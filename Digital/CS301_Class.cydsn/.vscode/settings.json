@@ -18,6 +18,9 @@
         "math.h": "c",
         "sensors_controller.h": "c",
         "usb.h": "c",
-        "sensors.h": "c"
+        "sensors.h": "c",
+        "stdlib.h": "c",
+        "point.h": "c",
+        "priority_queue.h": "c"
     }
 }
