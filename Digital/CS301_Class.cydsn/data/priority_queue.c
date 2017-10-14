@@ -5,12 +5,12 @@ static void perc_up(const PriorityQueue* queue, size_t index) {
     HeapNode* a, b;
     size_t fd = index / 2;
     while fd > 0 {
-        a = vector_get(queue, index);
-        b = vector_get(queue, fd);
+        a = vector_get((Vector*) queue, index);
+        b = vector_get((Vector*) queue, fd);
         if (a != NULL && b != NULL) {
             if (a->priority < b->priority) {
-                vector_set(queue, fd, a);
-                vector_set(queue, index, b);
+                vector_set((Vector*) queue, fd, a);
+                vector_set((Vector*) queue, index, b);
             }
         }
         fd /= 2;
@@ -27,8 +27,8 @@ static size_t min_child(const PriorityQueue* queue, size_t index) {
     }
     else {
         HeapNode* a, b;
-        a = vector_get(queue, index_x2);
-        b = vector_get(queue, index_x2p1);
+        a = vector_get((Vector*) queue, index_x2);
+        b = vector_get((Vector*) queue, index_x2p1);
         if (a != NULL && b != NULL) {
             if (a->priority < b->priority) {
                 child_index = index_x2;
@@ -48,23 +48,23 @@ static void perc_down(const PriorityQueue* queue, size_t index) {
 
     while (index * 2 <= queue->size) {
         mc = min_child(queue, index);
-        a = vector_get(queue, index);
-        b = vector_get(queue, mc);
+        a = vector_get((Vector*) queue, index);
+        b = vector_get((Vector*) queue, mc);
         if (a != NULL && b != NULL) {
             if (a->priority > b->priority) {
-                vector_set(queue, index, b);
-                vector_set(queue, mc, a);
+                vector_set((Vector*) queue, index, b);
+                vector_set((Vector*) queue, mc, a);
             }
         }
         index = mc;
     }  
 }
 
-PriorityQueue* priority_queue_create(size_t block_size, size_t initial_capacity) {
+PriorityQueue* priority_queue_create(size_t initial_capacity) {
     PriorityQueue* queue = malloc(sizeof(PriorityQueue));
     if (queue != NULL) {
         // Spare block at front of vector for easier addressing
-        queue = vector_create(block_size, initial_capacity + 1);
+        queue = vector_create(initial_capacity + 1);
         vector_append(queue, NULL);
         return queue;
     }
@@ -75,7 +75,7 @@ size_t priority_queue_index(PriorityQueue* queue, void* item) {
     size_t i;
     HeapNode* node;
     for (i = 0; i < queue->size; i++) {
-        node = vector_get(queue, i);
+        node = vector_get((Vector*) queue, i);
         if (node != NULL && node->item == item) {
             return i;
         }
@@ -84,7 +84,7 @@ size_t priority_queue_index(PriorityQueue* queue, void* item) {
 }
 
 void priority_queue_reprioritise(const PriorityQueue* queue, size_t index, size_t priority) {
-    HeapNode* node = vector_get(queue, index);
+    HeapNode* node = vector_get((Vector*) queue, index);
     if (node != NULL) {
         size_t last_priority = node->priority;
         node->priority = priority;
@@ -110,19 +110,19 @@ void priority_queue_push(const PriorityQueue* queue, size_t priority, void* item
     if (node != NULL) {
         node->priority = priority;
         node->item = item;
-        vector_append(queue, node);
+        vector_append((Vector*) queue, node);
         self.perc_up(queue->size - 1);
     }
 }
 
-void* priority_queue_remove(const PriorityQueue* queue, size_t index) {
-    HeapNode node = vector_get(queue, queue->size - 1);
+void* priority_queue_remove(const PriorityQueue* queue) {
+    HeapNode node = vector_get((Vector*) queue, queue->size - 1);
     if (node != NULL) {
-        node = vector_set(queue, 1, node);
+        node = vector_set((Vector*) queue, 1, node);
         if (node != NULL) {
             void* item = node->item;
             free(node);
-            vector_remove(queue, queue->size - 1);
+            vector_remove((Vector*) queue, queue->size - 1);
             perc_down(queue, 1);
         }
     }
@@ -139,4 +139,18 @@ void* priority_queue_peek(const ProrityQueue* queue, const size_t* r_priority) {
         return node->item;
     }
     return null;
+}
+
+bool priority_queue_empty(const PriorityQueue* queue) {
+    return queue->size <= 1;
+}
+
+void priority_queue_destroy(const PriorityQueue* queue) {
+    size_t i;
+    HeapNode* node;
+    for (i = 0; i < queue->size; i++) {
+        node = vector_get((Vector*) queue, i);
+        free(node);
+    }
+    vector_destroy((Vector*) queue);
 }

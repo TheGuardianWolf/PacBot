@@ -21,6 +21,9 @@
         "sensors.h": "c",
         "stdlib.h": "c",
         "point.h": "c",
-        "priority_queue.h": "c"
+        "priority_queue.h": "c",
+        "linked_list.h": "c",
+        "vector.h": "c",
+        "graph_astar.h": "c"
     }
 }

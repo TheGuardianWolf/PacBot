@@ -14,8 +14,13 @@
 typedef graph_size_t uint8_t;
 
 typedef struct {
-    graph_size_t a1[2]; // Arc 1
-    graph_size_t a2[2]; // Arc 2
+    graph_size_t destination;
+    uint8_t heading;
+} GraphArc;
+
+typedef struct {
+    GraphArc a1; // Arc 1
+    GraphArc a2; // Arc 2
 } GraphEdge;
 
 typedef struct {

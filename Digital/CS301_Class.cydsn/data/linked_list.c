@@ -56,3 +56,14 @@ void* linked_list_remove(const LinkedList* list) {
 	list->size--;
 	return item;	
 }
+
+void linked_list_destroy(const LinkedList* list) {
+	LLNode* node, next_node;
+	while(list->size > 0) {
+		node = list->first;
+		next_node = node->next;
+		free(node);
+		list->size--;
+	}
+	free(list);
+}

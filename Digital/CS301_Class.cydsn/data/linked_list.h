@@ -27,4 +27,6 @@ void linked_list_add(const LinkedList* list, void* item);
 
 void* linked_list_remove(const LinkedList* list);
 
+void linked_list_destroy(const LinkedList* list);
+
 #endif /* LINKED_LIST_H */

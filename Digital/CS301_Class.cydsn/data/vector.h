@@ -6,12 +6,11 @@
 
 typedef struct {
     void** container;
-    size_t block_size = 0
     size_t size = 0;
     size_t capacity = 0;
 } Vector;
 
-Vector* vector_create(size_t block_size, size_t initial_capacity);
+Vector* vector_create(size_t initial_capacity);
 
 bool vector_resize(Vector* vector, size_t target);
 

@@ -20,8 +20,8 @@ Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_widt
             }
         }
     
-        graph->nodes = vector_create(sizeof(GraphNode*), total_nodes));
-        graph->detatched_edges = vector_create(sizeof(GraphDetatchedEdge*), 1);
+        graph->nodes = vector_create(total_nodes);
+        graph->detatched_edges = vector_create(1);
         graph->unique_edges = 0;
 
         GraphNode* node;
@@ -33,7 +33,7 @@ Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_widt
                     if (node != NULL) {
                         node->pos_grid.x = j;
                         node->pos_grid.y = i;
-                        node->edges = vector_create(sizeof(GraphEdge*), 1);
+                        node->edges = vector_create(1);
                         vector_append(graph->nodes, node)
                     }
                 }
@@ -61,10 +61,10 @@ Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_widt
                         if (target_node_ptr != NULL && target_node_index != NODE_INVALID) {
                             edge = malloc(sizeof(GraphEdge));
                             if (edge != NULL) {
-                                edge->a1[0] = i;
-                                edge->a1[1] = j + 2;
-                                edge->a2[0] = target_node_id;
-                                edge->a2[1] = j;
+                                edge->a1.destination = i;
+                                edge->a1.heading = j + 2;
+                                edge->a2.destination = target_node_id;
+                                edge->a2.heading = j;
                                 vector_append(node_ptr->edges, edge);
                                 vector_append(target_node_ptr->edges, edge);
                                 unique_edges++;
@@ -116,7 +116,7 @@ graph_size_t graph_node_order(const Graph* graph, graph_size_t node_id) {
 
 void graph_edge_remove(const Graph* graph, const GraphEdge* edge) {
     GraphDetatchedEdge* detatched_edge = malloc(sizeof(GraphDetatchedEdge));
-    graph_size_t node_ids[2] = {edge->a1[0], edge->a2[0]};
+    graph_size_t node_ids[2] = {edge->a1.destination, edge->a2.destination};
 
     uint8_t i;
     graph_size_t j;
@@ -147,7 +147,7 @@ void graph_edge_attach(const Graph* graph, const GraphDetatchedEdge* detatched_e
     GraphEdge* edge;
     GraphDetatchedEdge* test_detatched_edge;
 
-    graph_size_t node_ids[2] = {detatched_edge->edge->a1[0], detatched_edge->edge->a2[0]};
+    graph_size_t node_ids[2] = {detatched_edge->edge->a1.destination, detatched_edge->edge->a2.destination};
     for (j = 0; j < 2; j++) {
         node = vector_get(graph->nodes, node_ids[j]);
         if (node != NULL) {
@@ -164,4 +164,22 @@ void graph_edge_attach(const Graph* graph, const GraphDetatchedEdge* detatched_e
     }
 
     free(detatched_edge);
+}
+
+GraphArc* graph_arc_to(const GraphEdge* edge, graph_size_t node_id) {
+    if (edge->a1.destination == node_id) {
+        return &(edge->a2);
+    }
+    else {
+        return &(edge->a1);
+    }
+}
+
+GraphArc* graph_arc_from(const GraphEdge* edge, graph_size_t node_id) {
+    if (edge->a1.destination == node_id) {
+        return &(edge->a1);
+    }
+    else {
+        return &(edge->a2);
+    }
 }
