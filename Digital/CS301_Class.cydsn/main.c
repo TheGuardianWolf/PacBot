@@ -32,7 +32,7 @@ static float straight_line_speed(float cmps) {
 static void curved_line_tracking() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    motor_controller_set(&mcd, 0.25f, 0, 0xEFFFFFF);
+    motor_controller_set(&mcd, 0.2f, 0, 0xEFFFFFF);
     while (true) {
         sensors_controller_worker(&scd);
         motor_controller_worker(&mcd);

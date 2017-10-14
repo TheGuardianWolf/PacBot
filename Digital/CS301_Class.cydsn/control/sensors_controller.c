@@ -38,6 +38,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .curr_speed_R = 0.0f,
         .last_run = 0,
         .right_turn = 0,
+        .wait_direction = 0,
     };
 
     if (use_wireless) {
@@ -99,6 +100,7 @@ void sensors_controller_worker(SCData* data) {
 
         uint8_t line_tracking = DI_N;
         bool line_tracking_aggressive = true;
+        int8_t wait = 0;
 
         if ((LINE_INV(3) || LINE_INV(4)) && (LINE(1) && LINE(2))) {
             uint8_t line_tracking_prev = data->line_tracking;
@@ -109,18 +111,20 @@ void sensors_controller_worker(SCData* data) {
             }
         }
        
-
-        if (data->line_front_lost) {
-            if (LINE_INV(1) || LINE_INV(2)) {
-                line_tracking_aggressive = true;
-                data->right_turn = 1;
-                uint8_t line_tracking_prev = data->line_tracking;
-                line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
-                if (line_tracking == DI_LR) {
-                    line_tracking = line_tracking_prev;
-                }
+        //below are automatic turning code
+        if (data->line_front_lost && (LINE_INV(1) != LINE_INV(2))) {
+            line_tracking_aggressive = true;
+            data->right_turn = 1;
+            uint8_t line_tracking_prev = data->line_tracking;
+            line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
+            if (line_tracking == DI_LR) {
+                line_tracking = line_tracking_prev;
             }
-        } 
+        }
+        //Stop the robot
+        else if (LINE(0) && ((!data->line_front_lost && LINE_INV(1) && LINE_INV(2)) || (LINE_INV(1) && LINE_INV(2)) || (!data->line_front_lost && LINE_INV(1)) || (!data->line_front_lost && LINE_INV(2)))){
+            wait = 1;
+        }
         
 
         if (LINE(3) || LINE(4)) {
@@ -136,6 +140,7 @@ void sensors_controller_worker(SCData* data) {
         
         data->line_tracking = line_tracking;
         data->line_tracking_aggressive = line_tracking_aggressive;
+        data->wait_direction = wait;
         
         // Check if lost or line has ended
         if ((LINE_INV(0) && LINE_INV(1) && LINE_INV(2) && LINE_INV(3) && LINE_INV(4))) {
@@ -153,18 +158,18 @@ void sensors_controller_worker(SCData* data) {
 
         // Automatic sensor enable/disable for higher switching speed
         
-        if(data->right_turn == 1) {
-             sensors_line_disable(0);
-             sensors_line_disable(5);
-             sensors_line_disable(1);
-             sensors_line_disable(2);
-        }
-        else {
-             sensors_line_enable(0);
-             sensors_line_enable(5);
-             sensors_line_enable(1);
-             sensors_line_enable(2);
-        }
+//        if(data->right_turn == 1) {
+//             sensors_line_disable(0);
+//             sensors_line_disable(5);
+//             sensors_line_disable(1);
+//             sensors_line_disable(2);
+//        }
+//        else {
+//             sensors_line_enable(0);
+//             sensors_line_enable(5);
+//             sensors_line_enable(1);
+//             sensors_line_enable(2);
+//        }
         
         if (LINE(0)) {
 //             sensors_line_disable(5);
@@ -174,12 +179,12 @@ void sensors_controller_worker(SCData* data) {
          }
 
          if (LINE(3) || LINE(4)) {
-             sensors_line_disable(0);
-             sensors_line_disable(5);
-         }
-         else {
-             sensors_line_enable(0);
-             sensors_line_enable(5);
+//             sensors_line_disable(0);
+//             sensors_line_disable(5);
+//         }
+//         else {
+//             sensors_line_enable(0);
+//             sensors_line_enable(5);
          }
     }
     

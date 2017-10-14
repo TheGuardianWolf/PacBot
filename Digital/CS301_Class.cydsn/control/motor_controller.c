@@ -88,38 +88,46 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
     if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
-            REG_LED_Write(data->sc_data->line_tracking & data->sc_data->line_tracking_aggressive << 2);
-            switch(data->sc_data->line_tracking) {
-            case DI_L:
-                if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -1.95f;
-                    data->bias_R += -1.1f;
-                    led_set(111);
+            if(data->sc_data->wait_direction == 0) {
+                REG_LED_Write(data->sc_data->line_tracking & data->sc_data->line_tracking_aggressive << 2);
+                switch(data->sc_data->line_tracking) {
+                case DI_L:
+                    if (data->sc_data->line_tracking_aggressive) {
+                        data->bias_L += -1.95f;
+                        data->bias_R += -1.1f;
+                        led_set(111);
+                    }
+                    else {
+                        data->bias_L += -0.25f;
+                        data->bias_R += 0.15f;
+                        led_set(001);
+                    }
+                    break;
+                case DI_R:
+                    if (data->sc_data->line_tracking_aggressive) {
+                        data->bias_L += -1.1f;
+                        data->bias_R += -1.95f;
+                        led_set(111);
+                    }
+                    else {
+                        data->bias_L += 0.15f;
+                        data->bias_R += -0.25f;
+                        led_set(001);
+                    }
+                    break;
+                default:
+                    break;
                 }
-                else {
-                    data->bias_L += -0.25f;
-                    data->bias_R += 0.15f;
-                    led_set(001);
-                }
-                break;
-            case DI_R:
-                if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -1.1f;
-                    data->bias_R += -1.95f;
-                    led_set(111);
-                }
-                else {
-                    data->bias_L += 0.15f;
-                    data->bias_R += -0.25f;
-                    led_set(001);
-                }
-                break;
-            default:
-                break;
+                //float inversion_bias = -0.02 * data->sc_data->line_inversions;
+                //data->bias_L += inversion_bias;
+                //data->bias_R += inversion_bias;
+        
             }
-            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            //data->bias_L += inversion_bias;
-            //data->bias_R += inversion_bias;
+            else {
+                data->bias_L += -1.0f;
+                data->bias_R += -1.0f; 
+                led_set(0b11);
+            }
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
