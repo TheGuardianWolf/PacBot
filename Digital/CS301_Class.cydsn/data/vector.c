@@ -4,7 +4,7 @@
 Vector* vector_create(size_t initial_capacity) {
     Vector* vector = malloc(block_size * initial_capacity);
     if (vector != NULL) {
-        vector->capacity = initial_capacity;
+        vector->capacity = (initial_capacity < 1) ? 1 : initial_capacity;
         return vector;
     }
     return NULL;

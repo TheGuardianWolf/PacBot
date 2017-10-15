@@ -22,10 +22,14 @@ void linked_list_push(const LinkedList* list, void* item);
 
 void* linked_list_pop(const LinkedList* list);
 
+void* linked_list_peek_stack(const LinkedList* list);
+
 // FIFO
 void linked_list_add(const LinkedList* list, void* item);
 
 void* linked_list_remove(const LinkedList* list);
+
+void* linked_list_peek_queue(const LinkedList* list);
 
 void linked_list_destroy(const LinkedList* list);
 

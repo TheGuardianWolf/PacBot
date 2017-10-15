@@ -20,18 +20,22 @@ void linked_list_push(const LinkedList* list, void* item) {
 		node->next = list->first;
 		node->prev = NULL;
 		list->first = node;
+		if (list->size == 0) {
+			list->last = node;
+		}
 		list->size++;
 	}
 }
 
 void* linked_list_pop(const LinkedList* list) {
-	LLNode* node = list->last;
-	node->prev->next = NULL;
-	list->last = node->prev;
-	void* item = node->item;
-	free(node);
-	list->size--;
-	return item;
+	return linked_list_remove(list);
+}
+
+void* linked_list_peek_stack(const LinkedList* list) {
+	if (list->size > 0) {
+		return list->last->item;
+	}
+	return NULL;
 }
 
 // FIFO
@@ -43,6 +47,9 @@ void linked_list_add(const LinkedList* list, void* item) {
 		node->next = NULL;
 		node->prev = list->last;
 		list->last = node;
+		if (list->size == 0) {
+			list->first = node;
+		}
 		list->size++;
 	}
 }
@@ -54,7 +61,17 @@ void* linked_list_remove(const LinkedList* list) {
 	void* item = node->item;
 	free(node);
 	list->size--;
+	if (list->size == 0) {
+		list->last = NULL;
+	}
 	return item;	
+}
+
+void* linked_list_peek_queue(const LinkedList* list) {
+	if (list->size > 0) {
+		return list->first->item;
+	}
+	return NULL;
 }
 
 void linked_list_destroy(const LinkedList* list) {

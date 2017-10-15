@@ -98,7 +98,7 @@ void priority_queue_reprioritise(const PriorityQueue* queue, size_t index, size_
     }
 }
 
-void priority_queue_push(const PriorityQueue* queue, size_t priority, void* item, bool upsert) {
+void priority_queue_add(const PriorityQueue* queue, size_t priority, void* item, bool upsert) {
     if (upsert) {
         size_t index = priority_queue_index(item);
         if (index > 0) {

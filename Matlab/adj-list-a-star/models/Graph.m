@@ -60,7 +60,7 @@ classdef Graph < handle
                     v = vect(j, :);
                     i_test = self.nodes{i}.pos_grid(2) + v(1);
                     j_test = self.nodes{i}.pos_grid(1) + v(2);
-                    if i_test <= rows && i_test > 0 && j_test <= cols && j_test > 0: 
+                    if i_test <= rows && i_test > 0 && j_test <= cols && j_test > 0
                         s = map(i_test, j_test);
                         if ~isnan(s)
                             edge = GraphEdge(edge_id, i, j, s, j - 2);

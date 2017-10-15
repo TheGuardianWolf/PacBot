@@ -24,6 +24,7 @@
         "priority_queue.h": "c",
         "linked_list.h": "c",
         "vector.h": "c",
-        "graph_astar.h": "c"
+        "graph_astar.h": "c",
+        "voidtypes.h": "c"
     }
 }

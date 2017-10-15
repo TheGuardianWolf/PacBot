@@ -44,7 +44,6 @@ Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_widt
         uint8_t direction[2][2] = {{1, 0}, {0, 1}};
         point_uint8_t grid_scan;
         graph_size_t target_node_id;
-        graph_size_t unique_edges = 0;
         GraphNode* node_ptr, target_node_ptr;
         GraphEdge* edge;
 
@@ -61,13 +60,14 @@ Graph* graph_create(const uint8_t** grid, uint8_t grid_height, uint8_t grid_widt
                         if (target_node_ptr != NULL && target_node_index != NODE_INVALID) {
                             edge = malloc(sizeof(GraphEdge));
                             if (edge != NULL) {
+                                edge->id = graph->unique_edges;
                                 edge->a1.destination = i;
                                 edge->a1.heading = j + 2;
                                 edge->a2.destination = target_node_id;
                                 edge->a2.heading = j;
                                 vector_append(node_ptr->edges, edge);
                                 vector_append(target_node_ptr->edges, edge);
-                                unique_edges++;
+                                graph->unique_edges++;
                             }
                         }
                     }

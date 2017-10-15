@@ -40,20 +40,16 @@ function [edge_priority, visited] = make_acyclic(graph, start)
                 break
             else
                 % It can never be a cycle if you're on start, it's always a cycle if you're going to start, unless you came from start
-                if (current ~= start) && (came_from{current}.get_arc_from(current) ~= next) && (next == start || came_from{next}.get_arc_from(next) ~= current)
-                    if (node_orders(frontier.peek()) >= 3)
-                        backtrack_edge = edges{i};
-                        graph.edge_remove(backtrack_edge);
-                    else
-                        while(node_orders(frontier.peek()) < 3) % do, while
-                            search_steps_size = search_steps_size - 1;
-                            backtrack = frontier.pop();
-                            backtrack_edge = came_from{backtrack};
-                            came_from{backtrack} = [];
-                        end
-                        graph.edge_remove(backtrack_edge);
-                        break
-                    end               
+                if (current ~= start) && (came_from{current} ~= edges{i}) && (next == start || came_from{next} ~= edges{i})
+                    backtrack_edge = edges{i};
+                    while(node_orders(frontier.peek()) < 3) % do, while
+                        search_steps_size = search_steps_size - 1;
+                        backtrack = frontier.pop();
+                        backtrack_edge = came_from{backtrack};
+                        came_from{backtrack} = [];
+                    end
+                    graph.edge_remove(backtrack_edge);
+                    break       
                 end
             end
             if i == length(edges)

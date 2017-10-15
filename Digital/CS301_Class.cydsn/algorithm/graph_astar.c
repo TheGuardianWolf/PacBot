@@ -6,7 +6,7 @@
 #include "linked_list.h"
 #include <math.h>
 
-#define NAN ((uvoid_t) 0 - 1);
+#define UVOID_T_MAX ((uvoid_t) 0 - 1);
 
 static uvoid_t herustic(point_uint8_t node_grid_pos, point_uint8_t target_grid_pos, uint8_t heading, uint8_t last_heading) {
     uvoid_t dx = (uvoid_t) labs((int16_t) node_grid_pos.x - target_grid_pos.x);
@@ -25,24 +25,23 @@ static uvoid_t herustic(point_uint8_t node_grid_pos, point_uint8_t target_grid_p
 
 LinkedList* graph_astar(const Graph* graph, graph_size_t start, graph_size_t target) {
     GraphNode* target_node = vector_get(graph->nodes, target);
-    if (target_node != NULL || start == target) {
+    if (target_node != NULL && start != target && start >= 0 && start < graph->nodes->size) {
         PriorityQueue queue = priority_queue_create((size_t) ceilf(sqrtf(graph->nodes->size)));
         Vector* cost_so_far = vector_create(graph->nodes->size);
         Vector* came_from = vector_create(graph->nodes->size);
 
-        priority_queue_push(queue, 0, (void*) start, false);
+        priority_queue_add(queue, 0, (void*) start, false);
 
         graph_size_t i;
         for (i = 0; i < graph->nodes->size; i++) {
             vector_append(cost_so_far, NULL);
             vector_append(came_from, NULL);
         }
-        vector_set(cost_so_far, start, (void*) NAN);
-        vector_set(came_from, start, NAN);
+        vector_set(cost_so_far, start, (void*) UVOID_T_MAX);
+        vector_set(came_from, start, UVOID_T_MAX);
 
         uvoid_t current_node_id;
         uvoid_t current_cost, new_cost;
-        graph_size_t next;
         GraphEdge* current_edge;
         GraphNode* current_node;
         GraphEdge* came_from_edge;
@@ -81,13 +80,13 @@ LinkedList* graph_astar(const Graph* graph, graph_size_t start, graph_size_t tar
                     vector_set(came_from, arc->destination, current_edge);
                     current_node = vector_get(graph->nodes, arc->destination);
                     new_cost += heuristic(current_node->pos_grid, target_node->pos_grid, arc->heading, last_heading);
-                    priority_queue_push(queue, new_cost, (void*)(uvoid_t) arc->destination, false);
+                    priority_queue_add(queue, new_cost, (void*)(uvoid_t) arc->destination, false);
                 }
             }
         }
 
-        priority_queue_destroy(queue);
         vector_destroy(cost_so_far);
+        priority_queue_destroy(queue);
 
         current_node_id = target;
         LinkedList* path = linked_list_create();

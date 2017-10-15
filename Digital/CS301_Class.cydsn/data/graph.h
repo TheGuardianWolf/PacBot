@@ -19,6 +19,7 @@ typedef struct {
 } GraphArc;
 
 typedef struct {
+    graph_size_t id;
     GraphArc a1; // Arc 1
     GraphArc a2; // Arc 2
 } GraphEdge;
@@ -26,7 +27,7 @@ typedef struct {
 typedef struct {
     graph_size_t node_edge_index[2];
     GraphEdge* edge;
-} GraphDetatchedEdge
+} GraphDetatchedEdge;
 
 typedef struct {
     point_uint8_t pos_grid;
