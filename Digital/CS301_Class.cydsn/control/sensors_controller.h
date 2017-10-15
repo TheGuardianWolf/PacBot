@@ -45,6 +45,7 @@ typedef struct {
     uint32_t last_run;
     bool right_turn;
     int8_t wait_direction;
+    bool u_turn;
 }  SCData;
 
 void sensors_controller_init();

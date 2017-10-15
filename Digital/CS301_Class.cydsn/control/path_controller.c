@@ -24,7 +24,7 @@ PCData path_controller_create(int8_t initial_heading, bool use_wireless, bool us
     motor_controller_set(data.mc_data, 0.15, 0, 0xFFFF);
     return data;
 }
-//
+
 //void calculate_turn(PCData* data, SCData *sc_data) {
 //    //heading east
 //    if(sc_data->curr_loc.orientation < 15 || sc_data->curr_loc.orientation > 345) {

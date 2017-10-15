@@ -39,6 +39,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .last_run = 0,
         .right_turn = 0,
         .wait_direction = 0,
+        .u_turn = false,
     };
 
     if (use_wireless) {
@@ -99,7 +100,8 @@ void sensors_controller_worker(SCData* data) {
         }
 
         uint8_t line_tracking = DI_N;
-        bool line_tracking_aggressive = true;
+        bool line_intersection = true;
+        bool u_turn = false;
         int8_t wait = 0;
 
         if ((LINE_INV(3) || LINE_INV(4)) && (LINE(1) && LINE(2))) {
@@ -113,7 +115,7 @@ void sensors_controller_worker(SCData* data) {
        
         //below are automatic turning code
         if (data->line_front_lost && (LINE_INV(1) != LINE_INV(2))) {
-            line_tracking_aggressive = true;
+            line_intersection = true;
             data->right_turn = 1;
             uint8_t line_tracking_prev = data->line_tracking;
             line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
@@ -129,21 +131,15 @@ void sensors_controller_worker(SCData* data) {
 
         if (LINE(3) || LINE(4)) {
             data->right_turn = 0;
-        }
-        else if(LINE(3) && LINE(4)) {
-            line_tracking = DI_N;
+            u_turn = false;
         }
 //        
         if (data->right_turn == 0) {
-            line_tracking_aggressive = false;
+            line_intersection = false;
         }
         
-        data->line_tracking = line_tracking;
-        data->line_tracking_aggressive = line_tracking_aggressive;
-        data->wait_direction = wait;
-        
         // Check if lost or line has ended
-        if ((LINE_INV(0) && LINE_INV(1) && LINE_INV(2) && LINE_INV(3) && LINE_INV(4))) {
+        if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE_INV(3) && LINE_INV(4))) {
             if (LINE(5)) {
                 data->line_end = true;
             }
@@ -155,21 +151,30 @@ void sensors_controller_worker(SCData* data) {
             data->line_end = false;
             data->line_lost = false;
         }
+        
+        if (data->line_end || data->line_lost) {
+            u_turn = true;
+        }
 
+        data->line_tracking = line_tracking;
+        data->line_intersection = line_intersection;
+        data->wait_direction = wait;
+        data->u_turn = u_turn;
+        
         // Automatic sensor enable/disable for higher switching speed
         
-//        if(data->right_turn == 1) {
-//             sensors_line_disable(0);
-//             sensors_line_disable(5);
-//             sensors_line_disable(1);
-//             sensors_line_disable(2);
-//        }
-//        else {
-//             sensors_line_enable(0);
-//             sensors_line_enable(5);
-//             sensors_line_enable(1);
-//             sensors_line_enable(2);
-//        }
+        if(data->right_turn == 1) {
+             sensors_line_disable(0);
+             sensors_line_disable(5);
+             sensors_line_disable(1);
+             sensors_line_disable(2);
+        }
+        else {
+             sensors_line_enable(0);
+             sensors_line_enable(5);
+             sensors_line_enable(1);
+             sensors_line_enable(2);
+        }
         
         if (LINE(0)) {
 //             sensors_line_disable(5);
