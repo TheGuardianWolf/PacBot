@@ -8,6 +8,7 @@
 #include "interactive.h"
 #include "systime.h"
 #include "usb.h"
+#include "wireless.h"
 
 #define MAX_CMPS 60
 #define STRAIGHT_LINE_SPEED 48
@@ -21,6 +22,7 @@ static void system_init() {
     sensors_controller_init();
     motor_controller_init();
     usb_init();
+    wireless_init();
     CYGlobalIntEnable;
 }
 

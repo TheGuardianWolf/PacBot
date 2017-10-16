@@ -154,6 +154,7 @@ void sensors_controller_worker(SCData* data) {
         
         if (data->line_end || data->line_lost) {
             u_turn = true;
+            data->right_turn = 1;
         }
 
         data->line_tracking = line_tracking;

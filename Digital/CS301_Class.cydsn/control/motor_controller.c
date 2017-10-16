@@ -129,7 +129,8 @@ static void adjust_bias(MCData* data) {
             }
             else {
                 data->bias_L += -1.0f;
-                data->bias_R += -1.0f; 
+                data->bias_R += -1.0f;
+                
                 led_set(0b11);
             }
         }
