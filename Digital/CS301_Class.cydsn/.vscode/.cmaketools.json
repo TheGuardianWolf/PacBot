@@ -19,104 +19,6 @@
             "targets": [
               {
                 "artifacts": [
-                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/test_graph"
-                ],
-                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build",
-                "fileGroups": [
-                  {
-                    "isGenerated": false,
-                    "sources": [
-                      "data/graph.h",
-                      "data/linked_list.h",
-                      "data/point.h",
-                      "data/priority_queue.h",
-                      "data/vector.h",
-                      "data/voidtypes.h",
-                      "algorithm/graph_astar.h",
-                      "algorithm/graph_travel_all.h",
-                      "algorithm/pathfinder.h"
-                    ]
-                  },
-                  {
-                    "compileFlags": "-g  ",
-                    "includePath": [
-                      {
-                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/INCLUDE_DIRS"
-                      }
-                    ],
-                    "isGenerated": false,
-                    "language": "C",
-                    "sources": [
-                      "tests/test_graph.c",
-                      "data/graph.c",
-                      "data/linked_list.c",
-                      "data/priority_queue.c",
-                      "data/vector.c",
-                      "algorithm/graph_astar.c",
-                      "algorithm/graph_travel_all.c",
-                      "algorithm/pathfinder.c"
-                    ]
-                  }
-                ],
-                "fullName": "test_graph",
-                "linkFlags": "-rdynamic",
-                "linkLanguageFlags": "-g",
-                "linkerLanguage": "C",
-                "name": "test_graph",
-                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
-                "type": "EXECUTABLE"
-              },
-              {
-                "artifacts": [
-                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/test_linked_list"
-                ],
-                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build",
-                "fileGroups": [
-                  {
-                    "isGenerated": false,
-                    "sources": [
-                      "data/graph.h",
-                      "data/linked_list.h",
-                      "data/point.h",
-                      "data/priority_queue.h",
-                      "data/vector.h",
-                      "data/voidtypes.h",
-                      "algorithm/graph_astar.h",
-                      "algorithm/graph_travel_all.h",
-                      "algorithm/pathfinder.h"
-                    ]
-                  },
-                  {
-                    "compileFlags": "-g  ",
-                    "includePath": [
-                      {
-                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/INCLUDE_DIRS"
-                      }
-                    ],
-                    "isGenerated": false,
-                    "language": "C",
-                    "sources": [
-                      "tests/test_linked_list.c",
-                      "data/graph.c",
-                      "data/linked_list.c",
-                      "data/priority_queue.c",
-                      "data/vector.c",
-                      "algorithm/graph_astar.c",
-                      "algorithm/graph_travel_all.c",
-                      "algorithm/pathfinder.c"
-                    ]
-                  }
-                ],
-                "fullName": "test_linked_list",
-                "linkFlags": "-rdynamic",
-                "linkLanguageFlags": "-g",
-                "linkerLanguage": "C",
-                "name": "test_linked_list",
-                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
-                "type": "EXECUTABLE"
-              },
-              {
-                "artifacts": [
                   "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/test_vector"
                 ],
                 "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build",
@@ -124,41 +26,30 @@
                   {
                     "isGenerated": false,
                     "sources": [
-                      "data/graph.h",
-                      "data/linked_list.h",
-                      "data/point.h",
-                      "data/priority_queue.h",
-                      "data/vector.h",
-                      "data/voidtypes.h",
-                      "algorithm/graph_astar.h",
-                      "algorithm/graph_travel_all.h",
-                      "algorithm/pathfinder.h"
+                      "tests/minunit.h"
                     ]
                   },
                   {
                     "compileFlags": "-g  ",
                     "includePath": [
                       {
-                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/INCLUDE_DIRS"
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm"
+                      },
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
                       }
                     ],
                     "isGenerated": false,
                     "language": "C",
                     "sources": [
-                      "tests/test_vector.c",
-                      "data/graph.c",
-                      "data/linked_list.c",
-                      "data/priority_queue.c",
-                      "data/vector.c",
-                      "algorithm/graph_astar.c",
-                      "algorithm/graph_travel_all.c",
-                      "algorithm/pathfinder.c"
+                      "tests/test_vector.c"
                     ]
                   }
                 ],
                 "fullName": "test_vector",
                 "linkFlags": "-rdynamic",
                 "linkLanguageFlags": "-g",
+                "linkLibraries": "algorithm/libalgorithm.a data/libdata.a",
                 "linkerLanguage": "C",
                 "name": "test_vector",
                 "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
@@ -173,52 +64,196 @@
                   {
                     "isGenerated": false,
                     "sources": [
-                      "data/graph.h",
-                      "data/linked_list.h",
-                      "data/point.h",
-                      "data/priority_queue.h",
-                      "data/vector.h",
-                      "data/voidtypes.h",
-                      "algorithm/graph_astar.h",
-                      "algorithm/graph_travel_all.h",
-                      "algorithm/pathfinder.h"
+                      "tests/minunit.h"
                     ]
                   },
                   {
                     "compileFlags": "-g  ",
                     "includePath": [
                       {
-                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/INCLUDE_DIRS"
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm"
+                      },
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
                       }
                     ],
                     "isGenerated": false,
                     "language": "C",
                     "sources": [
-                      "tests/test_priority_queue.c",
-                      "data/graph.c",
-                      "data/linked_list.c",
-                      "data/priority_queue.c",
-                      "data/vector.c",
-                      "algorithm/graph_astar.c",
-                      "algorithm/graph_travel_all.c",
-                      "algorithm/pathfinder.c"
+                      "tests/test_priority_queue.c"
                     ]
                   }
                 ],
                 "fullName": "test_priority_queue",
                 "linkFlags": "-rdynamic",
                 "linkLanguageFlags": "-g",
+                "linkLibraries": "algorithm/libalgorithm.a data/libdata.a",
                 "linkerLanguage": "C",
                 "name": "test_priority_queue",
                 "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
                 "type": "EXECUTABLE"
+              },
+              {
+                "artifacts": [
+                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/test_graph"
+                ],
+                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": false,
+                    "sources": [
+                      "tests/minunit.h"
+                    ]
+                  },
+                  {
+                    "compileFlags": "-g  ",
+                    "includePath": [
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm"
+                      },
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "C",
+                    "sources": [
+                      "tests/test_graph.c"
+                    ]
+                  }
+                ],
+                "fullName": "test_graph",
+                "linkFlags": "-rdynamic",
+                "linkLanguageFlags": "-g",
+                "linkLibraries": "algorithm/libalgorithm.a data/libdata.a",
+                "linkerLanguage": "C",
+                "name": "test_graph",
+                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
+                "type": "EXECUTABLE"
+              },
+              {
+                "artifacts": [
+                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/algorithm/libalgorithm.a"
+                ],
+                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/algorithm",
+                "fileGroups": [
+                  {
+                    "isGenerated": false,
+                    "sources": [
+                      "graph_astar.h",
+                      "graph_travel_all.h",
+                      "pathfinder.h"
+                    ]
+                  },
+                  {
+                    "compileFlags": "-g  ",
+                    "includePath": [
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm"
+                      },
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "C",
+                    "sources": [
+                      "graph_astar.c",
+                      "graph_travel_all.c",
+                      "pathfinder.c"
+                    ]
+                  }
+                ],
+                "fullName": "libalgorithm.a",
+                "linkerLanguage": "C",
+                "name": "algorithm",
+                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm",
+                "type": "STATIC_LIBRARY"
+              },
+              {
+                "artifacts": [
+                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/test_linked_list"
+                ],
+                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build",
+                "fileGroups": [
+                  {
+                    "isGenerated": false,
+                    "sources": [
+                      "tests/minunit.h"
+                    ]
+                  },
+                  {
+                    "compileFlags": "-g  ",
+                    "includePath": [
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/algorithm"
+                      },
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "C",
+                    "sources": [
+                      "tests/test_linked_list.c"
+                    ]
+                  }
+                ],
+                "fullName": "test_linked_list",
+                "linkFlags": "-rdynamic",
+                "linkLanguageFlags": "-g",
+                "linkLibraries": "algorithm/libalgorithm.a data/libdata.a",
+                "linkerLanguage": "C",
+                "name": "test_linked_list",
+                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn",
+                "type": "EXECUTABLE"
+              },
+              {
+                "artifacts": [
+                  "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/data/libdata.a"
+                ],
+                "buildDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/build/data",
+                "fileGroups": [
+                  {
+                    "isGenerated": false,
+                    "sources": [
+                      "graph.h",
+                      "linked_list.h",
+                      "point.h",
+                      "priority_queue.h",
+                      "vector.h",
+                      "voidtypes.h"
+                    ]
+                  },
+                  {
+                    "compileFlags": "-g  ",
+                    "includePath": [
+                      {
+                        "path": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data"
+                      }
+                    ],
+                    "isGenerated": false,
+                    "language": "C",
+                    "sources": [
+                      "graph.c",
+                      "linked_list.c",
+                      "priority_queue.c",
+                      "vector.c"
+                    ]
+                  }
+                ],
+                "fullName": "libdata.a",
+                "linkerLanguage": "C",
+                "name": "data",
+                "sourceDirectory": "/home/oracle/Documents/Git/uoa-cs301-2017-group11/Digital/CS301_Class.cydsn/data",
+                "type": "STATIC_LIBRARY"
               }
             ]
           }
         ]
       }
     ],
-    "cookie": "0.2892358535418511",
+    "cookie": "0.8007637898164406",
     "inReplyTo": "codemodel",
     "type": "reply"
   }

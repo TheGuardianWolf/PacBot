@@ -25,6 +25,8 @@
         "linked_list.h": "c",
         "vector.h": "c",
         "graph_astar.h": "c",
-        "voidtypes.h": "c"
+        "voidtypes.h": "c",
+        "stdint.h": "c",
+        "pathfinder.h": "c"
     }
 }

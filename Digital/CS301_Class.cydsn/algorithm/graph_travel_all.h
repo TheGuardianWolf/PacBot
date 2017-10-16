@@ -5,6 +5,6 @@
 #include "graph.h"
 #include "linked_list.h"
 
-LinkedList* graph_travel_all(const Graph* graph, graph_size_t start, graph_size_t target);
+LinkedList* graph_travel_all(Graph* graph, graph_size_t start, graph_size_t target);
 
 #endif /* GRAPH_TRAVEL_ALL_H */

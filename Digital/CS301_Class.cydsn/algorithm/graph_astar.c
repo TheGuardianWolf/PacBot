@@ -1,16 +1,15 @@
-#include "graph_astar.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include "graph_astar.h"
 #include "priority_queue.h"
 #include "vector.h"
 #include "voidtypes.h"
 #include "linked_list.h"
-#include <math.h>
 
-#define UVOID_T_MAX ((uvoid_t) 0 - 1);
 
-static uvoid_t herustic(point_uint8_t node_grid_pos, point_uint8_t target_grid_pos, uint8_t heading, uint8_t last_heading) {
-    uvoid_t dx = (uvoid_t) labs((int16_t) node_grid_pos.x - target_grid_pos.x);
-    uvoid_t dy = (uvoid_t) labs((int16_t) node_grid_pos.y - target_grid_pos.y);
+static uvoid_t heuristic(point_uint8_t node_grid_pos, point_uint8_t target_grid_pos, uint8_t heading, uint8_t last_heading) {
+    uvoid_t dx = (uvoid_t) abs((int16_t) node_grid_pos.x - target_grid_pos.x);
+    uvoid_t dy = (uvoid_t) abs((int16_t) node_grid_pos.y - target_grid_pos.y);
 
     uvoid_t D;
     if (heading != last_heading && last_heading < 5) {
@@ -23,22 +22,22 @@ static uvoid_t herustic(point_uint8_t node_grid_pos, point_uint8_t target_grid_p
     return D * (dx + dy);
 }
 
-LinkedList* graph_astar(const Graph* graph, graph_size_t start, graph_size_t target) {
+LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
     GraphNode* target_node = vector_get(graph->nodes, target);
     if (target_node != NULL && start != target && start >= 0 && start < graph->nodes->size) {
-        PriorityQueue queue = priority_queue_create((size_t) ceilf(sqrtf(graph->nodes->size)));
+        PriorityQueue* queue = priority_queue_create((size_t) ceilf(sqrtf(graph->nodes->size)));
         Vector* cost_so_far = vector_create(graph->nodes->size);
         Vector* came_from = vector_create(graph->nodes->size);
 
         priority_queue_add(queue, 0, (void*) start, false);
 
-        graph_size_t i;
-        for (i = 0; i < graph->nodes->size; i++) {
+        graph_size_t j;
+        for (j = 0; j < graph->nodes->size; j++) {
             vector_append(cost_so_far, NULL);
             vector_append(came_from, NULL);
         }
         vector_set(cost_so_far, start, (void*) UVOID_T_MAX);
-        vector_set(came_from, start, UVOID_T_MAX);
+        vector_set(came_from, start, (void*) UVOID_T_MAX);
 
         uvoid_t current_node_id;
         uvoid_t current_cost, new_cost;
@@ -90,7 +89,7 @@ LinkedList* graph_astar(const Graph* graph, graph_size_t start, graph_size_t tar
 
         current_node_id = target;
         LinkedList* path = linked_list_create();
-        linked_list_push(path, (void*)(uvoid_t) arc->target);
+        linked_list_push(path, (void*)(uvoid_t) arc->destination);
         while(current_node_id != start) {
             current_edge = vector_get(came_from, current_node_id);
             arc = graph_arc_from(current_edge, current_node_id);

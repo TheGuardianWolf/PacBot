@@ -28,7 +28,10 @@
             "includePath": [
                 "/usr/include",
                 "/usr/local/include",
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "${workspaceRoot}/data",
+                "/usr/include/linux",
+                "/usr/include/unistring"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",

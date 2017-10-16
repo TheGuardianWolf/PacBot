@@ -53,4 +53,8 @@ void graph_edge_remove(Graph* graph, GraphEdge* edge);
 
 void graph_edge_attach(Graph* graph, GraphDetatchedEdge* detatched_edge);
 
+GraphArc* graph_arc_to(GraphEdge* edge, graph_size_t node_id);
+
+GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id);
+
 #endif /* GRAPH_H */
