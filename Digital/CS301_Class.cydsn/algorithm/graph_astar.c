@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 #include "graph_astar.h"
 #include "priority_queue.h"
 #include "vector.h"
@@ -29,11 +30,11 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
         Vector* cost_so_far = vector_create(graph->nodes->size);
         Vector* came_from = vector_create(graph->nodes->size);
 
-        priority_queue_add(queue, 0, (void*) start, false);
+        priority_queue_add(queue, 0, (void*)(uvoid_t) start, false);
 
         graph_size_t j;
         for (j = 0; j < graph->nodes->size; j++) {
-            vector_append(cost_so_far, NULL);
+            vector_append(cost_so_far, (void*)(uvoid_t) 0);
             vector_append(came_from, NULL);
         }
         vector_set(cost_so_far, start, (void*) UVOID_T_MAX);
@@ -64,7 +65,7 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
                 current_edge = vector_get(current_node->edges, i);
                 arc = graph_arc_from(current_edge, current_node_id);
 
-                new_cost = vector_get(cost_so_far, current_node_id);
+                new_cost = (uvoid_t) vector_get(cost_so_far, current_node_id);
                 new_cost++;
 
                 if (arc->destination == target) {
@@ -73,8 +74,8 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
                     break;
                 }
 
-                current_cost = vector_get(cost_so_far, arc->destination);
-                if (current_cost == NULL || new_cost < current_cost) {
+                current_cost = (uvoid_t) vector_get(cost_so_far, arc->destination);
+                if (current_cost == 0 || new_cost < current_cost) {
                     vector_set(cost_so_far, arc->destination, (void*)(uvoid_t) new_cost);
                     vector_set(came_from, arc->destination, current_edge);
                     current_node = vector_get(graph->nodes, arc->destination);
