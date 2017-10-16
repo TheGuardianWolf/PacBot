@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <stddef.h>
+#include "linked_list.h"
 
 LinkedList* linked_list_create() {
-	LinkedList list = malloc(sizeof(LinkedList));
+	LinkedList* list = malloc(sizeof(LinkedList));
 	if (list != NULL) {
 		list->first = NULL;
 		list->last = NULL;
@@ -12,7 +14,7 @@ LinkedList* linked_list_create() {
 }
 
 // LIFO
-void linked_list_push(const LinkedList* list, void* item) {
+void linked_list_push(LinkedList* list, void* item) {
 	LLNode* node = malloc(sizeof(LLNode*));
 	if (node != NULL) {
 		node->item = item;
@@ -27,11 +29,11 @@ void linked_list_push(const LinkedList* list, void* item) {
 	}
 }
 
-void* linked_list_pop(const LinkedList* list) {
+void* linked_list_pop(LinkedList* list) {
 	return linked_list_remove(list);
 }
 
-void* linked_list_peek_stack(const LinkedList* list) {
+void* linked_list_peek_stack(LinkedList* list) {
 	if (list->size > 0) {
 		return list->last->item;
 	}
@@ -39,7 +41,7 @@ void* linked_list_peek_stack(const LinkedList* list) {
 }
 
 // FIFO
-void linked_list_add(const LinkedList* list, void* item) {
+void linked_list_add(LinkedList* list, void* item) {
 	LLNode* node = malloc(sizeof(LLNode*));
 	if (node != NULL) {
 		node->item = item;
@@ -54,7 +56,7 @@ void linked_list_add(const LinkedList* list, void* item) {
 	}
 }
 
-void* linked_list_remove(const LinkedList* list) {
+void* linked_list_remove(LinkedList* list) {
 	LLNode* node = list->first;
 	node->next->prev = NULL;
 	list->first = node->next;
@@ -67,18 +69,18 @@ void* linked_list_remove(const LinkedList* list) {
 	return item;	
 }
 
-void* linked_list_peek_queue(const LinkedList* list) {
+void* linked_list_peek_queue(LinkedList* list) {
 	if (list->size > 0) {
 		return list->first->item;
 	}
 	return NULL;
 }
 
-void linked_list_destroy(const LinkedList* list) {
-	LLNode* node, next_node;
+void linked_list_destroy(LinkedList* list) {
+	LLNode* node;
 	while(list->size > 0) {
 		node = list->first;
-		next_node = node->next;
+		list->first = node->next;
 		free(node);
 		list->size--;
 	}

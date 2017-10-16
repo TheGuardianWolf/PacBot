@@ -1,13 +1,15 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
-#import <stddef.h>
+#include <stddef.h>
 
-typedef struct {
+struct LLNode {
 	void* item;
-    LLNode* next;
-    LLNode* prev;
-} LLNode;
+    struct LLNode* next;
+    struct LLNode* prev;
+};
+
+typedef struct LLNode LLNode;
 
 typedef struct {
     LLNode* first;
@@ -18,19 +20,19 @@ typedef struct {
 LinkedList* linked_list_create();
 
 // LIFO
-void linked_list_push(const LinkedList* list, void* item);
+void linked_list_push(LinkedList* list, void* item);
 
-void* linked_list_pop(const LinkedList* list);
+void* linked_list_pop(LinkedList* list);
 
-void* linked_list_peek_stack(const LinkedList* list);
+void* linked_list_peek_stack(LinkedList* list);
 
 // FIFO
-void linked_list_add(const LinkedList* list, void* item);
+void linked_list_add(LinkedList* list, void* item);
 
-void* linked_list_remove(const LinkedList* list);
+void* linked_list_remove(LinkedList* list);
 
-void* linked_list_peek_queue(const LinkedList* list);
+void* linked_list_peek_queue(LinkedList* list);
 
-void linked_list_destroy(const LinkedList* list);
+void linked_list_destroy(LinkedList* list);
 
 #endif /* LINKED_LIST_H */

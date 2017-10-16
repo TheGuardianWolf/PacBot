@@ -1,13 +1,14 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 typedef struct {
     void** container;
-    size_t size = 0;
-    size_t capacity = 0;
+    size_t size;
+    size_t capacity;
 } Vector;
 
 Vector* vector_create(size_t initial_capacity);

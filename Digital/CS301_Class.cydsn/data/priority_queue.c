@@ -1,10 +1,12 @@
 #include "priority_queue.h"
-#include "vector.h"
+#include <stdlib.h>
+#include <stddef.h>
 
-static void perc_up(const PriorityQueue* queue, size_t index) {
-    HeapNode* a, b;
+static void perc_up(PriorityQueue* queue, size_t index) {
+    HeapNode* a;
+    HeapNode* b;
     size_t fd = index / 2;
-    while fd > 0 {
+    while (fd > 0) {
         a = vector_get((Vector*) queue, index);
         b = vector_get((Vector*) queue, fd);
         if (a != NULL && b != NULL) {
@@ -17,7 +19,7 @@ static void perc_up(const PriorityQueue* queue, size_t index) {
     }    
 }
 
-static size_t min_child(const PriorityQueue* queue, size_t index) {
+static size_t min_child(PriorityQueue* queue, size_t index) {
     size_t child_index;
     size_t index_x2 = index * 2;
     size_t index_x2p1 = index * 2 + 1;
@@ -26,7 +28,8 @@ static size_t min_child(const PriorityQueue* queue, size_t index) {
         child_index = index_x2;
     }
     else {
-        HeapNode* a, b;
+        HeapNode* a;
+        HeapNode* b;
         a = vector_get((Vector*) queue, index_x2);
         b = vector_get((Vector*) queue, index_x2p1);
         if (a != NULL && b != NULL) {
@@ -42,8 +45,9 @@ static size_t min_child(const PriorityQueue* queue, size_t index) {
     return child_index;
 }
 
-static void perc_down(const PriorityQueue* queue, size_t index) {
-    HeapNode* a, b;
+static void perc_down(PriorityQueue* queue, size_t index) {
+    HeapNode* a;
+    HeapNode* b;
     size_t mc;
 
     while (index * 2 <= queue->size) {
@@ -83,24 +87,24 @@ size_t priority_queue_index(PriorityQueue* queue, void* item) {
     return queue->size;
 }
 
-void priority_queue_reprioritise(const PriorityQueue* queue, size_t index, size_t priority) {
+void priority_queue_reprioritise(PriorityQueue* queue, size_t index, size_t priority) {
     HeapNode* node = vector_get((Vector*) queue, index);
     if (node != NULL) {
         size_t last_priority = node->priority;
         node->priority = priority;
 
         if (priority > last_priority) {
-            perc_down(index);
+            perc_down(queue, index);
         }
         else if (priority < last_priority) {
-            perc_up(index);
+            perc_up(queue, index);
         }
     }
 }
 
-void priority_queue_add(const PriorityQueue* queue, size_t priority, void* item, bool upsert) {
+void priority_queue_add(PriorityQueue* queue, size_t priority, void* item, bool upsert) {
     if (upsert) {
-        size_t index = priority_queue_index(item);
+        size_t index = priority_queue_index(queue, item);
         if (index > 0) {
             priority_queue_reprioritise(queue, index, priority);
             return;
@@ -111,12 +115,12 @@ void priority_queue_add(const PriorityQueue* queue, size_t priority, void* item,
         node->priority = priority;
         node->item = item;
         vector_append((Vector*) queue, node);
-        self.perc_up(queue->size - 1);
+        perc_up(queue, queue->size - 1);
     }
 }
 
-void* priority_queue_remove(const PriorityQueue* queue) {
-    HeapNode node = vector_get((Vector*) queue, queue->size - 1);
+void* priority_queue_remove(PriorityQueue* queue) {
+    HeapNode* node = vector_get((Vector*) queue, queue->size - 1);
     if (node != NULL) {
         node = vector_set((Vector*) queue, 1, node);
         if (node != NULL) {
@@ -130,22 +134,22 @@ void* priority_queue_remove(const PriorityQueue* queue) {
     return NULL;
 }
 
-void* priority_queue_peek(const ProrityQueue* queue, const size_t* r_priority) {
-    HeapNode node = vector_get(queue, 1);
+void* priority_queue_peek(PriorityQueue* queue, size_t* r_priority) {
+    HeapNode* node = vector_get(queue, 1);
     if (node != NULL) {
         if (r_priority != NULL) {
             *r_priority = node->priority;
         }
         return node->item;
     }
-    return null;
+    return NULL;
 }
 
-bool priority_queue_empty(const PriorityQueue* queue) {
+bool priority_queue_empty(PriorityQueue* queue) {
     return queue->size <= 1;
 }
 
-void priority_queue_destroy(const PriorityQueue* queue) {
+void priority_queue_destroy(PriorityQueue* queue) {
     size_t i;
     HeapNode* node;
     for (i = 0; i < queue->size; i++) {
