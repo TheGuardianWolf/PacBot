@@ -1,7 +1,5 @@
 #include <stdint.h>
 #include "linked_list.h"
-#include "graph.h"
-#include "point.h"
 
 LinkedList* pathfinder(
     const Graph* graph,
