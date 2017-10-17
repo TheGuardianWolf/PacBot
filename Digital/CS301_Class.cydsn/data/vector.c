@@ -78,14 +78,13 @@ void vector_insert(Vector* vector, size_t index, void* item) {
 }
 
 void* vector_remove(Vector* vector, size_t index) {
-    if (index < vector->size) {
+    if (index < vector->size - 1) {
         void* item = vector->container[index];
         size_t i;
-        for (i = vector->size; i > index; i--) {
-             vector->container[i - 1] = vector->container[i];
+        for (i = index; i < vector->size - 1; i++) {
+             vector->container[i] = vector->container[i + 1];
         }
         vector->size--;
-        vector_resize(vector, vector->size);
         return item;
     }
     return NULL;
