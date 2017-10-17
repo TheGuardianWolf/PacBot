@@ -86,53 +86,23 @@ static void adjust_bias(MCData* data) {
     // Run bias calculations
     data->bias_L = 0.0f;
     data->bias_R = 0.0f;
-    if (data->drive_mode == 0 || data->drive_mode == 3) {
         if (data->sc_data->use_line) {
-            if(data->sc_data->wait_direction == 0 && data->sc_data->u_turn == 0) {
-                REG_LED_Write(data->sc_data->line_tracking & data->sc_data->line_intersection << 2);
-                switch(data->sc_data->line_tracking) {
+            switch(data->sc_data->line_tracking) {
                 case DI_L:
-                    if (data->sc_data->line_intersection) {
-                        data->bias_L += -1.7f;
-                        data->bias_R += -0.4f;
-                        led_set(111);
-                    }
-                    else {
-                        data->bias_L += -0.45f;
-                        data->bias_R += 0.0f;
-                        led_set(001);
-                    }
+                    data->bias_L += -0.15f;
+                    data->bias_R += 0.0f;
                     break;
                 case DI_R:
-                    if (data->sc_data->line_intersection) {
-                        data->bias_L += -0.4f;
-                        data->bias_R += -1.7f;
-                        led_set(111);
-                    }
-                    else {
-                        data->bias_L += 0.0f;
-                        data->bias_R += -0.15f;
-                        led_set(001);
-                    }
+                    data->bias_L += 0.0f;
+                    data->bias_R += -0.15f;
                     break;
                 default:
                     break;
                 }
-                //float inversion_bias = -0.02 * data->sc_data->line_inversions;
-                //data->bias_L += inversion_bias;
-                //data->bias_R += inversion_bias;
-        
             }
-            else if (data->sc_data->u_turn == 1) {
-                data->bias_L += -1.5f;
-                data->bias_R += -0.5f;
-            }
-            else {
-                data->bias_L += -1.0f;
-                data->bias_R += -1.0f;
-                
-                led_set(0b11);
-            }
+            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
+            //data->bias_L += inversion_bias;
+            //data->bias_R += inversion_bias;
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
@@ -202,10 +172,6 @@ void motor_controller_worker(MCData* data) {
         data->PID_R.input = speed2pidin(data->sc_data->curr_speed_R);
 
         adjust_bias(data);
-        
-        if(data->sc_data->wait_direction == 1) {
-            motor_controller_set(data, 0.0f,  0, 0xEFFFFFF);
-        }
 
         adjust_setpoint(data);
 

@@ -92,6 +92,7 @@ void sensors_controller_worker(SCData* data) {
             } 
         }
 
+        // Check if front two sensors are both off line.
         if (LINE_INV(3) && LINE_INV(4)) {
             data->line_front_lost = true;
         }
@@ -99,44 +100,28 @@ void sensors_controller_worker(SCData* data) {
             data->line_front_lost = false;
         }
 
-        uint8_t line_tracking = DI_N;
-        bool line_intersection = true;
-        bool u_turn = false;
-        int8_t wait = 0;
-
-        if ((LINE_INV(3) || LINE_INV(4)) && (LINE(1) && LINE(2))) {
-            uint8_t line_tracking_prev = data->line_tracking;
-            line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
-            if (line_tracking == DI_LR) {
-                line_tracking = line_tracking_prev;
-                data->line_front_lost = true;
+        // Straight line tracking / corrections
+        if (LINE(1) && LINE(2)) {
+            // If front sensors roll off the line, and side sensors aren't detecting
+            // Try to correct.
+            if ((LINE_INV(3) || LINE_INV(4)) {
+                uint8_t line_tracking_prev = data->line_tracking;
+                data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
+                if (data->line_tracking == DI_LR) {
+                    data->line_tracking = line_tracking_prev;
+                }
             }
+            else {
+                data->line_tracking = DI_N;
+            }
+        }
+        else {
+            data->line_tracking = DI_N;
         }
        
-        //below are automatic turning code
-        if (data->line_front_lost && (LINE_INV(1) != LINE_INV(2))) {
-            line_intersection = true;
-            data->right_turn = 1;
-            uint8_t line_tracking_prev = data->line_tracking;
-            line_tracking = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
-            if (line_tracking == DI_LR) {
-                line_tracking = line_tracking_prev;
-            }
-        }
-        //Stop the robot
-        else if (LINE(0) && ((!data->line_front_lost && LINE_INV(1) && LINE_INV(2)) || (LINE_INV(1) && LINE_INV(2)) || (!data->line_front_lost && LINE_INV(1)) || (!data->line_front_lost && LINE_INV(2)))){
-            wait = 1;
-        }
-        
-
-        if (LINE(3) || LINE(4)) {
-            data->right_turn = 0;
-            u_turn = false;
-        }
-//        
-        if (data->right_turn == 0) {
-            line_intersection = false;
-        }
+        // Intersection detection
+        data->line_intersection_LR = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
+        data->line_intersection_FB = (uint8_t) !data->line_front_lost * DI_F  + (uint8_t) LINE(5) * DI_B;
         
         // Check if lost or line has ended
         if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE_INV(3) && LINE_INV(4))) {
@@ -152,46 +137,18 @@ void sensors_controller_worker(SCData* data) {
             data->line_lost = false;
         }
         
-        if (data->line_end || data->line_lost) {
-            u_turn = true;
-            data->right_turn = 1;
-        }
-
-        data->line_tracking = line_tracking;
-        data->line_intersection = line_intersection;
-        data->wait_direction = wait;
-        data->u_turn = u_turn;
-        
         // Automatic sensor enable/disable for higher switching speed
-        
-        if(data->right_turn == 1) {
-             sensors_line_disable(0);
-             sensors_line_disable(5);
-             sensors_line_disable(1);
-             sensors_line_disable(2);
+        if (LINE_INV(3) && LINE_INV(4) && LINE(1) && LINE(2)) {
+            sensors_line_disable(1);
+            sensors_line_disable(2);
+            sensors_line_enable(0);
         }
         else {
-             sensors_line_enable(0);
-             sensors_line_enable(5);
-             sensors_line_enable(1);
-             sensors_line_enable(2);
+            sensors_line_enable(1);
+            sensors_line_enable(2);
+            sensors_line_disable(0);
         }
-        
-        if (LINE(0)) {
-//             sensors_line_disable(5);
-//        }
-//         else {
-             sensors_line_enable(5);
-         }
-
-         if (LINE(3) || LINE(4)) {
-//             sensors_line_disable(0);
-//             sensors_line_disable(5);
-//         }
-//         else {
-//             sensors_line_enable(0);
-//             sensors_line_enable(5);
-         }
+        sensors_line_disable(5);
     }
     
     // Wireless fusion section - Guard via interrupt flag

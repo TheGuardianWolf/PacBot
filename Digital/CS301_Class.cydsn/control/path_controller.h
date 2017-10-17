@@ -4,6 +4,11 @@
 #include "motor_controller.h"
 #include "sensors_controller.h"
 
+// 211.5 mm width for 16 blocks travel
+// 26.5 mm width for 2 blocks travel
+// 154mm height for 12 blocks travel
+// 26 mm height for 2 blocks travel
+
 typedef struct {
     uint32_t sample_time;
     int8_t heading; // -1 - Stay, 0 - North, 1 - East, 2 - South, 3 - West

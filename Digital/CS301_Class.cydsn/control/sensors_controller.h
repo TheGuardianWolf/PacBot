@@ -16,7 +16,10 @@
 #define DI_N 0
 #define DI_L 1
 #define DI_R 2
+#define DI_F 1
+#define DI_B 2
 #define DI_LR 3
+#define DI_FB 3
 #define PI 3.14159265358979
 
 typedef struct {
@@ -24,7 +27,6 @@ typedef struct {
     bool use_wireless;
     bool use_line;
     uint8_t line_tracking;
-    bool line_tracking_aggressive;
     uint8_t line_intersection;
     uint8_t line_intersection_prev;
     bool line_end;
