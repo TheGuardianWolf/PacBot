@@ -106,6 +106,13 @@ static char * test_linked_list_add() {
     return 0;
 }
 
+static char * all_tests() {
+    mu_run_test(test_linked_list_create);
+    mu_run_test(test_linked_list_push);
+    mu_run_test(test_linked_list_pop);
+	mu_run_test(test_linked_list_add);
+    return 0;
+}
 
 int main(int argc, char **argv) {
     char *result = all_tests();
