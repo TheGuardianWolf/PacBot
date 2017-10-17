@@ -26,19 +26,19 @@ static char * test_linked_list_push() {
     mu_assert("test_linked_list_push: error, linkedlist->size != 0", ll->size == 0);
 	
     linked_list_push(ll, &foo);
-	mu_assert("test_linked_list_push: error, linkedlist->size != 1", ll->size == 1);
-    mu_assert("test_linked_list_push: error, linkedlist->first != 7", (*(int* )ll->first == 7));
-    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last == 7));
+    mu_assert("test_linked_list_push: error, linkedlist->size != 1", ll->size == 1);
+    mu_assert("test_linked_list_push: error, linkedlist->first != 7", (*((int*)ll->first->item) == 7));
+    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last->item == 7));
 	
 	linked_list_push(ll, &bar);
 	mu_assert("test_linked_list_push: error, linkedlist->size != 2", ll->size == 2);
-    mu_assert("test_linked_list_push: error, linkedlist->first != 4", (*(int* )ll->first == 4));
-    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last == 7));
+    mu_assert("test_linked_list_push: error, linkedlist->first != 4", (*(int* )ll->first->item == 4));
+    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last->item == 7));
 	
 	linked_list_push(ll, &bof);
 	mu_assert("test_linked_list_push: error, linkedlist->size != 3", ll->size == 3);
-    mu_assert("test_linked_list_push: error, linkedlist->first != bof", (*(int** )ll->first == bof));
-    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last == 7));
+    mu_assert("test_linked_list_push: error, linkedlist->first != bof", (*(int** )ll->first->item == bof));
+    mu_assert("test_linked_list_push: error, linkedlist->last != 7", (*(int* )ll->last->item == 7));
 	
     linked_list_destroy(ll);
     return 0;
@@ -55,23 +55,23 @@ static char * test_linked_list_pop() {
 	linked_list_push(ll, &baz);
 	linked_list_push(ll, &bof);	
 	mu_assert("test_linked_list_pop: error, linkedlist->size != 4", ll->size == 4);
-    mu_assert("test_linked_list_pop: error, linkedlist->first != 7", (*(int* )ll->first == 7));
-    mu_assert("test_linked_list_pop: error, linkedlist->last != bof", (*(int** )ll->last == bof));
+    mu_assert("test_linked_list_pop: error, linkedlist->first != bof", (*(int**)ll->first->item == bof));
+    mu_assert("test_linked_list_pop: error, linkedlist->last != 7", (*(int*)ll->last->item == 7));
 	
 	linked_list_pop(ll);
 	mu_assert("test_linked_list_pop: error, linkedlist->size != 3", ll->size == 3);
-    mu_assert("test_linked_list_pop: error, linkedlist->first != 4", (*(int* )ll->first == 4));
-    mu_assert("test_linked_list_pop: error, linkedlist->last != bof", (*(int** )ll->last == bof));
+    mu_assert("test_linked_list_pop: error, linkedlist->first != 1", (*(int*)ll->first->item == 1));
+    mu_assert("test_linked_list_pop: error, linkedlist->last != 7", (*(int*)ll->last->item == 7));
 		
 	linked_list_pop(ll);
 	mu_assert("test_linked_list_pop: error, linkedlist->size != 2", ll->size == 2);
-    mu_assert("test_linked_list_pop: error, linkedlist->first != 1", (*(int* )ll->first == 1));
-    mu_assert("test_linked_list_pop: error, linkedlist->last != bof", (*(int** )ll->last == bof));
+    mu_assert("test_linked_list_pop: error, linkedlist->first != 4", (*(int*)ll->first->item == 4));
+    mu_assert("test_linked_list_pop: error, linkedlist->last != 7", (*(int*)ll->last->item == 7));
 			
 	linked_list_pop(ll);
 	mu_assert("test_linked_list_pop: error, linkedlist->size != 1", ll->size == 1);
-    mu_assert("test_linked_list_pop: error, linkedlist->last != bof", (*(int** )ll->last == bof));
-    mu_assert("test_linked_list_pop: error, linkedlist->last != bof", (*(int** )ll->last == bof));
+    mu_assert("test_linked_list_pop: error, linkedlist->last != 7", (*(int*)ll->first->item == 7));
+    mu_assert("test_linked_list_pop: error, linkedlist->last != 7", (*(int*)ll->last->item == 7));
 				
 	linked_list_pop(ll);
 	mu_assert("test_linked_list_pop: error, linkedlist->size != 0", ll->size == 0);
@@ -91,18 +91,18 @@ static char * test_linked_list_add() {
 	
     linked_list_add(ll, &foo);
 	mu_assert("test_linked_list_add: error, linkedlist->size != 1", ll->size == 1);
-    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first == 7));
-    mu_assert("test_linked_list_add: error, linkedlist->last != 7", (*(int* )ll->last == 7));
+    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first->item == 7));
+    mu_assert("test_linked_list_add: error, linkedlist->last != 7", (*(int* )ll->last->item == 7));
 	
 	linked_list_add(ll, &bar);
 	mu_assert("test_linked_list_add: error, linkedlist->size != 2", ll->size == 2);
-    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first == 7));
-    mu_assert("test_linked_list_add: error, linkedlist->last != 4", (*(int* )ll->last == 4));
+    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first->item == 7));
+    mu_assert("test_linked_list_add: error, linkedlist->last != 4", (*(int* )ll->last->item == 4));
 	
 	linked_list_add(ll, &bof);
 	mu_assert("test_linked_list_add: error, linkedlist->size != 3", ll->size == 3);
-    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first == 7));
-    mu_assert("test_linked_list_add: error, linkedlist->last != bof", (*(int** )ll->last == bof));
+    mu_assert("test_linked_list_add: error, linkedlist->first != 7", (*(int* )ll->first->item == 7));
+    mu_assert("test_linked_list_add: error, linkedlist->last != bof", (*(int** )ll->last->item == bof));
 	
     linked_list_destroy(ll);
     return 0;

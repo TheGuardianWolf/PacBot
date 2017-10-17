@@ -15,16 +15,18 @@ LinkedList* linked_list_create() {
 
 // LIFO
 void linked_list_push(LinkedList* list, void* item) {
-	LLNode* node = malloc(sizeof(LLNode*));
+	LLNode* node = malloc(sizeof(LLNode));
 	if (node != NULL) {
 		node->item = item;
-		list->first->prev = node;
-		node->next = list->first;
-		node->prev = NULL;
-		list->first = node;
 		if (list->size == 0) {
 			list->last = node;
 		}
+		else {
+			list->first->prev = node;
+		}
+		node->next = list->first;
+		node->prev = NULL;
+		list->first = node;
 		list->size++;
 	}
 }
@@ -42,30 +44,36 @@ void* linked_list_peek_stack(LinkedList* list) {
 
 // FIFO
 void linked_list_add(LinkedList* list, void* item) {
-	LLNode* node = malloc(sizeof(LLNode*));
+	LLNode* node = malloc(sizeof(LLNode));
 	if (node != NULL) {
 		node->item = item;
-		list->last->next = node;
-		node->next = NULL;
-		node->prev = list->last;
-		list->last = node;
 		if (list->size == 0) {
 			list->first = node;
 		}
+		else {
+			list->last->next = node;
+		}
+		node->next = NULL;
+		node->prev = list->last;
+		list->last = node;
 		list->size++;
 	}
 }
 
 void* linked_list_remove(LinkedList* list) {
 	LLNode* node = list->first;
-	node->next->prev = NULL;
-	list->first = node->next;
-	void* item = node->item;
-	free(node);
 	list->size--;
 	if (list->size == 0) {
+		list->first = NULL;
 		list->last = NULL;
 	}
+	else {
+		list->first = node->next;
+	}
+	
+	void* item = node->item;
+	free(node);
+	
 	return item;	
 }
 
