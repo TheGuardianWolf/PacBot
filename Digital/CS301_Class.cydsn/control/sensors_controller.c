@@ -25,9 +25,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .use_wireless = use_wireless,
         .use_line = use_line,
         .line_tracking = DI_N,
-        .line_tracking_aggressive = false,
         .line_intersection = DI_N,
-        .line_intersection_prev = DI_N,
         .line_front_lost = false,
         .line_end = false,
         .line_lost = false,
@@ -37,9 +35,6 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
         .last_run = 0,
-        .right_turn = 0,
-        .wait_direction = 0,
-        .u_turn = false,
     };
 
     if (use_wireless) {

@@ -28,7 +28,6 @@ typedef struct {
     bool use_line;
     uint8_t line_tracking;
     uint8_t line_intersection;
-    uint8_t line_intersection_prev;
     bool line_end;
     bool line_lost;
     uint8_t line_inversions;
@@ -45,9 +44,6 @@ typedef struct {
     float curr_speed_L;
     float curr_speed_R;
     uint32_t last_run;
-    bool right_turn;
-    int8_t wait_direction;
-    bool u_turn;
 }  SCData;
 
 void sensors_controller_init();

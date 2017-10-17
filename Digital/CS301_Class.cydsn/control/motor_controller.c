@@ -100,9 +100,9 @@ static void adjust_bias(MCData* data) {
                     break;
                 }
             }
-            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            //data->bias_L += inversion_bias;
-            //data->bias_R += inversion_bias;
+            float inversion_bias = -0.02 * data->sc_data->line_inversions;
+            data->bias_L += inversion_bias;
+            data->bias_R += inversion_bias;
         }
         if (data->sc_data->use_wireless) {
             if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
@@ -122,8 +122,8 @@ static void adjust_bias(MCData* data) {
         }
     }
 
-    //data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
-    //data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
+    data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
+    data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
 }
 
 static void adjust_setpoint(MCData* data) {
@@ -156,7 +156,7 @@ static void adjust_setpoint(MCData* data) {
         }
     }
 
-    if (!special) {
+    if (data->drive_mode >= 0 && !special) {
         data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
         data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
     }

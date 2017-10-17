@@ -11,11 +11,11 @@
 #include "wireless.h"
 
 #define MAX_CMPS 60
-#define STRAIGHT_LINE_SPEED 48
-#define STRAIGHT_LINE_DISTANCE 1000
 
 static SCData scd;
 static MCData mcd;
+static PCData pcd;
+static Graph* graph;
 
 static void system_init() {
     systime_init();
@@ -34,9 +34,11 @@ static float real_speed(float cmps) {
 static void maze_runner() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
+    scd = path_controller_create(30);
     motor_controller_set(&mcd, 0.2f, 0, 0xEFFFFFF);
     while (true) {
         sensors_controller_worker(&scd);
+        path_controller_worker(&pcd, &mcd, &scd);
         motor_controller_worker(&mcd);
     }
 }
