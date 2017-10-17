@@ -74,7 +74,7 @@ void sensors_controller_worker(SCData* data) {
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
         data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);     
         
-        data->qd_differential = qd_data.L - qd_data.R;
+        data->qd_differential = qd_dist.L - qd_dist.R;
     }
     
     
