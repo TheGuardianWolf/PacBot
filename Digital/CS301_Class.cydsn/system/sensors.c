@@ -31,7 +31,7 @@ static void line_fsm_start() {
     REG_DRAIN_Write(0b11);
     next_mux();
     SIGMUX_FastSelect(mux_selection);
-    SIGTIMER_RESET_Write(0b1);
+    SIGTIMER_RESET_Write(0b11);
     isr_SIGTIMER_FALL_ClearPending();
     isr_SIGTIMER_FALL_Enable();
 }
@@ -45,8 +45,8 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
-            SIGTIMER_RESET_Write(0b1);
-            isr_SIGTIMER_ClearPending();
+            SIGTIMER_RESET_Write(0b11);
+            isr_SIGTIMER_RISE_ClearPending();
             isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
         }
@@ -88,7 +88,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             isr_SIGFALL_ClearPending();
             isr_SIGFALL_Enable();
             REG_DRAIN_Write(0b11);
-            SIGTIMER_RESET_Write(0b1);
+            SIGTIMER_RESET_Write(0b11);
             isr_SIGTIMER_FALL_ClearPending();
             isr_SIGTIMER_FALL_Enable();
             line_fsm_state = 2;
@@ -101,7 +101,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
             REG_DRAIN_Write(0b00);
             isr_SIGRISE_ClearPending();
             isr_SIGRISE_Enable();
-            SIGTIMER_RESET_Write(0b1);
+            SIGTIMER_RESET_Write(0b11);
             isr_SIGTIMER_RISE_ClearPending();
             isr_SIGTIMER_RISE_Enable();
             line_fsm_state = 1;
@@ -148,7 +148,8 @@ void sensors_init() {
     isr_SIGRISE_Disable();
     isr_SIGFALL_StartEx(line_fall);
     isr_SIGFALL_Disable();
-    SIGTIMER_Start();
+    SIGTIMER_RISE_Start();
+    SIGTIMER_FALL_Start();
     line_fsm_start();
 }
 

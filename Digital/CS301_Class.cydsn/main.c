@@ -100,7 +100,7 @@ int main() {
     led_set(0b111);
     while(true) {
         uint8_t run_mode = REG_DIP_Read() >> 1 & 0b111;
-        REG_LED_Write(run_mode);
+        //REG_LED_Write(run_mode);
         if(btn_get()) {
             led_set(0b000);
             uint32_t time = systime_s();
