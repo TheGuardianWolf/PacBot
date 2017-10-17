@@ -45,10 +45,101 @@ static char * test_vector_get() {
     return 0;
 }
 
+
+static char * test_vector_insert() {
+    Vector* vec = vector_create(3);
+    vector_append(vec, &foo);
+    vector_append(vec, &bar);
+    vector_insert(vec, 1, &baz);
+	mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 1", (*((int*) vector_get(vec, 1)) == 1));
+	mu_assert("test_vector_get: error, *vector[1] != 4", (*((int*) vector_get(vec, 1)) == 4));
+	
+    vector_insert(vec, 2 ,&bof);
+    mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 1", (*((int*) vector_get(vec, 1)) == 1));
+    mu_assert("test_vector_get: error, *vector[2] != bof", (*((int*) vector_get(vec, 2)) == bof));
+    mu_assert("test_vector_get: error, *vector[3] != 4", (*((int**) vector_get(vec, 3)) == 4));
+    vector_destroy(vec);
+    return 0;
+}
+
+static char * test_vector_remove() {
+    Vector* vec = vector_create(4);
+    vector_append(vec, &foo);
+    vector_append(vec, &bar);
+    vector_append(vec, &baz);
+    vector_append(vec, &bof);
+	
+	mu_assert("test_vector_get: error, should return NULL", (*((int*) vector_remove(vec, 4)) == NULL));
+	mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 1", (*((int*) vector_get(vec, 1)) == 1));
+    mu_assert("test_vector_get: error, *vector[2] != bof", (*((int*) vector_get(vec, 2)) == bof));
+    mu_assert("test_vector_get: error, *vector[3] != 4", (*((int**) vector_get(vec, 3)) == 4));
+	
+	vector_remove(vec, 1)
+    mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 1", (*((int*) vector_get(vec, 1)) == 1));
+    mu_assert("test_vector_get: error, *vector[2] != bof", (*((int**) vector_get(vec, 2)) == bof));
+	
+	vector_remove(vec, 1)
+    mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != bof", (*((int**) vector_get(vec, 1)) == bof));
+	
+	vector_remove(vec, 0)
+    mu_assert("test_vector_get: error, *vector[0] != bof", (*((int**) vector_get(vec, 0)) == bof));
+	
+    mu_assert("test_vector_get: error, should return NULL", (*((int*) vector_remove(vec, 0)) == NULL));
+	
+    vector_destroy(vec);
+    return 0;
+}
+
+static char * test_vector_set() {
+    Vector* vec = vector_create(4);
+    vector_append(vec, &foo);
+    vector_append(vec, &bar);
+    vector_append(vec, &baz);
+    vector_append(vec, &bof);
+	
+	mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 4", (*((int*) vector_get(vec, 1)) == 4));
+    mu_assert("test_vector_get: error, *vector[2] != 1", (*((int*) vector_get(vec, 2)) == 1));
+    mu_assert("test_vector_get: error, *vector[3] != bof", (*((int**) vector_get(vec, 3)) == bof));
+	
+	vector_set(vec, 2,&bar);
+	
+	mu_assert("test_vector_get: error, *vector[0] != 7", (*((int*) vector_get(vec, 0)) == 7));
+    mu_assert("test_vector_get: error, *vector[1] != 4", (*((int*) vector_get(vec, 1)) == 4));
+    mu_assert("test_vector_get: error, *vector[2] != 4", (*((int*) vector_get(vec, 2)) == 4));
+    mu_assert("test_vector_get: error, *vector[3] != bof", (*((int**) vector_get(vec, 3)) == bof));
+	
+	vector_set(vec, 0,&bar);
+	
+	mu_assert("test_vector_get: error, *vector[0] != 4", (*((int*) vector_get(vec, 0)) == 4));
+    mu_assert("test_vector_get: error, *vector[1] != 4", (*((int*) vector_get(vec, 1)) == 4));
+    mu_assert("test_vector_get: error, *vector[2] != 4", (*((int*) vector_get(vec, 2)) == 4));
+    mu_assert("test_vector_get: error, *vector[3] != bof", (*((int**) vector_get(vec, 3)) == bof));
+	
+	vector_set(vec, 0,&bof);
+	
+	mu_assert("test_vector_get: error, *vector[0] != bof", (*((int**) vector_get(vec, 0)) == bof));
+    mu_assert("test_vector_get: error, *vector[1] != 4", (*((int*) vector_get(vec, 1)) == 4));
+    mu_assert("test_vector_get: error, *vector[2] != 4", (*((int*) vector_get(vec, 2)) == 4));
+    mu_assert("test_vector_get: error, *vector[3] != bof", (*((int**) vector_get(vec, 3)) == bof));
+
+    vector_destroy(vec);
+    return 0;
+}
+
+
 static char * all_tests() {
     mu_run_test(test_vector_create);
     mu_run_test(test_vector_append);
     mu_run_test(test_vector_get);
+	mu_run_test(test_vector_insert);
+	mu_run_test(test_vector_remove);
+	mu_run_test(test_vector_set);
     return 0;
 }
 
