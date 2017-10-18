@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/tests/test_priority_queue",
+            "program": "${workspaceRoot}/build/tests/test_graph",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",

@@ -18,7 +18,7 @@ bool vector_resize(Vector* vector, size_t target) {
     size_t new_capacity = vector->capacity;
     if (target > vector->capacity) {
         do {
-            if (new_capacity > 1) {
+            if (new_capacity >= 1) {
                 new_capacity *= 2;
             }
             else {

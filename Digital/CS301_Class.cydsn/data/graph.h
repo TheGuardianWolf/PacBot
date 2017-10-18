@@ -41,7 +41,7 @@ typedef struct {
     graph_size_t unique_edges;
 } Graph;
 
-Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width);
+Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width);
 
 graph_size_t graph_grid2nodeid(Graph* graph, point_uint8_t pos_grid);
 

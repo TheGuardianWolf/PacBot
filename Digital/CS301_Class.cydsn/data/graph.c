@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "graph.h"
 
-Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
+Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width) {
     Graph* graph = malloc(sizeof(Graph));
     if (graph != NULL) {
         uint8_t i, j;
@@ -10,12 +10,12 @@ Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
         // Destructive operation on the grid to help create the graph
         for (i = 0; i < grid_height; i++) {
             for (j = 0; j < grid_width; j++) {
-                if (grid[i][j] == 0) {
-                    grid[i][j] = total_nodes;
+                if (grid[i * grid_width + j] == 0) {
+                    grid[i * grid_width + j] = total_nodes;
                     total_nodes++;
                 }
                 else {
-                    grid[i][j] = NODE_INVALID;
+                    grid[i * grid_width + j] = NODE_INVALID;
                 }
             }
         }
@@ -28,7 +28,7 @@ Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
 
         for (i = 0; i < grid_height; i++) {
             for (j = 0; j < grid_width; j++) {
-                if (grid[i][j] != NODE_INVALID) {
+                if (grid[i * grid_width + j] != NODE_INVALID) {
                     node = malloc(sizeof(GraphNode));
                     if (node != NULL) {
                         node->pos_grid.x = j;
@@ -50,13 +50,13 @@ Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
 
         graph_size_t k;
         for (k = 0; k < graph->nodes->size; k++) {
-            for (j = 1; j >= 0; j--) {
+            for (j = 1; j <= 1; j--) {
                 node_ptr = vector_get(graph->nodes, k);
                 if (node_ptr != NULL) {
                     grid_scan.x = node_ptr->pos_grid.x + direction[j][0];
                     grid_scan.y = node_ptr->pos_grid.y + direction[j][1];
                     if (grid_scan.x < grid_width && grid_scan.x >= 0 && grid_scan.y < grid_height && grid_scan.y >= 0) {
-                        target_node_id = grid[grid_scan.y][grid_scan.x];
+                        target_node_id = grid[grid_scan.y * grid_width + grid_scan.x];
                         target_node_ptr = vector_get(graph->nodes, target_node_id);
                         if (target_node_ptr != NULL && target_node_id != NODE_INVALID) {
                             edge = malloc(sizeof(GraphEdge));
@@ -75,7 +75,6 @@ Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
                 }
             }
         }
-
         return graph;
     }
 
@@ -131,7 +130,7 @@ void graph_edge_remove(Graph* graph, GraphEdge* edge) {
             for (j = 0; j < node->edges->size; j++) {
                 test_edge = vector_get(node->edges, j);
                 // Comparing memory addresses
-                if (test_edge != NULL && test_edge == edge) {
+                if (test_edge == edge) {
                     detatched_edge->node_edge_index[i] = j;
                     vector_remove(node->edges, j);
                     break;
@@ -140,6 +139,7 @@ void graph_edge_remove(Graph* graph, GraphEdge* edge) {
         }
     }
 
+    detatched_edge->edge = edge;
     vector_append(graph->detatched_edges, detatched_edge);
 }
 
@@ -171,19 +171,19 @@ void graph_edge_attach(Graph* graph, GraphDetatchedEdge* detatched_edge) {
 
 GraphArc* graph_arc_to(GraphEdge* edge, graph_size_t node_id) {
     if (edge->a1.destination == node_id) {
-        return &(edge->a2);
+        return &(edge->a1);
     }
     else {
-        return &(edge->a1);
+        return &(edge->a2);
     }
 }
 
 GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id) {
     if (edge->a1.destination == node_id) {
-        return &(edge->a1);
+        return &(edge->a2);
     }
     else {
-        return &(edge->a2);
+        return &(edge->a1);
     }
 }
 
@@ -196,11 +196,17 @@ void graph_destroy(Graph* graph) {
 
     for (i = 0; i < graph->nodes->size; i++) {
         node = vector_get(graph->nodes, i);
-        for (j = 0; j < node->edges->size; j++) {
-            edge = vector_get(node->edges, j);
-            free(edge);
+        while (node->edges->size > 0) {
+            edge = vector_get(node->edges, node->edges->size - 1);
+            graph_edge_remove(graph, edge);
         }
+        
+    }
+
+    for (i = 0; i < graph->nodes->size; i++) {
+        node = vector_get(graph->nodes, i);
         vector_destroy(node->edges);
+        free(node);
     }
     vector_destroy(graph->nodes);
 
