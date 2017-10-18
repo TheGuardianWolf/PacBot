@@ -131,9 +131,11 @@ static void adjust_setpoint(MCData* data) {
 
     // Run setpoint calculations
     if (data->drive_mode == 0) {
-        if (data->sc_data->use_wireless) {
-            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
-            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+        if (data->sc_data->use_line && data->sc_data->line_end || data->sc_data->line_intersection[0] > 0) {
+            data->PID_L.setpoint = 0.0f;
+            data->PID_L.setpoint = 0.0f;
+            data->target_dist.x = data->sc_data->qd_dist.x;
+            data->target_dist.y = data->sc_data->qd_dist.y;
             special = true;
         }
     }
@@ -142,17 +144,24 @@ static void adjust_setpoint(MCData* data) {
             if (!data->sc_data->line_front_lost) {
                 data->PID_L.setpoint = 0.0f;
                 data->PID_L.setpoint = 0.0f;
+                data->target_dist.x = data->sc_data->qd_dist.x;
+                data->target_dist.y = data->sc_data->qd_dist.y;
                 special = true;
             }
         }
     }
     else if (data->drive_mode == 3) {
-        if (data->sc_data->use_line) {
-            if (data->sc_data->line_end && data->sc_data->line_intersection == 0) {
-                data->PID_L.setpoint = 0.0f;
-                data->PID_L.setpoint = 0.0f;
-                special = true;
-            }
+        if (data->sc_data->use_line && data->sc_data->line_end || data->sc_data->line_intersection[0] > 0) {
+            data->PID_L.setpoint = 0.0f;
+            data->PID_L.setpoint = 0.0f;
+            data->target_dist.x = data->sc_data->qd_dist.x;
+            data->target_dist.y = data->sc_data->qd_dist.y;
+            special = true;
+        }
+        else if (data->sc_data->use_wireless) {
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+            special = true;
         }
     }
 
@@ -175,6 +184,13 @@ void motor_controller_worker(MCData* data) {
 
         adjust_setpoint(data);
 
+        if (data->PID_L.setpoint == 0 && data->PID_R.setpoint == 0) {
+            data->idle = true;
+        }
+        else {
+            data->idle = false;
+        }
+
         int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
         pid_compute(&(data->PID_L));
@@ -187,35 +203,39 @@ void motor_controller_worker(MCData* data) {
     }
 }
 
-void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t arg) {
-    data->target_speed = speed;
-    data->drive_mode = drive_mode;
-    if (drive_mode == 0) {
+void motor_controller_set(MCData* data, MotorCommand* cmd) {
+    data->target_speed = cmd->speed;
+    data->drive_mode = cmd->drive_mode;
+    if (cmd->drive_mode == -1) {
+        data->target_dist.L = data->sc_data->curr_speed_L;
+        data->target_dist.R = data->sc_data->curr_speed_R;
+    }
+    if (cmd->drive_mode == 0) {
         // Forward/Back
-        data->target_dist.L = dist2dec(arg);
-        data->target_dist.R = dist2dec(arg);
+        data->target_dist.L += dist2dec(cmd->arg);
+        data->target_dist.R += dist2dec(cmd->arg);
     }
-    else if (drive_mode == 1) {
+    else if (cmd->drive_mode == 1) {
         // Point turn left/right
-        int32_t arc_length = M_PI * WHEEL_DISTANCE * ((float) arg / 360);
-        data->target_dist.L = dist2dec(arc_length);
-        data->target_dist.R = dist2dec(-arc_length);
+        int32_t arc_length = M_PI * WHEEL_DISTANCE * ((float) cmd->arg / 360);
+        data->target_dist.L += dist2dec(arc_length);
+        data->target_dist.R += dist2dec(-arc_length);
     }
-    else if (drive_mode == 2) {
+    else if (cmd->drive_mode == 2) {
         // Arc turn left/right
-        int32_t arc_length = M_PI * 2.0f * WHEEL_DISTANCE * ((float) arg / 360);
+        int32_t arc_length = M_PI * 2.0f * WHEEL_DISTANCE * ((float) cmd->arg / 360);
         if (arc_length < 0.0f) {
-            data->target_dist.L = dist2dec(arc_length);
-            data->target_dist.R = 0;
+            data->target_dist.L += dist2dec(arc_length);
+            data->target_dist.R += 0;
         }
         else {
-            data->target_dist.L = 0;
-            data->target_dist.R = dist2dec(arc_length);
+            data->target_dist.L += 0;
+            data->target_dist.R += dist2dec(arc_length);
         }
     }
-    else if (drive_mode == 3) {
-        // Automatic
-        data->target_dist.L = 0x0FFFFFFF;
-        data->target_dist.R = 0x0FFFFFFF;
+    else if (cmd->drive_mode == 3) {
+        // Forward/Back with RF
+        data->target_dist.L += dist2dec(cmd->arg);
+        data->target_dist.R += dist2dec(cmd->arg);
     }
 }

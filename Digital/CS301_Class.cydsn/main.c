@@ -34,11 +34,15 @@ static float real_speed(float cmps) {
 static void maze_runner() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    scd = path_controller_create(30);
-    motor_controller_set(&mcd, 0.2f, 0, 0xEFFFFFF);
+    scd = path_controller_create(30, &scd, &mcd);
+    motor_controller_set(&mcd, (MotorCommand) {
+        .speed = 0.2f, 
+        .drive_mode = 0, 
+        .arg = 0xEFFFFFF
+    });
     while (true) {
         sensors_controller_worker(&scd);
-        path_controller_worker(&pcd, &mcd, &scd);
+        path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
     }
 }

@@ -3,9 +3,15 @@
 
 #include "motor_controller.h"
 #include "sensors_controller.h"
+#include "graph.h"
+#include "linked_list.h"
 
-#define GRAPH_BLOCK_WIDTH 13.219f
-#define GRAPH_BLOCK_HEIGHT 12.833f
+#define GRID_WIDTH 2379.4f
+#define GRID_HEIGHT 1796.6f
+#define GRID_BLOCK_WIDTH 132.19f
+#define GRID_BLOCK_HEIGHT 128.33f
+#define GRID_START_X 0
+#define GRID_START_Y 0
 
 // 211.5 mm width for 16 blocks travel
 // 26.5 mm width for 2 blocks travel
@@ -13,10 +19,20 @@
 // 26 mm height for 2 blocks travel
 
 typedef struct {
+    Graph* graph;
+    LinkedList* path;
     uint32_t sample_time;
-    int8_t heading; // -1 - Stay, 0 - North, 1 - East, 2 - South, 3 - West
+    LinkedList* command_queue;
+    graph_size_t current_node_id;
+    graph_size_t next_node_id;
+    MotorCommand* last_command;
+    uint8_t heading;
+    SCData* sc_data;
+    MCData* mc_data;
     uint32_t last_run;
 } PCData;
+
+
 
 void path_controller_init();
 

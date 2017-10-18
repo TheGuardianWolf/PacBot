@@ -22,8 +22,15 @@ typedef struct {
     PIDData PID_LR;
     QuadDecData target_dist;
     int8_t drive_mode;
+    bool idle;
     uint32_t last_run;
 } MCData;
+
+typedef struct {
+    uint8_t drive_mode;
+    int32_t arg;
+    float speed;
+} MotorCommand;
 
 void motor_controller_init();
 
@@ -33,6 +40,6 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data);
 
 void motor_controller_worker(MCData* data);
 
-void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t arg);
+void motor_controller_set(MCData* data, MotorCommand* cmd);
 
 #endif /* MOTOR_CONTROLLER_H */

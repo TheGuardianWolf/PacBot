@@ -25,7 +25,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .use_wireless = use_wireless,
         .use_line = use_line,
         .line_tracking = DI_N,
-        .line_intersection = DI_N,
+        .line_intersection = {DI_N, DI_N},
         .line_front_lost = false,
         .line_end = false,
         .line_lost = false,
@@ -115,8 +115,8 @@ void sensors_controller_worker(SCData* data) {
         }
        
         // Intersection detection
-        data->line_intersection_LR = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
-        data->line_intersection_FB = (uint8_t) !data->line_front_lost * DI_F  + (uint8_t) LINE(5) * DI_B;
+        data->line_intersection[0] = (uint8_t) LINE_INV(1) * DI_L + (uint8_t) LINE_INV(2) * DI_R;
+        data->line_intersection[1] = (uint8_t) !data->line_front_lost * DI_F  + (uint8_t) LINE(5) * DI_B;
         
         // Check if lost or line has ended
         if ((LINE_INV(0) && LINE(1) && LINE(2) && LINE_INV(3) && LINE_INV(4))) {
