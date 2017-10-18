@@ -15,7 +15,8 @@ static void perc_up(PriorityQueue* queue, size_t index) {
                 vector_set((Vector*) queue, index, b);
             }
         }
-        fd /= 2;
+        index = fd;
+        fd = index / 2;
     }    
 }
 
@@ -65,10 +66,9 @@ static void perc_down(PriorityQueue* queue, size_t index) {
 }
 
 PriorityQueue* priority_queue_create(size_t initial_capacity) {
-    PriorityQueue* queue = malloc(sizeof(PriorityQueue));
+    PriorityQueue* queue = vector_create(initial_capacity + 1);
     if (queue != NULL) {
         // Spare block at front of vector for easier addressing
-        queue = vector_create(initial_capacity + 1);
         vector_append(queue, NULL);
         return queue;
     }
@@ -120,14 +120,17 @@ void priority_queue_add(PriorityQueue* queue, size_t priority, void* item, bool 
 }
 
 void* priority_queue_remove(PriorityQueue* queue) {
-    HeapNode* node = vector_get((Vector*) queue, queue->size - 1);
-    if (node != NULL) {
-        node = vector_set((Vector*) queue, 1, node);
+    if (queue->size > 1) {
+        HeapNode* node = vector_get((Vector*) queue, queue->size - 1);
         if (node != NULL) {
-            void* item = node->item;
-            free(node);
+            node = vector_set((Vector*) queue, 1, node);
             vector_remove((Vector*) queue, queue->size - 1);
-            perc_down(queue, 1);
+            perc_down(queue, 1);            
+            if (node != NULL) {
+                void* item = node->item;
+                free(node);
+                return item;           
+            }
         }
     }
 
@@ -152,7 +155,7 @@ bool priority_queue_empty(PriorityQueue* queue) {
 void priority_queue_destroy(PriorityQueue* queue) {
     size_t i;
     HeapNode* node;
-    for (i = 0; i < queue->size; i++) {
+    for (i = 0; i < (Vector*) queue->size; i++) {
         node = vector_get((Vector*) queue, i);
         free(node);
     }

@@ -90,8 +90,11 @@ static char * test_vector_remove() {
 	vector_remove(vec, 0);
     mu_assert("test_vector_remove: error, *vector[0] != bof", (*((int**) vector_get(vec, 0)) == bof));
 	
+    mu_assert("test_vector_remove: error, *vector[0] != bof", (*((int**) vector_remove(vec, 0)) == bof));
+
     mu_assert("test_vector_remove: error, should return NULL", ((int*) vector_remove(vec, 0)) == NULL);
-	
+    mu_assert("test_vector_remove: error, vector->size != 0", vec->size == 0);
+    
     vector_destroy(vec);
     return 0;
 }
