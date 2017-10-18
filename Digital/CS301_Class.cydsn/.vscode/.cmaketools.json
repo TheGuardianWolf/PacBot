@@ -1,0 +1,16 @@
+{
+  "variant": {
+    "label": "Debug",
+    "keywordSettings": {
+      "buildType": "debug"
+    },
+    "description": "Emit debug information without performing optimizations"
+  },
+  "activeEnvironments": [],
+  "codeModel": {
+    "configurations": [],
+    "cookie": "0.7251069360930489",
+    "inReplyTo": "codemodel",
+    "type": "reply"
+  }
+}

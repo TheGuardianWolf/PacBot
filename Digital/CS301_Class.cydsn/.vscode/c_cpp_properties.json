@@ -28,7 +28,10 @@
             "includePath": [
                 "/usr/include",
                 "/usr/local/include",
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "${workspaceRoot}/data",
+                "/usr/include/linux",
+                "/usr/include/unistring"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -50,7 +53,8 @@
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/shared",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/winrt",
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "${workspaceRoot}/data"
             ],
             "defines": [
                 "_DEBUG",

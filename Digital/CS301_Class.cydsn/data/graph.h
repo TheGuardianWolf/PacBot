@@ -1,46 +1,62 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "point.h"
 #include <stdint.h>
-#include <stdbool.h>
+#include "point.h"
+#include "vector.h"
+
+#define NODE_INVALID (graph_size_t) 0xFF
+#define G_N 1
+#define G_W 2
+#define G_S 3
+#define G_E 4
+
+typedef uint8_t graph_size_t;
 
 typedef struct {
-    pointu16_t pos_real;
-    pointu16_t pos_grid;
-} GraphNode;
-
-typedef struct {
-    int8_t cost;
-    uint8_t food;
-    uint16_t destination;
+    graph_size_t destination;
+    uint8_t heading;
 } GraphArc;
 
 typedef struct {
-    union {
-        GraphArc n, s, w, e;
-        GraphArc arcs[4];
-    }
-} GraphCons;
+    graph_size_t id;
+    GraphArc a1; // Arc 1
+    GraphArc a2; // Arc 2
+} GraphEdge;
+
+typedef struct {
+    graph_size_t node_edge_index[2];
+    GraphEdge* edge;
+} GraphDetatchedEdge;
+
+typedef struct {
+    point_uint8_t pos_grid;
+    Vector* edges;
+} GraphNode;
 
 //graph created with 1 node pointer and more nodes can be added, their indices will be sequentially be numbered
 typedef struct {
-    Node** nodes;
-    int8_t** data;
-    size_t size;
+    Vector* nodes;
+    Vector* detatched_edges;
+    graph_size_t unique_edges;
 } Graph;
 
-Graph create_graph (size_t size);
+Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width);
 
-void change_arc (Graph* g, uint8_t ind1, uint8_t ind2, int16_t length);
+graph_size_t graph_grid2nodeid(Graph* graph, point_uint8_t pos_grid);
 
-void add_node (Graph* g, Node* Node_to_add, uint8_t ind);
+point_uint8_t graph_nodeid2grid(Graph* graph, graph_size_t node_id);
 
-Node* get_node (Graph* g, uint8_t ind);
+graph_size_t graph_node_order(Graph* graph, graph_size_t node_id);
 
-//returns arc length between 2 nodes, if not connected return -1
-int8_t get_arc (Graph* g, uint8_t ind1, uint8_t ind2);
+void graph_edge_remove(Graph* graph, GraphEdge* edge);
 
-void delete_graph (Graph* g);
+void graph_edge_attach(Graph* graph, GraphDetatchedEdge* detatched_edge);
+
+GraphArc* graph_arc_to(GraphEdge* edge, graph_size_t node_id);
+
+GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id);
+
+void graph_destroy(Graph* graph);
 
 #endif /* GRAPH_H */

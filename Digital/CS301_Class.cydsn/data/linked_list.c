@@ -1,85 +1,96 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+#include "linked_list.h"
 
-
-/*Need to know the vertices that can be visited. This can be
-done by creating a 1d array of arrays storing x,y location of points that can be visited*/
-
-int possibleLocations[100];
-
-
-struct Node {
-	int data;
-	struct Node *next;
-};
-
-struct Node *head = 0; // declared in gloabl scope
-struct Node *tail = 0;
-
-/*function to add to the end of the list*/
-void appendLinkedList(int data) {
-	struct Node *temp = (struct Node*)malloc(sizeof(struct Node)); //variable on heap
-	temp->data = data;
-	temp->next = 0;
-
-	if (head == 0 && tail == 0) { //if both pointers point to null then the list is empty
-		head = tail = temp; // head and tail equal to temp
-		return;
+LinkedList* linked_list_create() {
+	LinkedList* list = malloc(sizeof(LinkedList));
+	if (list != NULL) {
+		list->first = NULL;
+		list->last = NULL;
+		list->size = 0;
+		return list;
 	}
-	//else
-	tail->next = temp; //last node points to the new node
-	tail = temp;//tail node will now point to the newly added node
+	return NULL;
 }
 
-/*function to delete from the end of the list*/
-void deleteFromLinkedList(int dataValue) {
-	struct Node *temp;
-
-	if (head == 0 && tail == 0) { //if both pointers point to null then the list is empty
-		return;
-	}
-	struct Node *currentNode = head;
-	//else
-
-	if (head->data == dataValue) {//if head is the first pointer to be deleted
-		temp = head;
-		temp->next = 0; //set the pointer to null for the head
-		head = head->next;
-		return;
-	}
-	while (currentNode->next->next != 0) {
-		if (currentNode->next->data == dataValue) { //if current points to the dataValue entered
-			currentNode->next = currentNode->next->next; //skip the dataValue and point to the next of the next node
-			return;
+// LIFO
+void linked_list_push(LinkedList* list, void* item) {
+	LLNode* node = malloc(sizeof(LLNode));
+	if (node != NULL) {
+		node->item = item;
+		if (list->size == 0) {
+			list->last = node;
 		}
-		currentNode = currentNode->next;//else just move on to next node
+		else {
+			list->first->prev = node;
+		}
+		node->next = list->first;
+		node->prev = NULL;
+		list->first = node;
+		list->size++;
 	}
-	currentNode->next = 0; //the next of the current node is 0 now, so the last element pointer now points to 0
-	currentNode->next->data = 0;
-	
 }
 
-/*function to add to the front of the list*/
-//void prependLinkedList(int dataValue) {
-	//struct Node *temp;
-	//temp->next = head; // the new temp variable now points to head
-	//temp->data = dataValue;
-	//head = temp;
+void* linked_list_pop(LinkedList* list) {
+	return linked_list_remove(list);
+}
+
+void* linked_list_peek_stack(LinkedList* list) {
+	if (list->size > 0) {
+		return list->last->item;
+	}
+	return NULL;
+}
+
+// FIFO
+void linked_list_add(LinkedList* list, void* item) {
+	LLNode* node = malloc(sizeof(LLNode));
+	if (node != NULL) {
+		node->item = item;
+		if (list->size == 0) {
+			list->first = node;
+		}
+		else {
+			list->last->next = node;
+		}
+		node->next = NULL;
+		node->prev = list->last;
+		list->last = node;
+		list->size++;
+	}
+}
+
+void* linked_list_remove(LinkedList* list) {
+	LLNode* node = list->first;
+	list->size--;
+	if (list->size == 0) {
+		list->first = NULL;
+		list->last = NULL;
+	}
+	else {
+		list->first = node->next;
+	}
 	
-//}
+	void* item = node->item;
+	free(node);
+	
+	return item;	
+}
 
-int startLocation, destin_locaiton;
+void* linked_list_peek_queue(LinkedList* list) {
+	if (list->size > 0) {
+		return list->first->item;
+	}
+	return NULL;
+}
 
-//functions for BFS
-void generateGraph();
-void bf_Traversal();
-void BFS();
-
-int delete_queue();
-int isEmpty_queue();
-int insert_queue();
-
-
-int main() {
-	return 0;
+void linked_list_destroy(LinkedList* list) {
+	LLNode* node;
+	while(list->size > 0) {
+		node = list->first;
+		list->first = node->next;
+		free(node);
+		list->size--;
+	}
+	free(list);
 }

@@ -21,7 +21,8 @@ classdef PriorityQueue < handle
                     self.heap{fd} = self.heap{i};
                     self.heap{i} = tmp;
                 end
-                fd = floor(fd / 2);
+                i = fd;
+                fd = floor(i / 2);
             end               
         end
         
