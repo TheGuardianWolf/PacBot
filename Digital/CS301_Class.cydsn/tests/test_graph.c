@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "minunit.h"
-#include "vector.h"
+#include "graph.h"
 #include <stddef.h>
 
 #define PACMAN_MAP [15][19] = {\
@@ -32,7 +32,7 @@ static char * test_graph_create() {
 	
 	uint8_t test_map PACMAN_MAP;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
+    Graph* gra = graph_create(test_map , 15, 19);
     mu_assert("test_graph_create: error, graph == NULL", gra != NULL);
     mu_assert("test_graph_create: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_create: error, graph->unique_edges != 104", graph->unique_edges == 104);

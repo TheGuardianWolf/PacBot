@@ -25,6 +25,8 @@ void* priority_queue_peek(PriorityQueue* queue, size_t* r_priority);
 
 bool priority_queue_empty(PriorityQueue* queue);
 
+size_t priority_queue_size(PriorityQueue* queue);
+
 void priority_queue_destroy(PriorityQueue* queue);
     
 #endif /* PRIORITY_QUEUE_H */

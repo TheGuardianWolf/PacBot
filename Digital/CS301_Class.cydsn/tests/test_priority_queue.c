@@ -76,29 +76,35 @@ static char * test_priority_peek() {
     return 0;
 }
 
+static void get_vector_items(Vector* v) {
+    uint8_t i = 0;
+    for (i = 1; i < v->size; i++) {
+        printf("index %u: %i\n", i, (((HeapNode*) vector_get(v, i))->priority));
+    }
+}
+
 static char * test_priority_remove() {
     PriorityQueue* pq = priority_queue_create(3);
     mu_assert("priority_queue_peek: error, priorityQ->capacity != 4", pq->capacity == 4);
     mu_assert("priority_queue_peek: error, priorityQ->size != 1", pq->size == 1);
 	
     priority_queue_add(pq, 4, &foo, false);
-	priority_queue_add(pq, 3, &bar, false);
-	priority_queue_add(pq, 2, &baz, false);
-	priority_queue_add(pq, 5, &bof, false);
+    priority_queue_add(pq, 3, &bar, false);
+    priority_queue_add(pq, 2, &baz, false);
+    priority_queue_add(pq, 5, &bof, false);
     priority_queue_add(pq, 1, &bof, false);
+    
+    mu_assert("priority_queue_peek: error, priority_remove() != bof", (*((int** )priority_queue_remove(pq)) == bof));
 
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != bof", (*((int** )priority_queue_peek(pq, NULL)) == bof));
+    mu_assert("priority_queue_peek: error, priority_remove() != baz", (*((int* )priority_queue_remove(pq)) == baz));
 
-    // printf("%u", *((int*) priority_queue_remove(pq)));
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != 1", (1 == 1));
+    mu_assert("priority_queue_peek: error, priority_remove() != bar", (*((int* )priority_queue_remove(pq)) == bar));
 
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != 4", (*((int* )priority_queue_remove(pq)) == 4));
+    mu_assert("priority_queue_peek: error, priority_remove() != foo", (*((int* )priority_queue_remove(pq)) == foo));
 
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != 7", (*((int* )priority_queue_remove(pq)) == 7));
+    mu_assert("priority_queue_peek: error, priority_remove() != bof", (*((int** )priority_queue_remove(pq)) == bof));
 
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != bof", (*((int** )priority_queue_remove(pq)) == bof));
-
-    mu_assert("priority_queue_peek: error, after priority_remove(), priorityQ_peek() != NULL", (*((int** )priority_queue_remove(pq)) == NULL));
+    mu_assert("priority_queue_peek: error, priority_remove() != NULL", priority_queue_remove(pq) == NULL);
 
     priority_queue_destroy(pq);
     return 0;
