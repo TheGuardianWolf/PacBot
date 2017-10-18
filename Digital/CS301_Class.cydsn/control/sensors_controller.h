@@ -27,7 +27,7 @@ typedef struct {
     bool use_wireless;
     bool use_line;
     uint8_t line_tracking;
-    uint8_t line_intersection[2]
+    uint8_t line_intersection[2];
     bool line_end;
     bool line_lost;
     uint8_t line_inversions;

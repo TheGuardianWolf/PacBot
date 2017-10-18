@@ -69,7 +69,7 @@ void sensors_controller_worker(SCData* data) {
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
         data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);     
         
-        data->qd_differential = qd_dist.L - qd_dist.R;
+        data->qd_differential = data->qd_dist.L - data->qd_dist.R;
     }
     
     
@@ -99,7 +99,7 @@ void sensors_controller_worker(SCData* data) {
         if (LINE(1) && LINE(2)) {
             // If front sensors roll off the line, and side sensors aren't detecting
             // Try to correct.
-            if ((LINE_INV(3) || LINE_INV(4)) {
+            if (LINE_INV(3) || LINE_INV(4)) {
                 uint8_t line_tracking_prev = data->line_tracking;
                 data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
                 if (data->line_tracking == DI_LR) {

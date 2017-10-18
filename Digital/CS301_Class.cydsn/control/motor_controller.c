@@ -86,40 +86,39 @@ static void adjust_bias(MCData* data) {
     // Run bias calculations
     data->bias_L = 0.0f;
     data->bias_R = 0.0f;
-        if (data->sc_data->use_line) {
-            switch(data->sc_data->line_tracking) {
-                case DI_L:
-                    data->bias_L += -0.15f;
-                    data->bias_R += 0.0f;
-                    break;
-                case DI_R:
-                    data->bias_L += 0.0f;
-                    data->bias_R += -0.15f;
-                    break;
-                default:
-                    break;
-                }
-            }
-            float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            data->bias_L += inversion_bias;
-            data->bias_R += inversion_bias;
+    
+    if (data->sc_data->use_line) {
+        switch(data->sc_data->line_tracking) {
+            case DI_L:
+                data->bias_L += -0.15f;
+                data->bias_R += 0.0f;
+                break;
+            case DI_R:
+                data->bias_L += 0.0f;
+                data->bias_R += -0.15f;
+                break;
+            default:
+                break;
         }
-        if (data->sc_data->use_wireless) {
-            if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
-                data->bias_R += (float) data->sc_data->rel_orientation / 900;
-                data->bias_L += (float) -data->sc_data->rel_orientation / 900;
-            }
-            else {
-                data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-                data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-            }
+        float inversion_bias = -0.02 * data->sc_data->line_inversions;
+        data->bias_L += inversion_bias;
+        data->bias_R += inversion_bias;
+    }
+    if (data->sc_data->use_wireless) {
+        if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
+            data->bias_R += (float) data->sc_data->rel_orientation / 900;
+            data->bias_L += (float) -data->sc_data->rel_orientation / 900;
         }
+        else {
+            data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+            data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+        }
+    }
 
-        if (data->bias_L == 0 && data->bias_R == 0) {
-            // Quad Dec Differential P Bias
-            data->bias_L += -0.0 * data->sc_data->qd_differential;
-            data->bias_R += 0.0 * data->sc_data->qd_differential;
-        }
+    if (data->bias_L == 0 && data->bias_R == 0) {
+        // Quad Dec Differential P Bias
+        data->bias_L += -0.0 * data->sc_data->qd_differential;
+        data->bias_R += 0.0 * data->sc_data->qd_differential;
     }
 
     data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
@@ -131,11 +130,11 @@ static void adjust_setpoint(MCData* data) {
 
     // Run setpoint calculations
     if (data->drive_mode == 0) {
-        if (data->sc_data->use_line && data->sc_data->line_end || data->sc_data->line_intersection[0] > 0) {
+        if (data->sc_data->use_line && (data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
             data->PID_L.setpoint = 0.0f;
-            data->PID_L.setpoint = 0.0f;
-            data->target_dist.x = data->sc_data->qd_dist.x;
-            data->target_dist.y = data->sc_data->qd_dist.y;
+            data->PID_R.setpoint = 0.0f;
+            data->target_dist.L = data->sc_data->qd_dist.L;
+            data->target_dist.R = data->sc_data->qd_dist.R;
             special = true;
         }
     }
@@ -143,19 +142,19 @@ static void adjust_setpoint(MCData* data) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
                 data->PID_L.setpoint = 0.0f;
-                data->PID_L.setpoint = 0.0f;
-                data->target_dist.x = data->sc_data->qd_dist.x;
-                data->target_dist.y = data->sc_data->qd_dist.y;
+                data->PID_R.setpoint = 0.0f;
+                data->target_dist.L = data->sc_data->qd_dist.L;
+                data->target_dist.R = data->sc_data->qd_dist.R;
                 special = true;
             }
         }
     }
     else if (data->drive_mode == 3) {
-        if (data->sc_data->use_line && data->sc_data->line_end || data->sc_data->line_intersection[0] > 0) {
+        if (data->sc_data->use_line && (data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
             data->PID_L.setpoint = 0.0f;
-            data->PID_L.setpoint = 0.0f;
-            data->target_dist.x = data->sc_data->qd_dist.x;
-            data->target_dist.y = data->sc_data->qd_dist.y;
+            data->PID_R.setpoint = 0.0f;
+            data->target_dist.L = data->sc_data->qd_dist.L;
+            data->target_dist.R = data->sc_data->qd_dist.R;
             special = true;
         }
         else if (data->sc_data->use_wireless) {

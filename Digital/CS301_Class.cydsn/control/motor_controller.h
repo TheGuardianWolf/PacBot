@@ -27,7 +27,7 @@ typedef struct {
 } MCData;
 
 typedef struct {
-    uint8_t drive_mode;
+    int8_t drive_mode;
     int32_t arg;
     float speed;
 } MotorCommand;

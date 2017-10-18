@@ -1,18 +1,16 @@
 #include <project.h>
 #include "path_controller.h"
+#include "graph_astar.h"
+#include "graph_travel_all.h"
+#include "pathfinder.h"
+#include "voidtypes.h"
 #include "systime.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stddef.h>
 
-static void load_data(PCData* data) {
-    // Load the map in here
-    data->graph = graph_create(&grid);
-    data->path = pathfinder(data->graph, graph_astar);
-}
-
-static bool check_start(graph_size_t node_id) {
-    point_uint8_t start_grid = graph_nodeid2grid(node_id);
+static bool check_start(Graph* graph, graph_size_t node_id) {
+    point_uint8_t start_grid = graph_nodeid2grid(graph, node_id);
     return start_grid.x == GRID_START_X && start_grid.y == GRID_START_Y;
 }
 
@@ -53,9 +51,9 @@ static void update_path(PCData* data) {
             }
             
             if (real_node_order == node_order) {
-                if (scd->use_wireless) {
+                if (data->sc_data->use_wireless) {
                     // Extract next node coordinate
-                    point_uint8_t grid_loc = graph_nodeid2grid(data->next_node_id);
+                    point_uint8_t grid_loc = graph_nodeid2grid(data->graph, data->next_node_id);
                 
                     // Calculate current grid position
                     point_uint8_t real_grid_loc = real2grid(data->sc_data->curr_loc);
@@ -73,20 +71,20 @@ static void update_path(PCData* data) {
 
         if (!short_boost) {
             // Get current node id
-            data->current_node_id = linked_list_remove(path);
+            data->current_node_id = (graph_size_t)(uvoid_t) linked_list_remove(data->path);
             
             // Get next node id
-            graph_size_t next_node_id = linked_list_peek_stack(path);
+            graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek_stack(data->path);
 
             // Find the travel arc
-            GraphNode* current_node = vector_get(graph->nodes, current_node_id);
+            GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
             int8_t next_heading = -1;
             graph_size_t i;
             for (i = 0; i < current_node->edges->size; i++) {
-                GraphEdge* travel_edge = vector_get(current_node, i);
-                GraphArc* travel_arc; = graph_get_arc_from(travel_edge, current_node_id);
-                if (travel_arc != NULL) {
-                    next_heading = travel_arc.heading;
+                GraphEdge* travel_edge = vector_get(current_node->edges, i);
+                GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
+                if (travel_arc != NULL && travel_arc->destination == next_node_id) {
+                    next_heading = travel_arc->heading;
                     break;
                 }
             }
@@ -124,9 +122,9 @@ static void update_path(PCData* data) {
     }
 }
 
-PCData path_controller_create(uint32_t sample_time, Graph* graph, LinkedList* path, SCData* scd, MCData* mcd) {
+PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd, int8_t initial_heading) {
     PCData data = {
-        .sample_time = 30,
+        .sample_time = sample_time,
         .heading = initial_heading,
         .current_node_id = NODE_INVALID,
         .next_node_id = NODE_INVALID,
@@ -136,14 +134,13 @@ PCData path_controller_create(uint32_t sample_time, Graph* graph, LinkedList* pa
         .last_run = 0
     };
 
-    // load_data();
-
-    // graph_size_t start_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data.path);
-
-    // while(!check_start(start_node_id));
-
-    motor_controller_set(data.mc_data, 0.15, 0, 0xFFFF);
     return data;
+}
+
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end) {
+    // Load the map in here
+    data->graph = graph_create(grid, grid_height, grid_width);
+    data->path = pathfinder(data->graph, &graph_astar, start, end);
 }
 
 void path_controller_worker(PCData* data) {

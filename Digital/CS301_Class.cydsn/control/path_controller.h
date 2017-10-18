@@ -36,6 +36,8 @@ typedef struct {
 
 void path_controller_init();
 
-PCData path_controller_create(int8_t initial_heading, bool use_wireless, bool use_line);
+PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd, int8_t initial_heading);
+
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end);
 
 void path_controller_worker(PCData* data);

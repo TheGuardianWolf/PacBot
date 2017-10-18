@@ -15,7 +15,6 @@
 static SCData scd;
 static MCData mcd;
 static PCData pcd;
-static Graph* graph;
 
 static void system_init() {
     systime_init();
@@ -34,12 +33,13 @@ static float real_speed(float cmps) {
 static void maze_runner() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    scd = path_controller_create(30, &scd, &mcd);
-    motor_controller_set(&mcd, (MotorCommand) {
+    pcd = path_controller_create(30, &scd, &mcd, G_N);
+    MotorCommand cmd = {
         .speed = 0.2f, 
         .drive_mode = 0, 
         .arg = 0xEFFFFFF
-    });
+    };
+    motor_controller_set(&mcd, &cmd);
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
