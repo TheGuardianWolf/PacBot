@@ -28,6 +28,9 @@ static char * test_vector_append() {
     vector_append(vec, &bof);
     mu_assert("test_vector_append: error, vector->capacity != 4", vec->capacity == 4);
     mu_assert("test_vector_append: error, vector->size != 4", vec->size == 4);
+    vector_append(vec, &baz);
+    mu_assert("test_vector_append: error, vector->capacity != 4", vec->capacity == 8);
+    mu_assert("test_vector_append: error, vector->size != 4", vec->size == 5);
     vector_destroy(vec);
     return 0;
 }

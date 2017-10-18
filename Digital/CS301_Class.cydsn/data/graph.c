@@ -28,7 +28,7 @@ Graph* graph_create(uint8_t** grid, uint8_t grid_height, uint8_t grid_width) {
 
         for (i = 0; i < grid_height; i++) {
             for (j = 0; j < grid_width; j++) {
-                if (grid[i][j] != 0xFF) {
+                if (grid[i][j] != NODE_INVALID) {
                     node = malloc(sizeof(GraphNode));
                     if (node != NULL) {
                         node->pos_grid.x = j;
