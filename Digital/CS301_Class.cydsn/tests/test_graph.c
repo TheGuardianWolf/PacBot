@@ -32,11 +32,11 @@ static char * test_graph_create() {
 	
 	uint8_t test_map PACMAN_MAP;
 	
-    Graph* gra = graph_create(test_map , 15, 19);
-    mu_assert("test_graph_create: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_create: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_create: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_create: error, graph->unique_edges != 104", graph->unique_edges == 104);
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
@@ -45,37 +45,37 @@ static char * test_graph_grid2nodeid() {
     uint8_t test_map PACMAN_MAP;
     point_uint8_t point;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_grid2nodeid: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_grid2nodeid: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_grid2nodeid: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_grid2nodeid: error, graph->unique_edges != 104", graph->unique_edges == 104);
 
-    point->x = 1;
-    point->y = 1;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(gra, point) == 0);
+    point.x = 1;
+    point.y = 1;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(graph, point) == 0);
 
-    point->x = 0;
-    point->y = 0;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID1", graph_grid2nodeid(gra, point) == NODE_INVALID);
+    point.x = 0;
+    point.y = 0;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID1", graph_grid2nodeid(graph, point) == NODE_INVALID);
 
-    point->x = 6;
-    point->y = 5;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID2", graph_grid2nodeid(gra, point) == NODE_INVALID);
+    point.x = 6;
+    point.y = 5;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID2", graph_grid2nodeid(graph, point) == NODE_INVALID);
 
-    point->x = 17;
-    point->y = 13;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(gra, point) == 129);
+    point.x = 17;
+    point.y = 13;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(graph, point) == 129);
 
-    point->x = 15;
-    point->y = 19;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID3", graph_grid2nodeid(gra, point) == NODE_INVALID);
+    point.x = 15;
+    point.y = 19;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != NODE_INVALID3", graph_grid2nodeid(graph, point) == NODE_INVALID);
 
-    point->x = 11;
-    point->y = 6;
-    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(gra, point) == 57);
+    point.x = 11;
+    point.y = 6;
+    mu_assert("test_graph_grid2nodeid: error, nodeid != 1", graph_grid2nodeid(graph, point) == 57);
     
 
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
@@ -85,37 +85,32 @@ static char * test_graph_nodeid2grid() {
     uint8_t test_map PACMAN_MAP;
     point_uint8_t point;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_nodeid2grid: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_nodeid2grid: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_nodeid2grid: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_nodeid2grid: error, graph->unique_edges != 104", graph->unique_edges == 104);
 
-    point_uint8_t point;
-    point = graph_nodeid2grid(gra, 0);
-    mu_assert("test_graph_nodeid2grid: error, x!=1", point->x == 1);
-    mu_assert("test_graph_nodeid2grid: error, y!=1", point->y == 1);
+    point = graph_nodeid2grid(graph, 0);
+    mu_assert("test_graph_nodeid2grid: error, x!=1", point.x == 1);
+    mu_assert("test_graph_nodeid2grid: error, y!=1", point.y == 1);
 
-    point_uint8_t point;
-    point = graph_nodeid2grid(gra, 129);
-    mu_assert("test_graph_nodeid2grid: error, x != 17", point->x == 17);
-    mu_assert("test_graph_nodeid2grid: error, y != 13", point->y == 13);
+    point = graph_nodeid2grid(graph, 129);
+    mu_assert("test_graph_nodeid2grid: error, x != 17", point.x == 17);
+    mu_assert("test_graph_nodeid2grid: error, y != 13", point.y == 13);
 
-    point_uint8_t point;
-    point = graph_nodeid2grid(gra, 130);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point->x == NODE_INVALID);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point->y == NODE_INVALID);
+    point = graph_nodeid2grid(graph, 130);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point.x == NODE_INVALID);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point.y == NODE_INVALID);
 
-    point_uint8_t point;
-    point = graph_nodeid2grid(gra, 4);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 5", point->x == 5);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point->y == 1);
+    point = graph_nodeid2grid(graph, 4);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 5", point.x == 5);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point.y == 1);
 
-    point_uint8_t point;
-    point = graph_nodeid2grid(gra, 5);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 7", point->x == 7);
-    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point->y == 1);
+    point = graph_nodeid2grid(graph, 5);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 7", point.x == 7);
+    mu_assert("test_graph_nodeid2grid: error, nodeid != 1", point.y == 1);
 
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
@@ -125,20 +120,20 @@ static char * test_graph_node_order() {
     int i = 0;
     int j = 0;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_node_order: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_node_order: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_node_order: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_node_order: error, graph->unique_edges != 104", graph->unique_edges == 104);
 
-    mu_assert("test_graph_node_order: error, order != 1", graph_node_order(gra, 0) == 1);
-    mu_assert("test_graph_node_order: error, order != 2", graph_node_order(gra, 0) == 2);
-    mu_assert("test_graph_node_order: error, order != 2", graph_node_order(gra, 0) == 2);
-    mu_assert("test_graph_node_order: error, order != 3", graph_node_order(gra, 13) == 3);
-    mu_assert("test_graph_node_order: error, order != 3", graph_node_order(gra, 123) == 3);
-    mu_assert("test_graph_node_order: error, order != 0", graph_node_order(gra, 150) == 0);
-    mu_assert("test_graph_node_order: error, order != 0", graph_node_order(gra, 130) == 0);
+    mu_assert("test_graph_node_order: error, order != 1", graph_node_order(graph, 0) == 1);
+    mu_assert("test_graph_node_order: error, order != 2", graph_node_order(graph, 0) == 2);
+    mu_assert("test_graph_node_order: error, order != 2", graph_node_order(graph, 0) == 2);
+    mu_assert("test_graph_node_order: error, order != 3", graph_node_order(graph, 13) == 3);
+    mu_assert("test_graph_node_order: error, order != 3", graph_node_order(graph, 123) == 3);
+    mu_assert("test_graph_node_order: error, order != 0", graph_node_order(graph, 150) == 0);
+    mu_assert("test_graph_node_order: error, order != 0", graph_node_order(graph, 130) == 0);
 
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
@@ -153,36 +148,36 @@ static char * test_graph_edge_remove_attach() {
     int j = 0;
     int head = 5;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_edge_remove: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_edge_remove: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_edge_remove: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_edge_remove: error, graph->unique_edges != 104", graph->unique_edges == 104);
 
-    nod = vector_get(gra->nodes, 13);
+    nod = vector_get(graph->nodes, 13);
     ed =  vector_get(nod->edges, 1);
     arc = graph_arc_from(ed, 13);
 
-    graph_edge_remove(Graph* graph, GraphEdge* edge);
+    graph_edge_remove(graph, ed);
     if (arc->heading == 2) {
         head = 2;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(gra, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(gra, 18) == 1);
+        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
+        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 18) == 1);
     }
     else if (arc->heading == 1) {
         head = 1;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(gra, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(gra, 14) == 1);
+        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
+        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 14) == 1);
     }
     else if (arc->heading == 3) {
         head = 3;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(gra, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(gra, 12) == 1);
+        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
+        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 12) == 1);
     }
 
-    mu_assert("test_graph_edge_remove: error, detatched_edges size != 1", gra->detatched_edges->size == 1);
+    mu_assert("test_graph_edge_remove: error, detatched_edges size != 1", graph->detatched_edges->size == 1);
 
-    for (i = 0; i < gra->detatched_edges->size; i++) {
-        if(vector_get(gra->detatched_edges, i) == ed) {
+    for (i = 0; i < graph->detatched_edges->size; i++) {
+        if(vector_get(graph->detatched_edges, i) == ed) {
             j = 1;
         }
     }
@@ -192,46 +187,46 @@ static char * test_graph_edge_remove_attach() {
     mu_assert("test_graph_edge_remove: error, edge not removed", nod->edges->size == 2);
 
     for (i = 0; i < nod->edges->size; i++) {
-        mu_assert("test_graph_edge_remove: error, edges array still contains removed edge", vector_get(nod->edges, i) != ed;
+        mu_assert("test_graph_edge_remove: error, edges array still contains removed edge", vector_get(nod->edges, i) != ed);
     }
 
     //how do you know which edge you want to attach --------------------below is attach
-    graph_edge_attach(gra, vector_get(gra->detatched_edges, 0);
+    graph_edge_attach(graph, vector_get(graph->detatched_edges, 0));
 
-    if (arc->head == 2) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(gra, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(gra, 18) == 2);
+    if (arc->heading == 2) {
+        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
+        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 18) == 2);
     }
-    else if (arc->head == 1) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(gra, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(gra, 14) == 2);
+    else if (arc->heading == 1) {
+        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
+        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 14) == 2);
     }
-    else if (arc->head == 3) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(gra, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(gra, 12) == 2);
+    else if (arc->heading == 3) {
+        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
+        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 12) == 2);
     }
 
-    mu_assert("test_graph_edge_attach: error, detatched_edges size != 0", gra->detatched_edges->size == 0);
+    mu_assert("test_graph_edge_attach: error, detatched_edges size != 0", graph->detatched_edges->size == 0);
 
     mu_assert("test_graph_edge_attach: error, edge not attached", nod->edges->size == 3);
 
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
 static char * test_graph_arc_to() {
 	
     uint8_t test_map PACMAN_MAP;
-    GraphEdge* ed0,ed1,ed2;
+    GraphEdge* ed0, *ed1, *ed2;
     GraphNode* nod;
-    GraphArc* arc0,arc1,arc2;
+    GraphArc* arc0, *arc1, *arc2;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_create: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_create: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_create: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_create: error, graph->unique_edges != 104", graph->unique_edges == 104);
     
-    nod = vector_get(gra->nodes, 13);
+    nod = vector_get(graph->nodes, 13);
     ed0 =  vector_get(nod->edges, 0);
     ed1 =  vector_get(nod->edges, 1);
     ed2 =  vector_get(nod->edges, 2);
@@ -243,22 +238,22 @@ static char * test_graph_arc_to() {
     mu_assert("test_graph_arc_to: arc1->destination == 13", arc1->destination == 13);
     mu_assert("test_graph_arc_to: arc2->destination == 13", arc2->destination == 13);
     
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 
 static char * test_graph_arc_from() {
     uint8_t test_map PACMAN_MAP;
-    GraphEdge* ed0,ed1,ed2;
+    GraphEdge* ed0, *ed1, *ed2;
     GraphNode* nod;
-    GraphArc* arc0,arc1,arc2;
+    GraphArc* arc0, *arc1, *arc2;
 	
-    Graph* gra = graph_create(&test_map , 15, 19);
-    mu_assert("test_graph_create: error, graph == NULL", gra != NULL);
+    Graph* graph = graph_create((uint8_t**) test_map, 15, 19);
+    mu_assert("test_graph_create: error, graph == NULL", graph != NULL);
     mu_assert("test_graph_create: error, graph->nodes->size != 130", graph->nodes->size == 130);
     mu_assert("test_graph_create: error, graph->unique_edges != 104", graph->unique_edges == 104);
     
-    nod = vector_get(gra->nodes, 13);
+    nod = vector_get(graph->nodes, 13);
     ed0 =  vector_get(nod->edges, 0);
     ed1 =  vector_get(nod->edges, 1);
     ed2 =  vector_get(nod->edges, 2);
@@ -268,7 +263,7 @@ static char * test_graph_arc_from() {
 
     mu_assert("test_graph_arc_from: wrong arc destination for from == 13", (arc0->destination + arc1->destination + arc2->destination) == 44);
     
-    graph_destroy(gra);
+    graph_destroy(graph);
     return 0;
 }
 

@@ -57,4 +57,6 @@ GraphArc* graph_arc_to(GraphEdge* edge, graph_size_t node_id);
 
 GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id);
 
+void graph_destroy(Graph* graph);
+
 #endif /* GRAPH_H */

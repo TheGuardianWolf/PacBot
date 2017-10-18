@@ -186,3 +186,29 @@ GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id) {
         return &(edge->a2);
     }
 }
+
+void graph_destroy(Graph* graph) {
+    graph_size_t i;
+    graph_size_t j;
+    GraphNode* node;
+    GraphEdge* edge;
+    GraphDetatchedEdge* detatched_edge;
+
+    for (i = 0; i < graph->nodes->size; i++) {
+        node = vector_get(graph->nodes, i);
+        for (j = 0; j < node->edges->size; j++) {
+            edge = vector_get(node->edges, j);
+            free(edge);
+        }
+        vector_destroy(node->edges);
+    }
+    vector_destroy(graph->nodes);
+
+    for (i = 0; i < graph->detatched_edges->size; i++) {
+        detatched_edge = vector_get(graph->detatched_edges, i);
+        free(detatched_edge->edge);
+        free(detatched_edge);
+    }
+    vector_destroy(graph->detatched_edges);
+    free(graph);
+}
