@@ -171,7 +171,7 @@ static char * test_graph_edge_remove_attach() {
     } 
     mu_assert("test_graph_edge_remove: error, detatched_edges size != 1", graph->detatched_edges->size == 1);
 
-    if(vector_get(graph->detatched_edges, 0) != ed) {
+    if(((GraphDetatchedEdge*) vector_get(graph->detatched_edges, 0))->edge != ed) {
         mu_assert("test_graph_edge_remove: error, removed edge not in detatched_edges", false);
     }
 
