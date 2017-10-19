@@ -54,8 +54,8 @@ Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width) {
             for (j = 1; j <= 1; j--) {
                 node_ptr = vector_get(graph->nodes, k);
                 if (node_ptr != NULL) {
-                    grid_scan.x = node_ptr->pos_grid.x + direction[j][0];
-                    grid_scan.y = node_ptr->pos_grid.y + direction[j][1];
+                    grid_scan.x = node_ptr->pos_grid.x + direction[j][1];
+                    grid_scan.y = node_ptr->pos_grid.y + direction[j][0];
                     if (grid_scan.x < grid_width && grid_scan.x >= 0 && grid_scan.y < grid_height && grid_scan.y >= 0) {
                         target_node_id = grid[grid_scan.y * grid_width + grid_scan.x];
                         target_node_ptr = vector_get(graph->nodes, target_node_id);
@@ -148,7 +148,6 @@ void graph_edge_attach(Graph* graph, GraphDetatchedEdge* detatched_edge) {
     uint8_t j;
     graph_size_t i;
     GraphNode* node;
-    GraphEdge* edge;
     GraphDetatchedEdge* test_detatched_edge;
 
     graph_size_t node_ids[2] = {detatched_edge->edge->a1.destination, detatched_edge->edge->a2.destination};
@@ -190,7 +189,6 @@ GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id) {
 
 void graph_destroy(Graph* graph) {
     graph_size_t i;
-    graph_size_t j;
     GraphNode* node;
     GraphEdge* edge;
     GraphDetatchedEdge* detatched_edge;

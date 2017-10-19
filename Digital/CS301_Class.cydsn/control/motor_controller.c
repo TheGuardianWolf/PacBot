@@ -1,11 +1,13 @@
 #include <project.h>
-//#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "motor_controller.h"
 #include "systime.h"
 #include "motor.h"
+#include "interactive.h"
 
 #define LINE(x) data->sc_data->line_state[x]
+#define deg2dist(x)  M_PI * WHEEL_DISTANCE * ((float) x / 360)
 
 // pulse/ms -> % of max
 static float speed2pidin (float speed) {
@@ -16,22 +18,12 @@ static float speed2pidin (float speed) {
 static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
     if (target > 0) {
         if (now < target) {
-//            if (target - now > 200) {
-//                return 0.3f* (speed * bias);
-//            }
-//            else {
             return speed * (1 + bias);
-//            }
         }
     }
     else {
         if (now > target) {
-//            if (target - now < -200) {
-//                return 0.3f* (- speed * bias);
-//            }
-//            else {
             return speed * (-1 - bias);
-//            }
         }
     }
 
@@ -85,57 +77,43 @@ static void adjust_bias(MCData* data) {
     // Run bias calculations
     data->bias_L = 0.0f;
     data->bias_R = 0.0f;
-    if (data->drive_mode == 0 || data->drive_mode == 3) {
-        if (data->sc_data->use_line) {
-            REG_LED_Write(data->sc_data->line_tracking & data->sc_data->line_tracking_aggressive << 2);
-            switch(data->sc_data->line_tracking) {
+    
+    if (data->sc_data->use_line) {
+        switch(data->sc_data->line_tracking) {
             case DI_L:
-                if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -1.5f;
-                    data->bias_R += -0.5f;
-                }
-                else {
-                    data->bias_L += -0.2f;
-                    data->bias_R += 0.0f;
-                }
+                data->bias_L += -0.15f;
+                data->bias_R += 0.0f;
                 break;
             case DI_R:
-                if (data->sc_data->line_tracking_aggressive) {
-                    data->bias_L += -0.5f;
-                    data->bias_R += -1.5f;
-                }
-                else {
-                    data->bias_L += 0.0f;
-                    data->bias_R += -0.2f;
-                }
+                data->bias_L += 0.0f;
+                data->bias_R += -0.15f;
                 break;
             default:
                 break;
-            }
-            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
-            //data->bias_L += inversion_bias;
-            //data->bias_R += inversion_bias;
         }
-        if (data->sc_data->use_wireless) {
-            if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
-                data->bias_R += (float) data->sc_data->rel_orientation / 900;
-                data->bias_L += (float) -data->sc_data->rel_orientation / 900;
-            }
-            else {
-                data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-                data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-            }
+        float inversion_bias = -0.02 * data->sc_data->line_inversions;
+        data->bias_L += inversion_bias;
+        data->bias_R += inversion_bias;
+    }
+    if (data->sc_data->use_wireless) {
+        if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
+            data->bias_R += (float) data->sc_data->rel_orientation / 900;
+            data->bias_L += (float) -data->sc_data->rel_orientation / 900;
         }
-
-        if (data->bias_L == 0 && data->bias_R == 0) {
-            // Quad Dec Differential P Bias
-            data->bias_L += -0.0 * data->sc_data->qd_differential;
-            data->bias_R += 0.0 * data->sc_data->qd_differential;
+        else {
+            data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+            data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
         }
     }
 
-    //data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
-    //data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
+    if (data->bias_L == 0 && data->bias_R == 0) {
+        // Quad Dec Differential P Bias
+        data->bias_L += -0.0 * data->sc_data->qd_differential;
+        data->bias_R += 0.0 * data->sc_data->qd_differential;
+    }
+
+    data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
+    data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
 }
 
 static void adjust_setpoint(MCData* data) {
@@ -143,32 +121,48 @@ static void adjust_setpoint(MCData* data) {
 
     // Run setpoint calculations
     if (data->drive_mode == 0) {
-        if (data->sc_data->use_wireless) {
-            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
-            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+        if (data->sc_data->use_line && (data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
+            data->PID_L.setpoint = 0.0f;
+            data->PID_R.setpoint = 0.0f;
+            data->target_dist.L = data->sc_data->qd_dist.L;
+            data->target_dist.R = data->sc_data->qd_dist.R;
             special = true;
         }
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
-                data->PID_L.setpoint = 0.0f;
-                data->PID_L.setpoint = 0.0f;
-                special = true;
+                int32_t tolerance = deg2dist(45);
+                QuadDecData dist_to_target = {
+                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                    .R = data->target_dist.R - data->sc_data->qd_dist.R
+                };
+                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                    data->PID_L.setpoint = 0.0f;
+                    data->PID_R.setpoint = 0.0f;
+                    data->target_dist.L = data->sc_data->qd_dist.L;
+                    data->target_dist.R = data->sc_data->qd_dist.R;
+                    special = true;
+                }
             }
         }
     }
     else if (data->drive_mode == 3) {
-        if (data->sc_data->use_line) {
-            if (data->sc_data->line_end && data->sc_data->line_intersection == 0) {
-                data->PID_L.setpoint = 0.0f;
-                data->PID_L.setpoint = 0.0f;
-                special = true;
-            }
+        if (data->sc_data->use_line && (data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
+            data->PID_L.setpoint = 0.0f;
+            data->PID_R.setpoint = 0.0f;
+            data->target_dist.L = data->sc_data->qd_dist.L;
+            data->target_dist.R = data->sc_data->qd_dist.R;
+            special = true;
+        }
+        else if (data->sc_data->use_wireless) {
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+            special = true;
         }
     }
 
-    if (!special) {
+    if (data->drive_mode >= 0 && !special) {
         data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
         data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
     }
@@ -187,6 +181,13 @@ void motor_controller_worker(MCData* data) {
 
         adjust_setpoint(data);
 
+        if (data->PID_L.setpoint == 0 && data->PID_R.setpoint == 0) {
+            data->idle = true;
+        }
+        else {
+            data->idle = false;
+        }
+
         int8_t mspeedL, mspeedR = 0;
         // Run PID algorithm
         pid_compute(&(data->PID_L));
@@ -199,35 +200,39 @@ void motor_controller_worker(MCData* data) {
     }
 }
 
-void motor_controller_set(MCData* data, float speed, uint8_t drive_mode, int32_t arg) {
-    data->target_speed = speed;
-    data->drive_mode = drive_mode;
-    if (drive_mode == 0) {
+void motor_controller_set(MCData* data, MotorCommand* cmd) {
+    data->target_speed = cmd->speed;
+    data->drive_mode = cmd->drive_mode;
+    if (cmd->drive_mode == -1) {
+        data->target_dist.L = data->sc_data->curr_speed_L;
+        data->target_dist.R = data->sc_data->curr_speed_R;
+    }
+    if (cmd->drive_mode == 0) {
         // Forward/Back
-        data->target_dist.L = dist2dec(arg);
-        data->target_dist.R = dist2dec(arg);
+        data->target_dist.L += dist2dec(cmd->arg);
+        data->target_dist.R += dist2dec(cmd->arg);
     }
-    else if (drive_mode == 1) {
+    else if (cmd->drive_mode == 1) {
         // Point turn left/right
-        int32_t arc_length = M_PI * WHEEL_DISTANCE * ((float) arg / 360);
-        data->target_dist.L = dist2dec(arc_length);
-        data->target_dist.R = dist2dec(-arc_length);
+        int32_t arc_length = deg2dist(cmd->arg);
+        data->target_dist.L += dist2dec(arc_length);
+        data->target_dist.R += dist2dec(-arc_length);
     }
-    else if (drive_mode == 2) {
+    else if (cmd->drive_mode == 2) {
         // Arc turn left/right
-        int32_t arc_length = M_PI * 2.0f * WHEEL_DISTANCE * ((float) arg / 360);
+        int32_t arc_length = 2.0f * deg2dist(cmd->arg);
         if (arc_length < 0.0f) {
-            data->target_dist.L = dist2dec(arc_length);
-            data->target_dist.R = 0;
+            data->target_dist.L += dist2dec(arc_length);
+            data->target_dist.R += 0;
         }
         else {
-            data->target_dist.L = 0;
-            data->target_dist.R = dist2dec(arc_length);
+            data->target_dist.L += 0;
+            data->target_dist.R += dist2dec(arc_length);
         }
     }
-    else if (drive_mode == 3) {
-        // Automatic
-        data->target_dist.L = 0x0FFFFFFF;
-        data->target_dist.R = 0x0FFFFFFF;
+    else if (cmd->drive_mode == 3) {
+        // Forward/Back with RF
+        data->target_dist.L += dist2dec(cmd->arg);
+        data->target_dist.R += dist2dec(cmd->arg);
     }
 }

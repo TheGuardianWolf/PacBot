@@ -22,14 +22,12 @@ static void perc_up(PriorityQueue* queue, size_t index) {
 }
 
 static size_t min_child(PriorityQueue* queue, size_t index) {
-    size_t child_index;
+    
     size_t index_x2 = index * 2;
     size_t index_x2p1 = index * 2 + 1;
+    size_t child_index = index_x2;
 
-    if (index_x2p1 > queue->size - 1) {
-        child_index = index_x2;
-    }
-    else {
+    if (index_x2p1 <= queue->size - 1) {
         HeapNode* a;
         HeapNode* b;
         a = vector_get((Vector*) queue, index_x2);
@@ -160,7 +158,7 @@ size_t priority_queue_size(PriorityQueue* queue) {
 void priority_queue_destroy(PriorityQueue* queue) {
     size_t i;
     HeapNode* node;
-    for (i = 0; i < (Vector*) queue->size; i++) {
+    for (i = 0; i < queue->size; i++) {
         node = vector_get((Vector*) queue, i);
         free(node);
     }
