@@ -19,14 +19,14 @@ classdef Graph < handle
         end
 
         function build(self, map)
-            [cols, rows] = size(map);
+            [rows, cols] = size(map);
             block_length = sqrt(self.real_width * self.real_height / (cols * rows));
             hblock_length = block_length / 2;
             
             total_nodes = 0;
             % Reformat the map
-            for i = 1:cols
-                for j = 1:rows
+            for i = 1:rows
+                for j = 1:cols
                     if map(i, j) == 0
                         map(i, j) = Inf;
                         total_nodes = total_nodes + 1;
@@ -41,8 +41,8 @@ classdef Graph < handle
 
             % Mark node ids and create nodes
             node_id = 1;
-            for i = 1:cols
-                for j = 1:rows
+            for i = 1:rows
+                for j = 1:cols
                     if map(i, j) == Inf
                         map(i, j) = node_id;
                         self.nodes{node_id} = GraphNode(node_id, j, i, block_length * (j - 1) + hblock_length, block_length * (i - 1) + hblock_length);
