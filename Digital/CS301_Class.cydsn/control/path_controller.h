@@ -30,14 +30,17 @@ typedef struct {
     SCData* sc_data;
     MCData* mc_data;
     uint32_t last_run;
+    bool pathfinder;
 } PCData;
 
 
 
 void path_controller_init();
 
-PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd, int8_t initial_heading);
+PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd);
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end);
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end, int8_t initial_heading);
+
+void path_controller_add_command(PCData* data, MotorCommand* cmd);
 
 void path_controller_worker(PCData* data);

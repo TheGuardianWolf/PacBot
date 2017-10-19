@@ -23,7 +23,7 @@ static point_uint8_t real2grid(DiPoint real_loc) {
     return grid_pos;
 }
 
-static void update_path(PCData* data) {
+static void pathfinder_update_path(PCData* data) {
     if (data->current_node_id == NODE_INVALID && data->graph->nodes->size > 1) {
         bool short_boost = false;
 
@@ -122,25 +122,34 @@ static void update_path(PCData* data) {
     }
 }
 
-PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd, int8_t initial_heading) {
+PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd) {
     PCData data = {
         .sample_time = sample_time,
-        .heading = initial_heading,
+        .heading = -1,
         .current_node_id = NODE_INVALID,
         .next_node_id = NODE_INVALID,
         .command_queue = linked_list_create(),
         .mc_data = mcd,
         .sc_data = scd,
+        .pathfinder = false,
         .last_run = 0
     };
 
     return data;
 }
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end) {
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end, int8_t initial_heading) {
     // Load the map in here
+    data->heading = initial_heading;
     data->graph = graph_create(grid, grid_height, grid_width);
     data->path = pathfinder(data->graph, &graph_astar, start, end);
+    data->pathfinder = true;
+}
+
+void path_controller_add_command(PCData* data, MotorCommand* cmd) {
+    MotorCommand* mc = malloc(sizeof(MotorCommand));
+    *mc = *cmd;
+    linked_list_add(data->command_queue, mc);
 }
 
 void path_controller_worker(PCData* data) {
@@ -152,7 +161,9 @@ void path_controller_worker(PCData* data) {
             data->mc_data->PID_L.setpoint == 0 && data->mc_data->PID_R.setpoint == 0) {
                 if (data->command_queue->size == 0) {
                     // Update path if out of commands
-                    update_path(data);
+                    if (data->pathfinder) {
+                        pathfinder_update_path(data);
+                    }
                 }
                 // Run next command
                 MotorCommand* cmd = linked_list_pop(data->command_queue);

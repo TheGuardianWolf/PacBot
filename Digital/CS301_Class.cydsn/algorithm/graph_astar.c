@@ -90,7 +90,7 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
 
         current_node_id = target;
         LinkedList* path = linked_list_create();
-        linked_list_push(path, (void*)(uvoid_t) arc->destination);
+        linked_list_push(path, (void*)(uvoid_t) target);
         while(current_node_id != start) {
             current_edge = vector_get(came_from, current_node_id);
             arc = graph_arc_from(current_edge, current_node_id);

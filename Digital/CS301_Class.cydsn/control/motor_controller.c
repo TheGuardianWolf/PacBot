@@ -1,5 +1,5 @@
 #include <project.h>
-//#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "motor_controller.h"
 #include "systime.h"
@@ -7,6 +7,7 @@
 #include "interactive.h"
 
 #define LINE(x) data->sc_data->line_state[x]
+#define deg2dist(x)  M_PI * WHEEL_DISTANCE * ((float) x / 360)
 
 // pulse/ms -> % of max
 static float speed2pidin (float speed) {
@@ -17,22 +18,12 @@ static float speed2pidin (float speed) {
 static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
     if (target > 0) {
         if (now < target) {
-//            if (target - now > 200) {
-//                return 0.3f* (speed * bias);
-//            }
-//            else {
             return speed * (1 + bias);
-//            }
         }
     }
     else {
         if (now > target) {
-//            if (target - now < -200) {
-//                return 0.3f* (- speed * bias);
-//            }
-//            else {
             return speed * (-1 - bias);
-//            }
         }
     }
 
@@ -141,11 +132,18 @@ static void adjust_setpoint(MCData* data) {
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
-                data->PID_L.setpoint = 0.0f;
-                data->PID_R.setpoint = 0.0f;
-                data->target_dist.L = data->sc_data->qd_dist.L;
-                data->target_dist.R = data->sc_data->qd_dist.R;
-                special = true;
+                int32_t tolerance = deg2dist(45);
+                QuadDecData dist_to_target = {
+                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                    .R = data->target_dist.R - data->sc_data->qd_dist.R
+                };
+                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                    data->PID_L.setpoint = 0.0f;
+                    data->PID_R.setpoint = 0.0f;
+                    data->target_dist.L = data->sc_data->qd_dist.L;
+                    data->target_dist.R = data->sc_data->qd_dist.R;
+                    special = true;
+                }
             }
         }
     }
@@ -216,13 +214,13 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
     }
     else if (cmd->drive_mode == 1) {
         // Point turn left/right
-        int32_t arc_length = M_PI * WHEEL_DISTANCE * ((float) cmd->arg / 360);
+        int32_t arc_length = deg2dist(cmd->arg);
         data->target_dist.L += dist2dec(arc_length);
         data->target_dist.R += dist2dec(-arc_length);
     }
     else if (cmd->drive_mode == 2) {
         // Arc turn left/right
-        int32_t arc_length = M_PI * 2.0f * WHEEL_DISTANCE * ((float) cmd->arg / 360);
+        int32_t arc_length = 2.0f * deg2dist(cmd->arg);
         if (arc_length < 0.0f) {
             data->target_dist.L += dist2dec(arc_length);
             data->target_dist.R += 0;

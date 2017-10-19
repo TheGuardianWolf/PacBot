@@ -11,6 +11,7 @@
 #include "wireless.h"
 
 #define MAX_CMPS 60
+#define START_ORIENTATION G_N
 
 static SCData scd;
 static MCData mcd;
@@ -25,21 +26,40 @@ static void system_init() {
     CYGlobalIntEnable;
 }
 
-static float real_speed(float cmps) {
-    //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
-    return 0.01149265 * cmps + 0.0021600519;
+//static float real_speed(float cmps) {
+//    //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
+//    return 0.01149265 * cmps + 0.0021600519;
+//}
+
+static void command_test() {
+    scd = sensors_controller_create(30, false, true);
+    mcd = motor_controller_create(30, &scd);
+    pcd = path_controller_create(30, &scd, &mcd);
+    
+    MotorCommand cmd = {
+        .speed = 0.2f, 
+        .drive_mode = 0, 
+        .arg = 500
+    };
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 1;
+    cmd.arg = 90;
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 0;
+    cmd.arg = 500;
+    path_controller_add_command(&pcd, &cmd);
+    
+    while (true) {
+        sensors_controller_worker(&scd);
+        path_controller_worker(&pcd);
+        motor_controller_worker(&mcd);
+    }
 }
 
 static void maze_runner() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
-    pcd = path_controller_create(30, &scd, &mcd, G_N);
-    MotorCommand cmd = {
-        .speed = 0.2f, 
-        .drive_mode = 0, 
-        .arg = 0xEFFFFFF
-    };
-    motor_controller_set(&mcd, &cmd);
+    pcd = path_controller_create(30, &scd, &mcd);
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
@@ -52,16 +72,15 @@ int main() {
     led_set(0b111);
     while(true) {
         uint8_t run_mode = REG_DIP_Read();
-        REG_LED_Write(run_mode);
+        led_set(run_mode);
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
             if (run_mode == 1) {
-                led_set(run_mode);
                 maze_runner();
             }
-            else {
-                led_set(0b000);
+            else if (run_mode == 2) {
+                command_test();
             }
         }
     }

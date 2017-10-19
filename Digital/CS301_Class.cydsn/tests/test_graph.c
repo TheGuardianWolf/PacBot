@@ -157,17 +157,14 @@ static char * test_graph_edge_remove_attach() {
 
     graph_edge_remove(graph, ed);
     if (arc->heading == 2) {
-        head = 2;
         mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
         mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 18) == 1);
     }
     else if (arc->heading == 1) {
-        head = 1;
         mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
         mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 14) == 1);
     }
     else if (arc->heading == 3) {
-        head = 3;
         mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
         mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 12) == 1);
     }

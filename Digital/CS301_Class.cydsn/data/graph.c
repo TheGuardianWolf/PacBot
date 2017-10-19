@@ -147,7 +147,6 @@ void graph_edge_attach(Graph* graph, GraphDetatchedEdge* detatched_edge) {
     uint8_t j;
     graph_size_t i;
     GraphNode* node;
-    GraphEdge* edge;
     GraphDetatchedEdge* test_detatched_edge;
 
     graph_size_t node_ids[2] = {detatched_edge->edge->a1.destination, detatched_edge->edge->a2.destination};
@@ -189,7 +188,6 @@ GraphArc* graph_arc_from(GraphEdge* edge, graph_size_t node_id) {
 
 void graph_destroy(Graph* graph) {
     graph_size_t i;
-    graph_size_t j;
     GraphNode* node;
     GraphEdge* edge;
     GraphDetatchedEdge* detatched_edge;
