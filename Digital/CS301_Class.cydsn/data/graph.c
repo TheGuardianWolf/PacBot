@@ -41,7 +41,8 @@ Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width) {
         }
 
         // 1 - N; 2 - W; 3 - S; 4 - E;
-        uint8_t direction[2][2] = {{1, 0}, {0, 1}};
+        // [x, y]
+        uint8_t direction[2][2] = {{0, 1}, {1, 0}};
         point_uint8_t grid_scan;
         graph_size_t target_node_id;
         GraphNode* node_ptr;

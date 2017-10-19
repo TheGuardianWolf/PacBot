@@ -156,57 +156,47 @@ static char * test_graph_edge_remove_attach() {
     arc = graph_arc_from(ed, 13);
 
     graph_edge_remove(graph, ed);
-    if (arc->heading == 2) {
-        head = 2;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 18) == 1);
-    }
-    else if (arc->heading == 1) {
-        head = 1;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 14) == 1);
-    }
-    else if (arc->heading == 3) {
-        head = 3;
-        mu_assert("test_graph_edge_remove: error, order != 2", graph_node_order(graph, 13) == 2);
-        mu_assert("test_graph_edge_remove: error, order != 1", graph_node_order(graph, 12) == 1);
-    }
-
+    mu_assert("test_graph_edge_remove: error, node 13 order != 2", graph_node_order(graph, 13) == 2);
+    for (i = 0; i < nod->edges->size; i++) {
+        if (((GraphEdge*) vector_get(nod->edges, i)) == ed) {
+            mu_assert("test_graph_edge_remove: error, edge still detected on origin", false);
+        }
+    } 
+    mu_assert("test_graph_edge_remove: error, node 14 order != 1", graph_node_order(graph, 14) == 1);
+    nod = vector_get(graph->nodes, 14);
+    for (i = 0; i < nod->edges->size; i++) {
+        if (((GraphEdge*) vector_get(nod->edges, i)) == ed) {
+            mu_assert("test_graph_edge_remove: error, edge still detected on destination", false);
+        }
+    } 
     mu_assert("test_graph_edge_remove: error, detatched_edges size != 1", graph->detatched_edges->size == 1);
 
-    for (i = 0; i < graph->detatched_edges->size; i++) {
-        if(vector_get(graph->detatched_edges, i) == ed) {
-            j = 1;
-        }
+    if(vector_get(graph->detatched_edges, 0) != ed) {
+        mu_assert("test_graph_edge_remove: error, removed edge not in detatched_edges", false);
     }
 
-    mu_assert("test_graph_edge_remove: error, removed edge not in detatched_edges", j == 1);
-
-    mu_assert("test_graph_edge_remove: error, edge not removed", nod->edges->size == 2);
-
-    for (i = 0; i < nod->edges->size; i++) {
-        mu_assert("test_graph_edge_remove: error, edges array still contains removed edge", vector_get(nod->edges, i) != ed);
-    }
-
-    //how do you know which edge you want to attach --------------------below is attach
     graph_edge_attach(graph, vector_get(graph->detatched_edges, 0));
 
-    if (arc->heading == 2) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 18) == 2);
-    }
-    else if (arc->heading == 1) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 14) == 2);
-    }
-    else if (arc->heading == 3) {
-        mu_assert("test_graph_edge_attach: error, order != 3", graph_node_order(graph, 13) == 3);
-        mu_assert("test_graph_edge_attach: error, order != 2", graph_node_order(graph, 12) == 2);
-    }
+    bool edge_detected = false;
+    mu_assert("test_graph_edge_remove: error, node 13 order != 3", graph_node_order(graph, 13) == 3);
+    for (i = 0; i < nod->edges->size; i++) {
+        if (((GraphEdge*) vector_get(nod->edges, i)) == ed) {
+            edge_detected = true;
+            break;
+        }
+    } 
+    mu_assert("test_graph_edge_remove: error, edge not detected on origin", edge_detected);
+    mu_assert("test_graph_edge_remove: error, node 14 order != 2", graph_node_order(graph, 14) == 2);
+    nod = vector_get(graph->nodes, 14);
+    for (i = 0; i < nod->edges->size; i++) {
+        if (((GraphEdge*) vector_get(nod->edges, i)) == ed) {
+            edge_detected = true;
+            break;
+        }
+    } 
+    mu_assert("test_graph_edge_remove: error, edge not detected on destination", edge_detected);
 
-    mu_assert("test_graph_edge_attach: error, detatched_edges size != 0", graph->detatched_edges->size == 0);
-
-    mu_assert("test_graph_edge_attach: error, edge not attached", nod->edges->size == 3);
+    mu_assert("test_graph_edge_remove: error, detatched_edges size != 0", graph->detatched_edges->size == 0);
 
     graph_destroy(graph);
     return 0;
@@ -270,7 +260,7 @@ static char * all_tests() {
     mu_run_test(test_graph_grid2nodeid);
 	mu_run_test(test_graph_nodeid2grid);
     mu_run_test(test_graph_node_order);
-    // mu_run_test(test_graph_edge_remove_attach);
+    mu_run_test(test_graph_edge_remove_attach);
     mu_run_test(test_graph_arc_to);
     mu_run_test(test_graph_arc_from);
 
