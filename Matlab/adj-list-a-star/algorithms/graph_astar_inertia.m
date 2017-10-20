@@ -5,7 +5,7 @@ function [ path, search_steps ] = graph_astar_inertia( graph, start, target )
     frontier = PriorityQueue(floor(sqrt(length(graph.nodes))));
     frontier.put(0, start, 0);
     search_steps = start;
-    cost_so_far = NaN(1, length(graph.nodes));
+    cost_so_far = Inf(1, length(graph.nodes));
     cost_so_far(start) = 0;
     came_from = cell(1, length(graph.nodes));
     came_from{start} = 0;
@@ -38,7 +38,7 @@ function [ path, search_steps ] = graph_astar_inertia( graph, start, target )
                 break
             end
             
-            if isnan(cost_so_far(next)) || new_cost < cost_so_far(next)
+            if new_cost < cost_so_far(next)
                 search_steps(end + 1) = next; %#ok<AGROW>
                 cost_so_far(next) = new_cost;
                 heuristics_cost = heuristic(graph.nodes{next}.pos_grid, graph.nodes{target}.pos_grid, heading, last_heading);

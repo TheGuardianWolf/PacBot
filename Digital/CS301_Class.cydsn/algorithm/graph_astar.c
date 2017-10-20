@@ -34,7 +34,7 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
 
         graph_size_t j;
         for (j = 0; j < graph->nodes->size; j++) {
-            vector_append(cost_so_far, (void*)(uvoid_t) 0);
+            vector_append(cost_so_far, NULL);
             vector_append(came_from, NULL);
         }
         vector_set(cost_so_far, start, (void*) UVOID_T_MAX);
@@ -53,7 +53,7 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
             current_node = vector_get(graph->nodes, current_node_id);
 
             came_from_edge = vector_get(came_from, current_node_id);
-            if (came_from_edge != NULL) {
+            if (came_from_edge != (void*) UVOID_T_MAX) {
                 arc = graph_arc_from(came_from_edge, current_node_id);
                 last_heading = arc->heading;
             }
@@ -75,7 +75,7 @@ LinkedList* graph_astar(Graph* graph, graph_size_t start, graph_size_t target) {
                 }
 
                 current_cost = (uvoid_t) vector_get(cost_so_far, arc->destination);
-                if (current_cost == 0 || new_cost < current_cost) {
+                if (new_cost < current_cost) {
                     vector_set(cost_so_far, arc->destination, (void*)(uvoid_t) new_cost);
                     vector_set(came_from, arc->destination, current_edge);
                     current_node = vector_get(graph->nodes, arc->destination);
