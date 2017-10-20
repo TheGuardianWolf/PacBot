@@ -8,7 +8,7 @@ int32_t dist2dec(int32_t dist) {
 
 // pulse -> mm
 int32_t dec2dist(int32_t dec) {
-    return (int32_t) ((float) dec * WHEEL_CIRCUMFERENCE / PULSES_PER_REV);
+    return (int32_t) ((float) dec * WHEEL_CIRCUMFERENCE / PULSES_PER_REV) ;
 }
 
 void quad_dec_init() {

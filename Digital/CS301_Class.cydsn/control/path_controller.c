@@ -160,7 +160,7 @@ void path_controller_worker(PCData* data) {
     if (time_diff >= data->sample_time) {
         // If robot is idle now
         if (data->sc_data->curr_speed_L == 0 && data->sc_data->curr_speed_R == 0 && 
-            data->mc_data->PID_L.setpoint == 0 && data->mc_data->PID_R.setpoint == 0) {
+             data->mc_data->idle) {
                 if (data->command_queue->size == 0) {
                     // Update path if out of commands
                     if (data->pathfinder) {
