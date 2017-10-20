@@ -13,7 +13,7 @@
 #define MAX_CMPS 60
 #define START_ORIENTATION G_N
 
-#define Kappa 0.9375
+#define Kappa 0.9005
     
 static SCData scd;
 static MCData mcd;
@@ -41,29 +41,57 @@ static void command_test() {
     MotorCommand cmd = {
         .speed = 0.2f, 
         .drive_mode = 0, 
-        .arg = (int)(512 * Kappa)
+        .arg = (int)(128 * Kappa)
     };
     path_controller_add_command(&pcd, &cmd);
-    cmd.drive_mode = 1;
-    cmd.arg = -90;
-    path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 256);
+    cmd.arg = (int)(Kappa * 128);
     path_controller_add_command(&pcd, &cmd);
+    
     cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 256);
+    cmd.arg = (int)(Kappa * 128);
     path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 128);
+    path_controller_add_command(&pcd, &cmd);
+    
     cmd.drive_mode = 1;
-    cmd.arg = -90;
+    cmd.arg = -88;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 132);
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 132);
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 132);
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 132);
+    path_controller_add_command(&pcd, &cmd);
+
+    cmd.drive_mode = 1;
+    cmd.arg = -88;
     path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 0;
     cmd.arg = (int)(Kappa * 128);
     path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 1;
-    cmd.arg = 90;
+    cmd.arg = 88;
     path_controller_add_command(&pcd, &cmd);
+    
     cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 256);
+    cmd.arg = (int)(Kappa * 128);
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 128);
     path_controller_add_command(&pcd, &cmd);
     
     while (true) {

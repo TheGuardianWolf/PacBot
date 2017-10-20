@@ -119,12 +119,13 @@ static void adjust_setpoint(MCData* data) {
     if (data->drive_mode == 0) {
         if (data->sc_data->use_line) { 
             if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-                int32_t tolerance = 350;
+                int32_t tolerance = 64;
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
                     .R = data->target_dist.R - data->sc_data->qd_dist.R
                 };
                 if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                    led_set(0b000);
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
@@ -141,11 +142,13 @@ static void adjust_setpoint(MCData* data) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
                 int32_t tolerance = deg2dist(45);
+
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
                     .R = data->target_dist.R - data->sc_data->qd_dist.R
                 };
                 if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+//                    led_set(0b000);
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
@@ -153,7 +156,7 @@ static void adjust_setpoint(MCData* data) {
                     special = true;
                 }
                 else {
-                    led_set(0b011);
+//                        led_set(0b111);
                 }
             }
         }
