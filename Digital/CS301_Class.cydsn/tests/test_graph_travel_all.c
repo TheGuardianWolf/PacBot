@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include "minunit.h"
+#include "graph.h"
+#include <stddef.h>
+#include "graph_travel_all.h"
+
 #define PACMAN_MAP [15][19] = {\
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},\
     {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},\
@@ -45,3 +51,52 @@
     {8,14},{9,14},{10,14},{10,13}\
 }
 #define MATLAB_START {.x = 2, .y = 2 }
+
+static char * test_graph_travel_all() {
+    size_t i;
+    size_t j;
+    uint8_t test_map PACMAN_MAP;
+    uint8_t ref_path MATLAB_PATH;
+    
+    Graph* graph = graph_create((uint8_t*) test_map, 15, 19);
+    mu_assert("test_graph_travel_all: error, graph == NULL", graph != NULL);
+    mu_assert("test_graph_travel_all: error, graph->nodes->size != 140", graph->nodes->size == 140);
+    mu_assert("test_graph_travel_all: error, graph->unique_edges != 154", graph->unique_edges == 154);
+    
+    point_uint8_t start = MATLAB_START;
+
+    point_uint8_t end = MATLAB_TARGET;
+
+    LinkedList* ll = graph_travel_all(graph, graph_grid2nodeid(graph, start), graph_grid2nodeid(graph, end));
+    mu_assert("test_graph_travel_all: error, ll->size != MATLAB_PATH_SIZE", ll->size == MATLAB_PATH_SIZE);
+
+    for (i = 0; i < ll->size; i++) {
+        point_uint8_t pos = graph_nodeid2grid(graph, (graph_size_t) (uvoid_t) linked_list_pop(ll));
+        mu_assert("test_graph_travel_all: error, path not matching", ref_path[i][0] == pos.y && ref_path[i][1] == pos.x);
+    }
+
+    mu_assert("test_graph_travel_all: error, ll->size != 0", ll->size == 0);
+    linked_list_destroy(ll);
+    graph_destroy(graph);
+    return 0;
+}
+
+
+static char * all_tests() {
+    mu_run_test(test_graph_travel_all);
+
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    char *result = all_tests();
+    if (result != 0) {
+        printf("%s\n", result);
+    }
+    else {
+        printf("ALL TESTS PASSED\n");
+    }
+    printf("Tests run: %d\n", tests_run);
+
+    return result != 0;
+}
