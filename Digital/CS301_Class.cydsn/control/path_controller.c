@@ -169,9 +169,11 @@ void path_controller_worker(PCData* data) {
                 }
                 else {
                     // Run next command
-                    sensors_controller_reset(data->sc_data);
-                    data->mc_data->target_dist.L = 0;
-                    data->mc_data->target_dist.R = 0;
+                    // sensors_controller_reset(data->sc_data);
+                    // data->mc_data->target_dist.L = 0;
+                    // data->mc_data->target_dist.R = 0;
+                    // data->mc_data->ref_dist.L = 0;
+                    // data->mc_data->ref_dist.R = 0;
                     MotorCommand* cmd = linked_list_pop(data->command_queue);
                     
                

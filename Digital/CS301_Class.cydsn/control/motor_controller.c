@@ -15,14 +15,12 @@ static float speed2pidin (float speed) {
     return pidin;
 }
 
-static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
-    if (now < target) {
-        return speed * (1 + bias);
+static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
+    int32_t difference = abs(target - ref) - abs(now - ref);
+    int32_t sign = sign(difference);
+    if (difference > 0) { 
+        return sign * speed * (1 + bias);
     }
-    else if (now > target) {
-        return speed * (-1 - bias);
-    }
-
     return 0.0f;
 }
 
@@ -63,7 +61,12 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
+        .ref_dist = {
+            .L = 0,
+            .R = 0
+        },
         .drive_mode = 0,
+        .idle = false,
         .last_run = 0
     };
     return data;
@@ -152,26 +155,15 @@ static void adjust_setpoint(MCData* data) {
             special = true;
         }
         else if (data->sc_data->use_wireless) {
-            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->target_speed, data->bias_L);
-            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->target_speed, data->bias_R);
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist.L, data->ref_dist.L, data->target_speed, data->bias_L);
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist.R, data->ref_dist.R, data->bias_R);
             special = true;
         }
     }
 
     if (data->drive_mode >= 0 && !special) {
-        if (abs(data->target_dist.L) > abs(data->sc_data->qd_dist.L)) {
-            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
-        }
-        else {
-            data->PID_L.setpoint = 0;
-        }
-        
-        if (abs(data->target_dist.R) > abs(data->sc_data->qd_dist.R)) {
-            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
-        }
-        else {
-            data->PID_R.setpoint = 0;
-        }
+        data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->ref_dist.L, data->target_speed, data->bias_L);
+        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->ref_dist.R, data->target_speed, data->bias_R);
     }
 }
 
@@ -189,6 +181,8 @@ void motor_controller_worker(MCData* data) {
         adjust_setpoint(data);
 
         if (data->PID_L.setpoint == 0 && data->PID_R.setpoint == 0) {
+            data->ref_dist.L = data->target_dist.L;
+            data->ref_dist.R = data->target_dist.R;
             data->idle = true;
         }
         else {
