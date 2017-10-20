@@ -17,7 +17,7 @@ static float speed2pidin (float speed) {
 
 static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
     int32_t difference = abs(target - ref) - abs(now - ref);
-    int32_t sign = sign(difference);
+    int32_t sign = (int32_t) copysignf(1.0f, (float) difference);
     if (difference > 0) { 
         return sign * speed * (1 + bias);
     }
@@ -122,7 +122,7 @@ static void adjust_setpoint(MCData* data) {
     if (data->drive_mode == 0) {
         if (data->sc_data->use_line) { 
             if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-                int32_t tolerance = 64;
+                tolerance = 64;
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
                     .R = data->target_dist.R - data->sc_data->qd_dist.R
@@ -144,7 +144,7 @@ static void adjust_setpoint(MCData* data) {
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
-                int32_t tolerance = deg2dist(45);
+                tolerance = deg2dist(45);
 
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
@@ -173,8 +173,8 @@ static void adjust_setpoint(MCData* data) {
             special = true;
         }
         else if (data->sc_data->use_wireless) {
-            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist.L, data->ref_dist.L, data->target_speed, data->bias_L);
-            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist.R, data->ref_dist.R, data->bias_R);
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->ref_dist.L, data->target_speed, data->bias_L);
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->ref_dist.R, data->target_speed, data->bias_R);
             special = true;
         }
     }
