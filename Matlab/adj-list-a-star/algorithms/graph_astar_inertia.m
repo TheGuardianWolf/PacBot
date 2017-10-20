@@ -13,9 +13,9 @@ function [ path, search_steps ] = graph_astar_inertia( graph, start, target )
     while ~frontier.empty()
         current = frontier.get();
         
-%         if current == target   
-%             break
-%         end
+        if current == target   
+            break
+        end
         
         edges = graph.edges{current};
         
@@ -30,13 +30,13 @@ function [ path, search_steps ] = graph_astar_inertia( graph, start, target )
             
             new_cost = cost_so_far(current) + 1; % Edge travel cost is here as '1'
             
-            if next == target   
-                search_steps(end + 1) = next; %#ok<AGROW>
-                cost_so_far(next) = new_cost;
-                came_from{next} = edges{i};
-                frontier.size = 0;
-                break
-            end
+%             if next == target   
+%                 search_steps(end + 1) = next; %#ok<AGROW>
+%                 cost_so_far(next) = new_cost;
+%                 came_from{next} = edges{i};
+%                 frontier.size = 0;
+%                 break
+%             end
             
             if new_cost < cost_so_far(next)
                 search_steps(end + 1) = next; %#ok<AGROW>

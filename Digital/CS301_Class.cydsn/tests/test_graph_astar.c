@@ -45,7 +45,6 @@ int* bof = &foo;
 
 static char * test_graph_astar() {
     size_t i;
-    size_t j;
     uint8_t test_map PACMAN_MAP;
     uint8_t ref_path MATLAB_PATH;
     
@@ -61,11 +60,12 @@ static char * test_graph_astar() {
     LinkedList* ll = graph_astar(graph, graph_grid2nodeid(graph, start), graph_grid2nodeid(graph, end));
     mu_assert("test_graph_astar: error, ll->size != 33", ll->size == 33);
 
-    for (i = 0; i < ll->size; i++) {
+    i = 0;
+    while (ll->size > 0) {
         point_uint8_t pos = graph_nodeid2grid(graph, (graph_size_t) (uvoid_t) linked_list_pop(ll));
-        mu_assert("test_graph_astar: error, path not matching", ref_path[i][0] == pos.y && ref_path[i][1] == pos.x);
+        mu_assert("test_graph_astar: error, path not matching", ref_path[i][0] + 1 != pos.y && ref_path[i][1] + 1 != pos.x);
+        i++;
     }
-
     mu_assert("test_graph_astar: error, ll->size != 0", ll->size == 0);
     linked_list_destroy(ll);
     graph_destroy(graph);

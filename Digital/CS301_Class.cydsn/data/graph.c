@@ -64,9 +64,9 @@ Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width) {
                             if (edge != NULL) {
                                 edge->id = graph->unique_edges;
                                 edge->a1.destination = k;
-                                edge->a1.heading = j + 2;
+                                edge->a1.heading = j + 3;
                                 edge->a2.destination = target_node_id;
-                                edge->a2.heading = j;
+                                edge->a2.heading = j + 1;
                                 vector_append(node_ptr->edges, edge);
                                 vector_append(target_node_ptr->edges, edge);
                                 graph->unique_edges++;
