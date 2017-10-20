@@ -13,6 +13,8 @@
 #define MAX_CMPS 60
 #define START_ORIENTATION G_N
 
+#define Kappa 0.9375
+    
 static SCData scd;
 static MCData mcd;
 static PCData pcd;
@@ -39,21 +41,37 @@ static void command_test() {
     MotorCommand cmd = {
         .speed = 0.2f, 
         .drive_mode = 0, 
-        .arg = 500
+        .arg = (int)(512 * Kappa)
     };
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 1;
+    cmd.arg = -90;
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 256);
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 256);
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 1;
+    cmd.arg = -90;
+    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 0;
+    cmd.arg = (int)(Kappa * 128);
     path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 1;
     cmd.arg = 90;
     path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 0;
-    cmd.arg = 500;
+    cmd.arg = (int)(Kappa * 256);
     path_controller_add_command(&pcd, &cmd);
     
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
-        led_set(pcd.command_queue->size);
+
+//        led_set(pcd.command_queue->size);
     }
 }
 

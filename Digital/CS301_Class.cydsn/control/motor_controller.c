@@ -119,7 +119,7 @@ static void adjust_setpoint(MCData* data) {
     if (data->drive_mode == 0) {
         if (data->sc_data->use_line) { 
             if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-                int32_t tolerance = 400;
+                int32_t tolerance = 350;
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
                     .R = data->target_dist.R - data->sc_data->qd_dist.R
@@ -130,6 +130,9 @@ static void adjust_setpoint(MCData* data) {
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
                     special = true;
+                }
+                else {
+                    led_set(0b111);
                 }
             }
         }
@@ -148,6 +151,9 @@ static void adjust_setpoint(MCData* data) {
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
                     special = true;
+                }
+                else {
+                    led_set(0b011);
                 }
             }
         }
