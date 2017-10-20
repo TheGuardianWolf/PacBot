@@ -35,12 +35,12 @@ void* linked_list_pop(LinkedList* list) {
 	return linked_list_remove(list);
 }
 
-void* linked_list_peek_stack(LinkedList* list) {
-	if (list->size > 0) {
-		return list->last->item;
-	}
-	return NULL;
-}
+// void* linked_list_peek_stack(LinkedList* list) {
+// 	if (list->size > 0) {
+// 		return list->last->item;
+// 	}
+// 	return NULL;
+// }
 
 // FIFO
 void linked_list_add(LinkedList* list, void* item) {
@@ -80,7 +80,7 @@ void* linked_list_remove(LinkedList* list) {
     return NULL;
 }
 
-void* linked_list_peek_queue(LinkedList* list) {
+void* linked_list_peek(LinkedList* list) {
 	if (list->size > 0) {
 		return list->first->item;
 	}

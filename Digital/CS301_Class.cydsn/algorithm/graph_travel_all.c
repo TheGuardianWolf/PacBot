@@ -1,3 +1,9 @@
+#define DEBUG_STEPS 0
+
+#if DEBUG_STEPS == 1
+#include <stdio.h>
+#endif
+
 #include "graph_travel_all.h"
 #include <stdint.h>
 #include "priority_queue.h"
@@ -9,7 +15,7 @@
 static Vector* make_acyclic(Graph* graph, graph_size_t start) {
     size_t i;
     Vector* node_orders = vector_create(graph->nodes->size);
-    for (i = 0; i < node_orders->size; i++) {
+    for (i = 0; i < graph->nodes->size; i++) {
         vector_append(node_orders, (void*)(uvoid_t) graph_node_order(graph, i));
     }
     LinkedList* frontier = linked_list_create();
@@ -17,6 +23,7 @@ static Vector* make_acyclic(Graph* graph, graph_size_t start) {
     for (i = 0; i < graph->nodes->size; i++) {
         vector_append(came_from, NULL);
     }
+    vector_set(came_from, start, (void*) UVOID_T_MAX);
     Vector* edge_priority = vector_create(graph->unique_edges);
     for (i = 0; i < graph->unique_edges; i++) {
         vector_append(edge_priority, (void*) UVOID_T_MAX);
@@ -31,13 +38,18 @@ static Vector* make_acyclic(Graph* graph, graph_size_t start) {
     GraphEdge* came_from_edge;
     GraphArc* arc;
     while(frontier->size > 0) {
-        current_node_id = (uvoid_t) linked_list_peek_stack(frontier);
+        current_node_id = (uvoid_t) linked_list_peek(frontier);
+        #if DEBUG_STEPS == 1
+        printf("Current node is %u.\n", current_node_id);
+        #endif
         current_node = vector_get(graph->nodes, current_node_id);
 
         for (i = 0; i < current_node->edges->size; i++) {
             current_edge = vector_get(current_node->edges, i);
             arc = graph_arc_from(current_edge, current_node_id);
-
+            // #if DEBUG_STEPS == 1
+            // printf("Looking at node %u, edge %u of %u\n", arc->destination, i, current_node->edges->size);
+            // #endif
             came_from_edge = vector_get(came_from, arc->destination);
             if (came_from_edge == NULL) {
                 vector_set(came_from, arc->destination, current_edge);
@@ -47,13 +59,22 @@ static Vector* make_acyclic(Graph* graph, graph_size_t start) {
             else {
                 if (current_node_id != start &&
                     vector_get(came_from, current_node_id) != current_edge &&
-                    (arc->destination != start || came_from_edge != current_edge)) {
-                        current_node_order = (uvoid_t) vector_get(node_orders, current_node_id);
-                        while (current_node_order < 3) {
+                    (arc->destination == start || came_from_edge != current_edge)) {
+                        #if DEBUG_STEPS == 1
+                        printf("Cycle found at node %u.\n", current_node_id);
+                        #endif
+                        while ((uvoid_t) vector_get(node_orders, (uvoid_t) linked_list_peek(frontier)) < 3) {
                             current_node_id = (uvoid_t) linked_list_pop(frontier);
                             current_edge = vector_set(came_from, current_node_id, NULL);
+                            #if DEBUG_STEPS == 1
+                            printf("Backtracking to node %u, node order is %u.\n", current_node_id, ((uvoid_t) vector_get(node_orders, (uvoid_t) linked_list_peek(frontier))));
+                            #endif
                         }
                         graph_edge_remove(graph, current_edge);
+                        #if DEBUG_STEPS == 1
+                        printf("Breaking edge at node %u.\n", current_node_id);
+                        #endif
+                        break;
                 }
             }
 
@@ -61,7 +82,7 @@ static Vector* make_acyclic(Graph* graph, graph_size_t start) {
                 branch_length = frontier->size;
                 current_node_id = (uvoid_t) linked_list_pop(frontier);
                 came_from_edge = vector_get(came_from, current_node_id);
-                if (came_from_edge != NULL) {
+                if (came_from_edge != (void*) UVOID_T_MAX) {
                     vector_set(edge_priority, came_from_edge->id, (void*)(uvoid_t) branch_length);
                 }
             }
@@ -97,7 +118,7 @@ static LinkedList* make_path(Graph* graph, graph_size_t start, Vector* edge_prio
     vector_set(came_from, start, (void*)(uvoid_t) start);
 
     while(frontier->size > 0) {
-        current_node_id = (uvoid_t) linked_list_peek_stack(frontier);
+        current_node_id = (uvoid_t) linked_list_peek(frontier);
         
         linked_list_add(path, (void*)(uvoid_t) current_node_id);
         if (nodes_visited == graph->nodes->size) {
@@ -141,14 +162,28 @@ static LinkedList* make_path(Graph* graph, graph_size_t start, Vector* edge_prio
 }
 
 LinkedList* graph_travel_all(Graph* graph, graph_size_t start, graph_size_t target) {
-    Vector* edge_priority = make_acyclic(graph, start);
-    LinkedList* path = make_path(graph, start, edge_priority);
+    #if DEBUG_STEPS == 1
+    printf("Starting at %u.\n", start);
+    #endif
 
-    GraphDetatchedEdge* detatched_edge;
-    while (graph->detatched_edges->size > 0) {
-        detatched_edge = vector_get(graph->detatched_edges, graph->detatched_edges->size - 1);
-        graph_edge_attach(graph, detatched_edge);
+    if (start != NODE_INVALID) {
+        #if DEBUG_STEPS == 1
+        printf("Breaking cyclic paths.\n");
+        #endif
+        Vector* edge_priority = make_acyclic(graph, start);
+        #if DEBUG_STEPS == 1
+        printf("Iterating over map.\n");
+        #endif
+        LinkedList* path = make_path(graph, start, edge_priority);    
+
+        GraphDetatchedEdge* detatched_edge;
+        while (graph->detatched_edges->size > 0) {
+            detatched_edge = vector_get(graph->detatched_edges, graph->detatched_edges->size - 1);
+            graph_edge_attach(graph, detatched_edge);
+        }
+
+        return path;
     }
 
-    return path;
+    return NULL;
 }

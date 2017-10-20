@@ -9,11 +9,6 @@
 
 int tests_run = 0;
 
-int foo = 7;
-int bar = 4;
-int baz = 1;
-int* bof = &foo;
-
 #define PACMAN_MAP [15][19] = {\
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},\
     {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},\
@@ -63,7 +58,7 @@ static char * test_graph_astar() {
     i = 0;
     while (ll->size > 0) {
         point_uint8_t pos = graph_nodeid2grid(graph, (graph_size_t) (uvoid_t) linked_list_pop(ll));
-        mu_assert("test_graph_astar: error, path not matching", ref_path[i][0] + 1 != pos.y && ref_path[i][1] + 1 != pos.x);
+        mu_assert("test_graph_astar: error, path not matching", ref_path[i][0] == pos.y + 1 && ref_path[i][1] == pos.x + 1);
         i++;
     }
     mu_assert("test_graph_astar: error, ll->size != 0", ll->size == 0);

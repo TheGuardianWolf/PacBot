@@ -72,10 +72,10 @@ static void pathfinder_update_path(PCData* data) {
 
         if (!short_boost) {
             // Get current node id
-            data->current_node_id = (graph_size_t)(uvoid_t) linked_list_remove(data->path);
+            data->current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
             
             // Get next node id
-            graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek_stack(data->path);
+            graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
 
             // Find the travel arc
             GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);

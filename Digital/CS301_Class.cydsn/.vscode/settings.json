@@ -28,6 +28,7 @@
         "voidtypes.h": "c",
         "stdint.h": "c",
         "pathfinder.h": "c",
-        "minunit.h": "c"
+        "minunit.h": "c",
+        "graph_travel_all.h": "c"
     }
 }

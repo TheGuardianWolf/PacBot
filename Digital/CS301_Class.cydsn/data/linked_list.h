@@ -24,14 +24,14 @@ void linked_list_push(LinkedList* list, void* item);
 
 void* linked_list_pop(LinkedList* list);
 
-void* linked_list_peek_stack(LinkedList* list);
+// void* linked_list_peek_stack(LinkedList* list);
 
 // FIFO
 void linked_list_add(LinkedList* list, void* item);
 
 void* linked_list_remove(LinkedList* list);
 
-void* linked_list_peek_queue(LinkedList* list);
+void* linked_list_peek(LinkedList* list);
 
 void linked_list_destroy(LinkedList* list);
 
