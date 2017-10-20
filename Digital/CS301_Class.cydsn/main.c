@@ -53,6 +53,7 @@ static void command_test() {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
+        led_set(pcd.command_queue->size);
     }
 }
 
@@ -69,7 +70,6 @@ static void maze_runner() {
 
 int main() {
     system_init();
-    led_set(0b111);
     while(true) {
         uint8_t run_mode = REG_DIP_Read();
         led_set(run_mode);

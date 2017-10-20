@@ -6,6 +6,7 @@
 #include "graph.h"
 #include "linked_list.h"
 
+
 #define GRID_WIDTH 2379.4f
 #define GRID_HEIGHT 1796.6f
 #define GRID_BLOCK_WIDTH 132.19f
