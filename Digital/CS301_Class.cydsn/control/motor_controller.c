@@ -114,15 +114,24 @@ static void adjust_bias(MCData* data) {
 
 static void adjust_setpoint(MCData* data) {
     bool special = false;
-
+    int32_t tolerance;
     // Run setpoint calculations
     if (data->drive_mode == 0) {
-        if (data->sc_data->use_line && (data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-            data->PID_L.setpoint = 0.0f;
-            data->PID_R.setpoint = 0.0f;
-            data->target_dist.L = data->sc_data->qd_dist.L;
-            data->target_dist.R = data->sc_data->qd_dist.R;
-            special = true;
+        if (data->sc_data->use_line) { 
+            if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
+                int32_t tolerance = 400;
+                QuadDecData dist_to_target = {
+                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                    .R = data->target_dist.R - data->sc_data->qd_dist.R
+                };
+                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                    data->PID_L.setpoint = 0.0f;
+                    data->PID_R.setpoint = 0.0f;
+                    data->target_dist.L = data->sc_data->qd_dist.L;
+                    data->target_dist.R = data->sc_data->qd_dist.R;
+                    special = true;
+                }
+            }
         }
     }
     else if (data->drive_mode == 1) {
@@ -208,6 +217,7 @@ void motor_controller_worker(MCData* data) {
 }
 
 void motor_controller_set(MCData* data, MotorCommand* cmd) {
+    data->idle = false;
     data->target_speed = cmd->speed;
     data->drive_mode = cmd->drive_mode;
     if (cmd->drive_mode == -1) {
