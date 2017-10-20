@@ -16,15 +16,11 @@ static float speed2pidin (float speed) {
 }
 
 static float calc_setpoint(int32_t target, int32_t now, float speed, float bias) {
-    if (target > 0) {
-        if (now < target) {
-            return speed * (1 + bias);
-        }
+    if (now < target) {
+        return speed * (1 + bias);
     }
-    else {
-        if (now > target) {
-            return speed * (-1 - bias);
-        }
+    else if (now > target) {
+        return speed * (-1 - bias);
     }
 
     return 0.0f;
@@ -163,8 +159,19 @@ static void adjust_setpoint(MCData* data) {
     }
 
     if (data->drive_mode >= 0 && !special) {
-        data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
-        data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
+        if (abs(data->target_dist.L) > abs(data->sc_data->qd_dist.L)) {
+            data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->qd_dist.L, data->target_speed, data->bias_L);
+        }
+        else {
+            data->PID_L.setpoint = 0;
+        }
+        
+        if (abs(data->target_dist.R) > abs(data->sc_data->qd_dist.R)) {
+            data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->qd_dist.R, data->target_speed, data->bias_R);
+        }
+        else {
+            data->PID_R.setpoint = 0;
+        }
     }
 }
 
@@ -204,8 +211,8 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
     data->target_speed = cmd->speed;
     data->drive_mode = cmd->drive_mode;
     if (cmd->drive_mode == -1) {
-        data->target_dist.L = data->sc_data->curr_speed_L;
-        data->target_dist.R = data->sc_data->curr_speed_R;
+        data->target_dist.L = data->sc_data->qd_dist.L;
+        data->target_dist.R = data->sc_data->qd_dist.R;
     }
     if (cmd->drive_mode == 0) {
         // Forward/Back

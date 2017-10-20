@@ -1,10 +1,11 @@
 #include <project.h>
 #include "path_controller.h"
-#include "graph_astar.h"
 #include "graph_travel_all.h"
+#include "graph_astar.h"
 #include "pathfinder.h"
 #include "voidtypes.h"
 #include "systime.h"
+#include "interactive.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -98,6 +99,7 @@ static void pathfinder_update_path(PCData* data) {
                 cmd->speed = 0.15;
                 linked_list_add(data->command_queue, cmd);
             }
+            
             cmd = malloc(sizeof(MotorCommand));
             cmd->drive_mode = 1;
             if (next_heading == G_N || next_heading == G_S) {
@@ -165,13 +167,20 @@ void path_controller_worker(PCData* data) {
                         pathfinder_update_path(data);
                     }
                 }
-                // Run next command
-                MotorCommand* cmd = linked_list_pop(data->command_queue);
-                motor_controller_set(data->mc_data, cmd);
-                if (data->last_command != NULL) {
-                    free(data->last_command);
+                else {
+                    // Run next command
+                    sensors_controller_reset(data->sc_data);
+                    data->mc_data->target_dist.L = 0;
+                    data->mc_data->target_dist.R = 0;
+                    MotorCommand* cmd = linked_list_pop(data->command_queue);
+                    
+               
+                    motor_controller_set(data->mc_data, cmd);
+                    if (data->last_command != NULL) {
+                        free(data->last_command);
+                    }
+                    data->last_command = cmd;
                 }
-                data->last_command = cmd;
          }
     }
 }

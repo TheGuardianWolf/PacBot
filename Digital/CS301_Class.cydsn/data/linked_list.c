@@ -61,20 +61,23 @@ void linked_list_add(LinkedList* list, void* item) {
 }
 
 void* linked_list_remove(LinkedList* list) {
-	LLNode* node = list->first;
-	list->size--;
-	if (list->size == 0) {
-		list->first = NULL;
-		list->last = NULL;
-	}
-	else {
-		list->first = node->next;
-	}
-	
-	void* item = node->item;
-	free(node);
-	
-	return item;	
+    if (list->size > 0) {
+    	LLNode* node = list->first;
+    	list->size--;
+    	if (list->size == 0) {
+    		list->first = NULL;
+    		list->last = NULL;
+    	}
+    	else {
+    		list->first = node->next;
+    	}
+    	
+    	void* item = node->item;
+    	free(node);
+    	
+    	return item;
+    }
+    return NULL;
 }
 
 void* linked_list_peek_queue(LinkedList* list) {
