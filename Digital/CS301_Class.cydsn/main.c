@@ -33,66 +33,68 @@ static void system_init() {
 //    return 0.01149265 * cmps + 0.0021600519;
 //}
 
-static void command_test() {
-    scd = sensors_controller_create(30, false, false);
-    mcd = motor_controller_create(30, &scd);
-    pcd = path_controller_create(30, &scd, &mcd);
-    
+static void command_test() {    
     MotorCommand cmd = {
-        .speed = 0.2f, 
+        .speed = 0.3f, 
         .drive_mode = 0, 
-        .arg = (int)(128 * Kappa)
+        .arg = GRID_BLOCK_WIDTH * 2
     };
     path_controller_add_command(&pcd, &cmd);
     cmd.drive_mode = 1;
-    cmd.arg = 90;
+    cmd.speed = 0.3f;
+    cmd.arg = 85;
     path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 128);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 128);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 1;
-//    cmd.arg = -88;
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 132);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 132);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 132);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 132);
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = -88;
-//    path_controller_add_command(&pcd, &cmd);
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 128);
-//    path_controller_add_command(&pcd, &cmd);
-//    cmd.drive_mode = 1;
-//    cmd.arg = 88;
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 128);
-//    path_controller_add_command(&pcd, &cmd);
-//    
-//    cmd.drive_mode = 0;
-//    cmd.arg = (int)(Kappa * 128);
-//    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.speed = 0.3f;
+    cmd.arg = GRID_BLOCK_HEIGHT * 2;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 1;
+    cmd.speed = 0.3f;
+    cmd.arg = 85;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.speed = 0.3f;
+    cmd.arg = GRID_BLOCK_WIDTH * 2;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 1;
+    cmd.arg = -85;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = GRID_BLOCK_HEIGHT * 2;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 1;
+    cmd.arg = -85;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = GRID_BLOCK_WIDTH * 6;
+    path_controller_add_command(&pcd, &cmd);
+
+    cmd.drive_mode = 1;
+    cmd.arg = -85;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = GRID_BLOCK_HEIGHT * 2;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 1;
+    cmd.arg = 85;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 0;
+    cmd.arg = GRID_BLOCK_WIDTH * 10;
+    path_controller_add_command(&pcd, &cmd);
+    
+    cmd.drive_mode = 1;
+    cmd.arg = 185;
+    path_controller_add_command(&pcd, &cmd);
     
     while (true) {
         sensors_controller_worker(&scd);
@@ -104,9 +106,6 @@ static void command_test() {
 }
 
 static void maze_runner() {
-    scd = sensors_controller_create(30, false, true);
-    mcd = motor_controller_create(30, &scd);
-    pcd = path_controller_create(30, &scd, &mcd);
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
@@ -116,6 +115,9 @@ static void maze_runner() {
 
 int main() {
     system_init();
+    scd = sensors_controller_create(30, false, true);
+    mcd = motor_controller_create(30, &scd);
+    pcd = path_controller_create(30, &scd, &mcd);
     while(true) {
         uint8_t run_mode = REG_DIP_Read();
         led_set(run_mode);

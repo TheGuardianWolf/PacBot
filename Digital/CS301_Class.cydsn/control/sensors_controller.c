@@ -69,7 +69,7 @@ void sensors_controller_worker(SCData* data) {
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
         data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);     
         
-        data->qd_differential = data->qd_dist.L - data->qd_dist.R;
+//        data->qd_differential = data->qd_dist.L - data->qd_dist.R;
     }
     
     
@@ -134,13 +134,14 @@ void sensors_controller_worker(SCData* data) {
         
         // Automatic sensor enable/disable for higher switching speed
         if (LINE_INV(3) && LINE_INV(4) && LINE(1) && LINE(2)) {
+            // Dead end need middle sensor
             sensors_line_disable(1);
             sensors_line_disable(2);
             sensors_line_enable(0);
         }
         else {
-            sensors_line_enable(1);
-            sensors_line_enable(2);
+            sensors_line_disable(1);
+            sensors_line_disable(2);
             sensors_line_disable(0);
         }
         sensors_line_disable(5);
