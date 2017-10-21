@@ -28,6 +28,7 @@ typedef struct {
     graph_size_t next_node_id;
     MotorCommand* last_command;
     uint8_t heading;
+    uint8_t next_heading;
     SCData* sc_data;
     MCData* mc_data;
     uint32_t last_run;

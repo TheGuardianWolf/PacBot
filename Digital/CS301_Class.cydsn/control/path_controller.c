@@ -71,45 +71,52 @@ static void pathfinder_update_path(PCData* data) {
         }
 
         if (!short_boost) {
-            // Get current node id
-            data->current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+            MotorCommand* cmd;
             
-            // Get next node id
-            graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
+            if (data->last_command->drive_mode != 1) {
+                // Only pull from path if we're not adjusting orientations
+                graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+                graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
+                
+                data->current_node_id = current_node_id;
+                data->next_node_id = next_node_id;
 
-            // Find the travel arc
-            GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
-            int8_t next_heading = -1;
-            graph_size_t i;
-            for (i = 0; i < current_node->edges->size; i++) {
-                GraphEdge* travel_edge = vector_get(current_node->edges, i);
-                GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
-                if (travel_arc != NULL && travel_arc->destination == next_node_id) {
-                    next_heading = travel_arc->heading;
-                    break;
+                // Find the travel arc
+                GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
+                graph_size_t i;
+                for (i = 0; i < current_node->edges->size; i++) {
+                    GraphEdge* travel_edge = vector_get(current_node->edges, i);
+                    GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
+                    if (travel_arc != NULL && travel_arc->destination == next_node_id) {
+                        data->next_heading = travel_arc->heading;
+                        break;
+                    }
                 }
             }
 
             // Set motor speed and mode
-            MotorCommand* cmd;
-            if (next_heading != data->heading) {
+            if (data->next_heading != data->heading) {
+                // Turn to face the travel arc
                 cmd = malloc(sizeof(MotorCommand));
                 cmd->drive_mode = 1;
-                cmd->arg = (int32_t) (next_heading - data->heading) * 90;
+                cmd->arg = (int32_t) (data->next_heading - data->heading) * 90;
+                cmd->speed = 0.15;
+                linked_list_add(data->command_queue, cmd);
+                data->heading = data->next_heading;
+            }
+            else {
+                // Travel straight if already oriented
+                cmd = malloc(sizeof(MotorCommand));
+                cmd->drive_mode = 0;
+                if (data->next_heading == G_N || data->next_heading == G_S) {
+                    cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT);
+                }
+                else {
+                    cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH);
+                }
                 cmd->speed = 0.15;
                 linked_list_add(data->command_queue, cmd);
             }
-            
-            cmd = malloc(sizeof(MotorCommand));
-            cmd->drive_mode = 1;
-            if (next_heading == G_N || next_heading == G_S) {
-                cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT);
-            }
-            else {
-                cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH);
-            }
-            cmd->speed = 0.15;
-            linked_list_add(data->command_queue, cmd);
         }
         else {
             // Apply short command boost to attempt to find a trigger
@@ -128,6 +135,7 @@ PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd) {
     PCData data = {
         .sample_time = sample_time,
         .heading = -1,
+        .next_heading = -1,
         .current_node_id = NODE_INVALID,
         .next_node_id = NODE_INVALID,
         .command_queue = linked_list_create(),
@@ -144,7 +152,7 @@ void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height,
     // Load the map in here
     data->heading = initial_heading;
     data->graph = graph_create(grid, grid_height, grid_width);
-    data->path = pathfinder(data->graph, &graph_astar, start, end);
+    data->path = pathfinder(data->graph, &graph_travel_all, start, end);
     data->pathfinder = true;
 }
 
