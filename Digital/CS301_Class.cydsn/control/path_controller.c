@@ -95,16 +95,14 @@ static void pathfinder_update_path(PCData* data) {
                             break;
                         }
                     }
-                    if (data->heading == 3 || data->heading == 1) {
-                        dist += GRID_BLOCK_HEIGHT;
+
+                    dist ++;
+
+                    if(data->next_heading == data->heading) {
+                        current_node_id = (graph_size_t)(uvoid_t)linked_list_pop(data->path);
                     }
-                    else {
-                        dist += GRID_BLOCK_WIDTH;
-                    }
-                    linked_list_pop(data->path);
                 } while (data->next_heading == data->heading);
-                
-                cmd->arg = dist;
+
                 
             }
 
@@ -126,10 +124,10 @@ static void pathfinder_update_path(PCData* data) {
                 cmd = malloc(sizeof(MotorCommand));
                 cmd->drive_mode = 0;
                 if (data->next_heading == G_N || data->next_heading == G_S) {
-                    cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT);
+                    cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT * dist);
                 }
                 else {
-                    cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH);
+                    cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH * dist);
                 }
                 cmd->speed = 0.15;
                 linked_list_add(data->command_queue, cmd);
