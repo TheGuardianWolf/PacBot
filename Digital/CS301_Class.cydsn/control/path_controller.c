@@ -72,26 +72,29 @@ static void pathfinder_update_path(PCData* data) {
 
         if (!short_boost) {
             MotorCommand* cmd;
+            int32_t dist = 0;
             
             if (data->last_command->drive_mode != 1) {
                 // Only pull from path if we're not adjusting orientations
                 graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
-                graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
-                
                 data->current_node_id = current_node_id;
-                data->next_node_id = next_node_id;
+                
+//                do {
+                    graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
+                    data->next_node_id = next_node_id;
 
-                // Find the travel arc
-                GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
-                graph_size_t i;
-                for (i = 0; i < current_node->edges->size; i++) {
-                    GraphEdge* travel_edge = vector_get(current_node->edges, i);
-                    GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
-                    if (travel_arc != NULL && travel_arc->destination == next_node_id) {
-                        data->next_heading = travel_arc->heading;
-                        break;
+                    // Find the travel arc
+                    GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
+                    graph_size_t i;
+                    for (i = 0; i < current_node->edges->size; i++) {
+                        GraphEdge* travel_edge = vector_get(current_node->edges, i);
+                        GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
+                        if (travel_arc != NULL && travel_arc->destination == next_node_id) {
+                            data->next_heading = travel_arc->heading;
+                            break;
+                        }
                     }
-                }
+//                } while (data->next_heading == data->heading);
             }
 
             // Set motor speed and mode

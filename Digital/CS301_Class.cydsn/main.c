@@ -34,7 +34,7 @@ static void system_init() {
 //}
 
 static void command_test() {
-    scd = sensors_controller_create(30, false, true);
+    scd = sensors_controller_create(30, false, false);
     mcd = motor_controller_create(30, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
     
@@ -44,62 +44,62 @@ static void command_test() {
         .arg = (int)(128 * Kappa)
     };
     path_controller_add_command(&pcd, &cmd);
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
-    
     cmd.drive_mode = 1;
-    cmd.arg = -88;
+    cmd.arg = 90;
     path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 132);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 132);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 132);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 132);
-    path_controller_add_command(&pcd, &cmd);
-
-    cmd.drive_mode = 1;
-    cmd.arg = -88;
-    path_controller_add_command(&pcd, &cmd);
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
-    cmd.drive_mode = 1;
-    cmd.arg = 88;
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
-    
-    cmd.drive_mode = 0;
-    cmd.arg = (int)(Kappa * 128);
-    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 128);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 128);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 1;
+//    cmd.arg = -88;
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 132);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 132);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 132);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 132);
+//    path_controller_add_command(&pcd, &cmd);
+//
+//    cmd.drive_mode = 1;
+//    cmd.arg = -88;
+//    path_controller_add_command(&pcd, &cmd);
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 128);
+//    path_controller_add_command(&pcd, &cmd);
+//    cmd.drive_mode = 1;
+//    cmd.arg = 88;
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 128);
+//    path_controller_add_command(&pcd, &cmd);
+//    
+//    cmd.drive_mode = 0;
+//    cmd.arg = (int)(Kappa * 128);
+//    path_controller_add_command(&pcd, &cmd);
     
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
 
-//        led_set(pcd.command_queue->size);
+        led_set(pcd.command_queue->size);
     }
 }
 

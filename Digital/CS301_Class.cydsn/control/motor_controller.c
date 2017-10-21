@@ -19,8 +19,8 @@ static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed
     int32_t difference = abs(target - ref) - abs(now - ref);
     int32_t sign = (int32_t) copysignf(1.0f, (float) difference);
     if(difference > 0) { 
-        if (difference < 100) {
-            return sign * ((float) difference / 100) * speed * (1 + bias);
+        if (difference < 50) {
+            return sign * ((float) difference / 50) * speed * (1 + bias);
         }
         return sign * speed * (1 + bias);
     }
@@ -139,9 +139,6 @@ static void adjust_setpoint(MCData* data) {
                     data->target_dist.R = data->sc_data->qd_dist.R;
                     special = true;
                 }
-                else {
-                    led_set(0b111);
-                }
             }
         }
     }
@@ -199,8 +196,6 @@ void motor_controller_worker(MCData* data) {
         adjust_setpoint(data);
 
         if (data->PID_L.setpoint == 0 && data->PID_R.setpoint == 0) {
-            data->ref_dist.L = data->target_dist.L;
-            data->ref_dist.R = data->target_dist.R;
             data->idle = true;
         }
         else {
@@ -223,6 +218,8 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
     data->idle = false;
     data->target_speed = cmd->speed;
     data->drive_mode = cmd->drive_mode;
+    data->ref_dist.L = data->target_dist.L;
+    data->ref_dist.R = data->target_dist.R;
     if (cmd->drive_mode == -1) {
         data->target_dist.L = data->sc_data->qd_dist.L;
         data->target_dist.R = data->sc_data->qd_dist.R;
