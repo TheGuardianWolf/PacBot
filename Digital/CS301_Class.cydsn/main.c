@@ -9,11 +9,10 @@
 #include "systime.h"
 #include "usb.h"
 #include "wireless.h"
+#include "map.h"
 
 #define MAX_CMPS 60
 #define START_ORIENTATION G_N
-
-#define Kappa 0.9005
     
 static SCData scd;
 static MCData mcd;
@@ -100,8 +99,9 @@ static void command_test() {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
-
-        led_set(pcd.command_queue->size);
+        
+        
+        //led_set(pcd.command_queue->size);
     }
 }
 
@@ -118,9 +118,18 @@ int main() {
     scd = sensors_controller_create(30, false, true);
     mcd = motor_controller_create(30, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
+    led_set(1);
+    uint8_t grid PACMAN_MAP;
+    point_uint8_t start = {
+        .x = PACMAN_START_X,
+        .y = PACMAN_START_Y
+    };
+    path_controller_load_data(&pcd, (uint8_t*) &grid, 15, 19, start, start, -1);
     while(true) {
-        uint8_t run_mode = REG_DIP_Read();
-        led_set(run_mode);
+        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
+        pcd.heading = initial_heading;
+        uint8_t run_mode = REG_DIP_Read() & 0b0011;
+        led_set(pcd.heading);
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
@@ -128,6 +137,7 @@ int main() {
                 maze_runner();
             }
             else if (run_mode == 2) {
+                pcd.pathfinder = false;
                 command_test();
             }
         }
