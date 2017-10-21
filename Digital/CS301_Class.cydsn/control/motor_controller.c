@@ -18,7 +18,10 @@ static float speed2pidin (float speed) {
 static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
     int32_t difference = abs(target - ref) - abs(now - ref);
     int32_t sign = (int32_t) copysignf(1.0f, (float) difference);
-    if (difference > 0) { 
+    if(difference > 0) { 
+        if (difference < 100) {
+            return sign * ((float) difference / 100) * speed * (1 + bias);
+        }
         return sign * speed * (1 + bias);
     }
     return 0.0f;
@@ -105,10 +108,12 @@ static void adjust_bias(MCData* data) {
         }
     }
 
-    if (data->bias_L == 0 && data->bias_R == 0) {
-        // Quad Dec Differential P Bias
-        data->bias_L += -0.0 * data->sc_data->qd_differential;
-        data->bias_R += 0.0 * data->sc_data->qd_differential;
+    if (data->drive_mode == 0) {
+//        if (data->bias_L == 0 && data->bias_R == 0) {
+            // Quad Dec Differential P Bias
+            data->bias_L += -0.01 * data->sc_data->qd_differential;
+            data->bias_R += 0.01 * data->sc_data->qd_differential;
+//        }
     }
 
     data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
