@@ -69,6 +69,8 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
+        .line_stop_tolerance = 100,
+        .line_turn_tolerance = deg2dist(75),
         .drive_mode = 0,
         .idle = false,
         .last_run = 0
@@ -105,18 +107,18 @@ static void adjust_bias(MCData* data) {
 //        data->bias_L += inversion_bias;
 //        data->bias_R += inversion_bias;
     }
-    if (data->sc_data->use_wireless) {
-        if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
-            data->bias_R += (float) data->sc_data->rel_orientation / 900;
-            data->bias_L += (float) -data->sc_data->rel_orientation / 900;
-        }
-        else {
-            data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-            data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
-        }
-    }
+    // if (data->sc_data->use_wireless) {
+    //     if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
+    //         data->bias_R += (float) data->sc_data->rel_orientation / 900;
+    //         data->bias_L += (float) -data->sc_data->rel_orientation / 900;
+    //     }
+    //     else {
+    //         data->bias_L += (float) (data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+    //         data->bias_R += (float) -(data->sc_data->rel_orientation - ORIENTATION_HREV) / 900;
+    //     }
+    // }
 
-    #if USE_DIFFERENTIAL == 1
+#if USE_DIFFERENTIAL == 1
     if (data->drive_mode == 0) {
         int32_t qd_differential = (data->sc_data->qd_dist.L - data->ref_dist.L) - (data->sc_data->qd_dist.R - data->ref_dist.R);
         if (data->bias_L == 0 && data->bias_R == 0) {
@@ -125,7 +127,7 @@ static void adjust_bias(MCData* data) {
             data->bias_R += 0.01 * qd_differential;
         }
     }
-    #endif
+#endif
 
     data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
     data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
@@ -137,42 +139,45 @@ static void adjust_setpoint(MCData* data) {
     // Run setpoint calculations
     if (data->drive_mode == 0) {
         if (data->sc_data->use_line) {
-            if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-                tolerance = 100;
-                QuadDecData dist_to_target = {
-                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
-                    .R = data->target_dist.R - data->sc_data->qd_dist.R
-                };
-                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+            tolerance = data->line_stop_tolerance;
+            QuadDecData dist_to_target = {
+                .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                .R = data->target_dist.R - data->sc_data->qd_dist.R
+            };
+
+            if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
+                if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
                     special = true;
                 }
+            }
+            else {
+                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
             }
         }
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
-            if (!data->sc_data->line_front_lost) {
-                tolerance = deg2dist(75);
-                led_set(0b111);
-                QuadDecData dist_to_target = {
-                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
-                    .R = data->target_dist.R - data->sc_data->qd_dist.R
-                };
-                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+            tolerance = data->line_turn_tolerance;
+            QuadDecData dist_to_target = {
+                .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                .R = data->target_dist.R - data->sc_data->qd_dist.R
+            };
+            if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
+                if (!data->sc_data->line_front_lost) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
-                    data->ref_dist.L = data->target_dist.L;
-                    data->ref_dist.R = data->target_dist.R;
                     special = true;
-
                 }
             }
+            sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
         }
     }
     else if (data->drive_mode == 3) {
@@ -260,6 +265,13 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         int32_t arc_length = deg2dist(cmd->arg);
         data->target_dist.L += dist2dec(arc_length);
         data->target_dist.R += dist2dec(-arc_length);
+
+        if (arc_length < 0) {
+            data->sc_data->line_herustic_turn = DI_L;
+        }
+        else if (arc_length > 0) {
+            data->sc_data->line_herustic_turn = DI_R;
+        }
     }
     else if (cmd->drive_mode == 2) {
         // Arc turn left/right

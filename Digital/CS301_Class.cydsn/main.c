@@ -12,11 +12,12 @@
 #include "map.h"
 // #include "motor.h"
 
+#define TOUCH_UI 1
 #define MAX_CMPS 60
 
 static uint8_t grid PACMAN_MAP;
 static uint8_t food_list PACMAN_FOOD_LIST;
-    
+
 static SCData scd;
 static MCData mcd;
 static PCData pcd;
@@ -41,6 +42,7 @@ static void maze_runner();
 
 static void flash_invalid();
 
+#if TOUCH_UI == 1
 int main() {
     // Red light for initialisation
     led_set(1);
@@ -64,7 +66,7 @@ int main() {
     };
 
     path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
-    
+
     led_set(0);
     while(true) {
         if(btn_get()) {
@@ -92,7 +94,7 @@ int main() {
         led_set(selection);
 
         switch(state) {
-            case 0:
+        case 0:
             if (held) {
                 if (selection > 0 && selection < 4) {
                     run_mode = selection;
@@ -104,7 +106,7 @@ int main() {
                 }
             }
             break;
-            case 1:
+        case 1:
             if (held) {
                 if (selection > 0 && selection < 5) {
                     initial_heading = selection;
@@ -116,7 +118,7 @@ int main() {
                 }
             }
             break;
-            case 2:
+        case 2:
             if (held) {
                 ready = true;
             }
@@ -124,7 +126,7 @@ int main() {
                 led_set(0b010);
             }
             break;
-            default:
+        default:
             state = 0;
             break;
         }
@@ -161,8 +163,47 @@ int main() {
         pressed = false;
         held = false;
     }
-    return 0; 
+    return 0;
 }
+#else
+int main() {
+    led_set(1);
+    system_init();
+    scd = sensors_controller_create(15, false, true);
+    mcd = motor_controller_create(15, &scd);
+    pcd = path_controller_create(30, &scd, &mcd);
+    uint8_t grid PACMAN_MAP;
+    uint8_t food_list PACMAN_FOOD_LIST;
+    point_uint8_t start = {
+        .x = PACMAN_START_X,
+        .y = PACMAN_START_Y
+    };
+    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
+    led_set(0);
+    while(true) {
+       int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
+       uint8_t run_mode = REG_DIP_Read() & 0b0011;
+       led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11));
+        if(btn_get()) {
+            uint32_t time = systime_s();
+            while(systime_s() - time < 2);
+           if (run_mode == 0) {
+               pcd.path = pcd.astar_path;
+               maze_runner();
+           }
+           if (run_mode == 1) {
+               pcd.path = pcd.travel_path;
+               maze_runner();
+           }
+           else if (run_mode == 2) {
+               command_test();
+               //motor_test();
+           }
+        }
+    }
+    return 0;
+}
+#endif
 
 static void maze_runner() {
     while (true) {
@@ -172,46 +213,46 @@ static void maze_runner() {
     }
 }
 
-static void command_test() {    
+static void command_test() {
     MotorCommand cmd = {
-        .speed = 0.3f, 
-        .drive_mode = 0, 
+        .speed = 0.3f,
+        .drive_mode = 0,
         .arg = GRID_BLOCK_WIDTH * 2
     };
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.speed = 0.3f;
     cmd.arg = 85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.speed = 0.3f;
     cmd.arg = GRID_BLOCK_HEIGHT * 2;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.speed = 0.3f;
     cmd.arg = 85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.speed = 0.3f;
     cmd.arg = GRID_BLOCK_WIDTH * 2;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.arg = -85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.arg = GRID_BLOCK_HEIGHT * 2;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.arg = -85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.arg = GRID_BLOCK_WIDTH * 6;
     path_controller_add_command(&pcd, &cmd);
@@ -219,23 +260,23 @@ static void command_test() {
     cmd.drive_mode = 1;
     cmd.arg = -85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.arg = GRID_BLOCK_HEIGHT * 2;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.arg = 85;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 0;
     cmd.arg = GRID_BLOCK_WIDTH * 10;
     path_controller_add_command(&pcd, &cmd);
-    
+
     cmd.drive_mode = 1;
     cmd.arg = 185;
     path_controller_add_command(&pcd, &cmd);
-    
+
     while (true) {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);

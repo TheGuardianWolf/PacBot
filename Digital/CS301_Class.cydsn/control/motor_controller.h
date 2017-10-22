@@ -22,6 +22,8 @@ typedef struct {
     PIDData PID_LR;
     QuadDecData target_dist;
     QuadDecData ref_dist;
+    int32_t line_stop_tolerance;
+    int32_t line_turn_tolerance;
     int8_t drive_mode;
     bool idle;
     uint32_t last_run;

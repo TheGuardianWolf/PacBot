@@ -7,6 +7,8 @@
 #include "systime.h"
 // #include "adc.h"
 
+#define USE_HERUSTICS 1
+
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
     return (float) (curr - prev) / (float) dt;
@@ -26,6 +28,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .use_line = use_line,
         .line_sensor_config = 0,
         .line_tracking = DI_N,
+        .line_tracking_prev = DI_N,
         .line_intersection = {DI_N, DI_N},
         .line_front_lost = false,
         .line_end = false,
@@ -62,6 +65,37 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
 void sensors_controller_set_config(SCData* data, int8_t config) {
     if (data->line_sensor_config != config) {
         data->line_sensor_config = config;
+        switch(config) {
+            case LINE_DISABLE_CONFIG:
+            sensors_line_disable(0);
+            sensors_line_disable(3);
+            sensors_line_disable(4);
+            sensors_line_disable(1);
+            sensors_line_disable(2);
+            sensors_line_disable(5);
+            case LINE_TRACKING_CONFIG:
+            sensors_line_disable(0);
+            sensors_line_enable(3);
+            sensors_line_enable(4);
+            sensors_line_disable(1);
+            sensors_line_disable(2);
+            if (data->reversed) {
+                sensors_line_enable(5);
+            }
+            else {
+                sensors_line_disable(5);
+            }
+            case LINE_INTERSECTION_CONFIG:
+            sensors_line_disable(0);
+            sensors_line_disable(3);
+            sensors_line_disable(4);
+            sensors_line_enable(1);
+            sensors_line_enable(2);
+            sensors_line_enable(5);
+            break;
+            default:
+            break;
+        }
     }
 }
 
@@ -82,7 +116,6 @@ void sensors_controller_worker(SCData* data) {
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
         data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);
     }
-    
     
     // Line section - Guard via interrupt flag
     #define LINE(x) line_data.state[x]
@@ -110,8 +143,8 @@ void sensors_controller_worker(SCData* data) {
         if (LINE(1) && LINE(2)) {
             // If front sensors roll off the line, and side sensors aren't detecting
             // Try to correct.
-            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || LINE_INV(5))) {
-                uint8_t line_tracking_prev = data->line_tracking;
+            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || (data->reversed && LINE_INV(5)))) {
+                data->line_tracking_prev = data->line_tracking;
                 if (!data->reversed) {
                     data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
                 }
@@ -120,7 +153,18 @@ void sensors_controller_worker(SCData* data) {
                 }
 
                 if (data->line_tracking == DI_LR) {
-                    data->line_tracking = line_tracking_prev;
+                    // Use herustics submitted by another controller if available.
+                    #if USE_HERUSTICS == 1
+                    if (data->line_herustic_turn != DI_N) {
+                        data->line_tracking = data->line_herustic_turn;
+                        data->line_herustic_turn = DI_N;
+                    }
+                    else {
+                    #endif
+                        data->line_tracking = data->line_tracking_prev;
+                    #if USE_HERUSTICS == 1
+                    }
+                    #endif
                 }
             }
             else {
@@ -148,20 +192,6 @@ void sensors_controller_worker(SCData* data) {
             data->line_end = false;
             data->line_lost = false;
         }
-        
-        // Automatic sensor enable/disable for higher switching speed
-        // if (LINE_INV(3) && LINE_INV(4) && LINE(1) && LINE(2)) {
-        //     // Dead end need middle sensor
-        //     sensors_line_disable(1);
-        //     sensors_line_disable(2);
-        //     sensors_line_enable(0);
-        // }
-        // else {
-        //     sensors_line_enable(1);
-        //     sensors_line_enable(2);
-        //     sensors_line_disable(0);
-        // }
-        // sensors_line_disable(5);
     }
     
     // Wireless fusion section - Guard via interrupt flag
@@ -188,11 +218,15 @@ void sensors_controller_worker(SCData* data) {
 void sensors_controller_reverse(SCData* data) {
     if (!data->reversed) {
         data->reversed = true;
-        sensors_line_enable(5);
+        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
+            sensors_line_enable(5);
+        }
     }
     else {
         data->reversed = false;
-        sensors_line_disable(5);
+        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
+            sensors_line_disable(5);
+        }
     }
 }
 

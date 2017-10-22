@@ -31,7 +31,9 @@ typedef struct {
     bool use_wireless;
     bool use_line;
     uint8_t line_tracking;
+    uint8_t line_tracking_prev;
     uint8_t line_intersection[2];
+    uint8_t line_herustic_turn;
     bool line_end;
     bool line_lost;
     uint8_t line_inversions;
@@ -54,6 +56,8 @@ typedef struct {
 void sensors_controller_init();
 
 SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool use_line);
+
+void sensors_controller_set_config(SCData* data, int8_t config);
 
 void sensors_controller_worker(SCData* data);
 
