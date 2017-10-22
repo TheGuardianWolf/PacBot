@@ -5,7 +5,7 @@
 
 #include "sensors_controller.h"
 #include "systime.h"
-#include "adc.h"
+// #include "adc.h"
 
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
@@ -16,7 +16,7 @@ void sensors_controller_init() {
     systime_init();
     wireless_init();
     sensors_init();
-    adc_init();
+    // adc_init();
 }
 
 SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool use_line) {
