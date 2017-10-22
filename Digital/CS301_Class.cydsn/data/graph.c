@@ -64,9 +64,9 @@ Graph* graph_create(uint8_t* grid, uint8_t grid_height, uint8_t grid_width) {
                             if (edge != NULL) {
                                 edge->id = graph->unique_edges;
                                 edge->a1.destination = k;
-                                edge->a1.heading = j + 3;
+                                edge->a1.heading = j + 1;
                                 edge->a2.destination = target_node_id;
-                                edge->a2.heading = j + 1;
+                                edge->a2.heading = j + 3;
                                 vector_append(node_ptr->edges, edge);
                                 vector_append(target_node_ptr->edges, edge);
                                 graph->unique_edges++;
@@ -119,10 +119,10 @@ graph_size_t graph_node_order(Graph* graph, graph_size_t node_id) {
 
 GraphEdge* graph_edge_find(Graph* graph, graph_size_t node_a, graph_size_t node_b, GraphArc** r_arc) {
     graph_size_t i;
-    GraphNode* current_node = vector_get(data->graph->nodes, node_a);
+    GraphNode* current_node = vector_get(graph->nodes, node_a);
     for (i = 0; i < current_node->edges->size; i++) {
         GraphEdge* travel_edge = vector_get(current_node->edges, i);
-        GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
+        GraphArc* travel_arc = graph_arc_from(travel_edge, node_a);
         if (travel_arc != NULL && travel_arc->destination == node_b) {
             *r_arc = travel_arc;
             return travel_edge;

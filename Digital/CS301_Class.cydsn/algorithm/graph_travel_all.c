@@ -32,7 +32,7 @@ static Vector* make_acyclic(Graph* graph, graph_size_t start) {
 
     linked_list_push(frontier, (void*)(uvoid_t) start);
 
-    uvoid_t current_node_id, current_node_order;
+    uvoid_t current_node_id;
     GraphEdge* current_edge;
     GraphNode* current_node;
     GraphEdge* came_from_edge;

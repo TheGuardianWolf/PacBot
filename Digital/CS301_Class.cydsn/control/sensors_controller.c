@@ -105,7 +105,7 @@ void sensors_controller_worker(SCData* data) {
         if (LINE(1) && LINE(2)) {
             // If front sensors roll off the line, and side sensors aren't detecting
             // Try to correct.
-            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || LINE_INV(5)) {
+            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || LINE_INV(5))) {
                 uint8_t line_tracking_prev = data->line_tracking;
                 if (!data->reversed) {
                     data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;

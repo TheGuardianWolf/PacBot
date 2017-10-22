@@ -25,7 +25,7 @@
     {13,5},\
     {9,9}\
 }
-#define PACMAN_FOOD_LIST_SIZE = 5
+#define PACMAN_FOOD_LIST_SIZE 0
     
 #define PACMAN_START_X 1
 #define PACMAN_START_Y 1

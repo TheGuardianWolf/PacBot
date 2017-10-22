@@ -49,7 +49,7 @@ point_uint8_t graph_nodeid2grid(Graph* graph, graph_size_t node_id);
 
 graph_size_t graph_node_order(Graph* graph, graph_size_t node_id);
 
-GraphEdge* graph_edge_find(Graph* graph, graph_size_t node_a, graph_size_t node_b, GraphArc* r_arc);
+GraphEdge* graph_edge_find(Graph* graph, graph_size_t node_a, graph_size_t node_b, GraphArc** r_arc);
 
 void graph_edge_remove(Graph* graph, GraphEdge* edge);
 

@@ -238,7 +238,7 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         data->target_dist.L += dist2dec(cmd->arg);
         data->target_dist.R += dist2dec(cmd->arg);
 
-        if (data->target_dist.L < ref_dist.L) {
+        if (data->target_dist.L < data->ref_dist.L) {
             if (!data->sc_data->reversed) {
                 sensors_controller_reverse(data->sc_data);
             }

@@ -6,11 +6,12 @@
 #include "voidtypes.h"
 #include "systime.h"
 #include "interactive.h"
+#include "map.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stddef.h>
 
-#define USE_REVERSE 1
+#define USE_REVERSE 0
 
 DiPoint rf2grid(DiPoint rf_loc) {
     DiPoint grid_pos = {
@@ -26,7 +27,7 @@ DiPoint rf2grid(DiPoint rf_loc) {
     return grid_pos;
 }
 
-static void pathfinder_turn(PDData* data, int32_t turn) {
+static void pathfinder_turn(PCData* data, int32_t turn) {
     MotorCommand* cmd;
 
     // Turn to face the next heading
@@ -39,7 +40,7 @@ static void pathfinder_turn(PDData* data, int32_t turn) {
     data->heading = data->next_heading;
 }
 
-static void pathfinder_straight(PDData* data, int32_t blocks) {
+static void pathfinder_straight(PCData* data, int32_t blocks) {
     MotorCommand* cmd;
 
     // Travel straight if already oriented
@@ -63,7 +64,7 @@ static void pathfinder_update_path(PCData* data) {
 
         // Pre-travel checks to make sure we're actually on the next node
         if (data->sc_data->use_wireless) {
-            if (data->next_node_id != NULL) {
+            if (data->next_node_id != 0) {
                 // Extract next node coordinate
                 point_uint8_t grid_loc = graph_nodeid2grid(data->graph, data->next_node_id);
             
@@ -100,53 +101,53 @@ static void pathfinder_update_path(PCData* data) {
             }
         }
 
-        if (!short_boost) {            
-            if (data->last_command == NULL || data->last_command->drive_mode != 1) {
-                // Only pull from path if we're not adjusting orientations
-                graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
-                data->current_node_id = current_node_id;
-                
-                while(true) {
-                    graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
-                    data->next_node_id = next_node_id;
-                    // Find the travel arc
-                    GraphArc* travel_arc;
-                    GraphEdge* travel_edge = graph_edge_find(graph, current_node_id, next_node_id, &travel_arc);
-
-                    if (travel_arc == NULL || travel_edge == NULL) {
-                        // Break if unexpected nulls found
-                        break;
-                    }
-
-                    turn = (data->heading - travel_arc->heading);
-
-                    if (turn == 0 && straight_blocks >= 0) {
-                        // Straight line travel and concatenation if going forward
-                        straight_blocks++;
-                        current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
-                    }
-                    #ifdef USE_REVERSE == 1
-                    else if (abs(turn) == 2 && straight_blocks <= 0) {
-                        // Straight line travel and concatenation if going backwards
-                        straight_blocks--;
-                        current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
-                    }
-                    #endif
-                    else {
-                        // Not a straight line, don't concatenate
-                        break;
-                    }
-                } 
-
-                data->next_heading = travel_arc->heading;
+        if (!short_boost) {
+            // Only pull from path if we're not adjusting orientations
+            graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+            data->current_node_id = current_node_id;
+            
+            GraphArc* travel_arc;
+            graph_size_t next_node_id;
+            
+            while(true) {
+                next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
                 data->next_node_id = next_node_id;
-            }
+                // Find the travel arc
+                GraphEdge* travel_edge = graph_edge_find(data->graph, current_node_id, next_node_id, &travel_arc);
+
+                if (travel_arc == NULL || travel_edge == NULL) {
+                    // Break if unexpected nulls found
+                    break;
+                }
+
+                turn = (data->heading - travel_arc->heading);
+
+                if (turn == 0 && straight_blocks >= 0) {
+                    // Straight line travel and concatenation if going forward
+                    straight_blocks++;
+                    current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+                }
+                #if USE_REVERSE == 1
+                else if (abs(turn) == 2 && straight_blocks <= 0) {
+                    // Straight line travel and concatenation if going backwards
+                    straight_blocks--;
+                    current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+                }
+                #endif
+                else {
+                    // Not a straight line, don't concatenate
+                    break;
+                }
+            } 
+
+            data->next_heading = travel_arc->heading;
+            data->next_node_id = next_node_id;
 
             // Set motor speed and mode
             if (straight_blocks > 0) {
                 pathfinder_straight(data, straight_blocks);
             }
-            #ifdef USE_REVERSE == 1
+            #if USE_REVERSE == 1
             else if (straight_blocks < 0) {
                 pathfinder_straight(data, straight_blocks);
             }
@@ -186,7 +187,7 @@ PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd) {
     return data;
 }
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t* food_list, uint8_t food_list_height, uint8_t grid_height, uint8_t grid_width, point_uint8_t start) {
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, uint8_t* food_list, uint8_t food_list_size, point_uint8_t start) {
     // Load the map in here
     data->graph = graph_create(grid, grid_height, grid_width);
     data->travel_path = pathfinder(data->graph, &graph_travel_all, start, start);
@@ -195,7 +196,7 @@ void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t* food_list, 
     uint8_t i;
     LinkedList* astar_path = NULL;
     
-    for (uint8_t i = 0; i < list_size; i++) {
+    for (i = 0; i < food_list_size; i++) {
         point_uint8_t target = {
             .x = food_list[i * 2 + 0],
             .y = food_list[i * 2 + 1]

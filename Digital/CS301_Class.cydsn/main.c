@@ -10,6 +10,7 @@
 #include "usb.h"
 #include "wireless.h"
 #include "map.h"
+#include "motor.h"
 
 #define MAX_CMPS 60
 #define START_ORIENTATION G_N
@@ -39,6 +40,7 @@ static void command_test() {
         .arg = GRID_BLOCK_WIDTH * 2
     };
     path_controller_add_command(&pcd, &cmd);
+    
     cmd.drive_mode = 1;
     cmd.speed = 0.3f;
     cmd.arg = 85;
@@ -100,7 +102,7 @@ static void command_test() {
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
 
-        //led_set(pcd.command_queue->size);
+        led_set(pcd.command_queue->size);
     }
 }
 
@@ -110,6 +112,11 @@ static void maze_runner() {
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
     }
+}
+
+static void motor_test() {
+    motor_set_L(100);
+    motor_set_R(100);
 }
 
 int main() {
@@ -126,25 +133,28 @@ int main() {
     };
     path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_SIZE, start);
     while(true) {
-        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
-        pcd.heading = initial_heading;
-        uint8_t run_mode = REG_DIP_Read() & 0b0011;
-        led_set(pcd.heading);
+//        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
+        pcd.heading = G_S;
+//        uint8_t run_mode = REG_DIP_Read() & 0b0011;
+//        led_set(pcd.heading);
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
-            if (run_mode == 0) {
-                pcd.path = pcd.astar_path;
-                maze_runner();
-            }
-            if (run_mode == 1) {
-                pcd.path = pcd.travel_path;
-                maze_runner();
-            }
-            else if (run_mode == 2) {
-                pcd.pathfinder = false;
-                command_test();
-            }
+            pcd.path = pcd.travel_path;
+            maze_runner();
+            //command_test();
+//            if (run_mode == 0) {
+//                pcd.path = pcd.astar_path;
+//                maze_runner();
+//            }
+//            if (run_mode == 1) {
+//                pcd.path = pcd.travel_path;
+//                maze_runner();
+//            }
+//            else if (run_mode == 2) {
+//                command_test();
+//                //motor_test();
+//            }
         }
     }
     return 0; 

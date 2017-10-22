@@ -10,10 +10,10 @@
 #define GRID_BLOCK_HEIGHT 128.33f
 #define GRID_BLOCK_WIDTH_PX 52.875f
 #define GRID_BLOCK_HEIGHT_PX 51.333f
-#define GRID_OFFSET_X 100.0f
-#define GRID_OFFSET_Y 100.0f
-#define GRID_OFFSET_X_PX 100.0f
-#define GRID_OFFSET_Y_PX 100.0f
+#define GRID_OFFSET_X 201.0f
+#define GRID_OFFSET_Y 194.0f
+#define GRID_OFFSET_X_PX 80.4f
+#define GRID_OFFSET_Y_PX 77.6f
 
 // 211.5 cm width for 16 blocks travel
 // 26.5 cm width for 2 blocks travel
@@ -43,7 +43,7 @@ void path_controller_init();
 
 PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd);
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, uint8_t* food_list, uint8_t food_list_height, point_uint8_t start);
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, uint8_t* food_list, uint8_t food_list_size, point_uint8_t start);
 
 void path_controller_add_command(PCData* data, MotorCommand* cmd);
 
