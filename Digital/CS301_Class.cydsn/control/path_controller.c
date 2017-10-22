@@ -10,17 +10,18 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-static uint8_t count = 0;
-static bool check_start(Graph* graph, graph_size_t node_id) {
-    point_uint8_t start_grid = graph_nodeid2grid(graph, node_id);
-    return start_grid.x == GRID_START_X && start_grid.y == GRID_START_Y;
-}
+#define USE_REVERSE 1
 
-static point_uint8_t real2grid(DiPoint real_loc) {
-    point_uint8_t grid_pos = {
-        .x = real_loc.x,
-        .y = real_loc.y
+DiPoint rf2grid(DiPoint rf_loc) {
+    DiPoint grid_pos = {
+        .x = roundf(((float) rf_loc.x - GRID_OFFSET_X_PX) / GRID_BLOCK_WIDTH_PX),
+        .y = roundf(((float) rf_loc.y - GRID_OFFSET_Y_PX) / GRID_BLOCK_HEIGHT_PX),
+        .orientation = roundf((((float) rf_loc.orientation / RF_DEGREESPERUNIT) + 45) / 90) + 1
     };
+
+    if (grid_pos.orientation > 4) {
+        grid_pos.orientation = 1;
+    }
 
     return grid_pos;
 }
@@ -60,47 +61,44 @@ static void pathfinder_update_path(PCData* data) {
         int32_t straight_blocks = 0;
         int8_t turn = 0;
 
-//        // Pre-travel checks to make sure we're actually on the next node
-//        if (data->next_node_id != NODE_INVALID) {
-//            uint8_t node_order = graph_node_order(data->graph, data->next_node_id);
-//            // Test 1: Check for matching node orders
-//            uint8_t real_node_order = 0;
-//
-//            uint8_t i;
-//            for (i = 0; i < 2; i++) {
-//                switch(data->sc_data->line_intersection[i]) {
-//                    case 1:
-//                    real_node_order++;
-//                    break;
-//                    case 2:
-//                    real_node_order++;
-//                    break;
-//                    case 3:
-//                    real_node_order += 2;
-//                    break;
-//                    default:
-//                    break;
-//                }
-//            }
-//            
-//            if (real_node_order == node_order) {
-//                if (data->sc_data->use_wireless) {
-//                    // Extract next node coordinate
-//                    point_uint8_t grid_loc = graph_nodeid2grid(data->graph, data->next_node_id);
-//                
-//                    // Calculate current grid position
-//                    point_uint8_t real_grid_loc = real2grid(data->sc_data->curr_loc);
-//    
-//                    // Test 2: Check if currently in next grid position via RF
-//                    if (grid_loc.x != real_grid_loc.x || grid_loc.y != real_grid_loc.y) {
-//                        short_boost = true;
-//                    }
-//                }
-//            }
-//            else {
-//                short_boost = true;
-//            }
-//        }
+        // Pre-travel checks to make sure we're actually on the next node
+        if (data->sc_data->use_wireless) {
+            if (data->next_node_id != NULL) {
+                // Extract next node coordinate
+                point_uint8_t grid_loc = graph_nodeid2grid(data->graph, data->next_node_id);
+            
+                // Calculate current grid position
+                DiPoint real_grid_loc = rf2grid(data->sc_data->curr_loc);
+
+                // Test: Check if currently in right grid or orientation with RF
+                if (data->last_command->drive_mode == 1) {
+                    if (data->heading != real_grid_loc.orientation) {
+                        data->last_command->arg = ((int32_t) data->heading - real_grid_loc.orientation) * 15;
+                        short_boost = true;
+                    }
+                }
+                else {
+                    if (grid_loc.x != real_grid_loc.x || grid_loc.y != real_grid_loc.y) {
+                        short_boost = true;
+                        if (data->heading == G_N) {
+                            data->last_command->arg = ((int32_t) real_grid_loc.y - grid_loc.y) * 65;
+                        }
+                        else if (data->heading == G_S) {
+                            data->last_command->arg = ((int32_t) grid_loc.y - real_grid_loc.y) * 65;
+                        }
+                        else if (data->heading == G_E) {
+                            data->last_command->arg = ((int32_t) grid_loc.x - real_grid_loc.x) * 65;
+                        }
+                        else if (data->heading == G_W) {
+                            data->last_command->arg = ((int32_t) real_grid_loc.x - grid_loc.x) * 65;
+                        }
+                        else {
+                            short_boost = false;
+                        }
+                    }
+                }
+            }
+        }
 
         if (!short_boost) {            
             if (data->last_command == NULL || data->last_command->drive_mode != 1) {
@@ -127,11 +125,13 @@ static void pathfinder_update_path(PCData* data) {
                         straight_blocks++;
                         current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
                     }
+                    #ifdef USE_REVERSE == 1
                     else if (abs(turn) == 2 && straight_blocks <= 0) {
                         // Straight line travel and concatenation if going backwards
                         straight_blocks--;
                         current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
                     }
+                    #endif
                     else {
                         // Not a straight line, don't concatenate
                         break;
@@ -144,18 +144,15 @@ static void pathfinder_update_path(PCData* data) {
 
             // Set motor speed and mode
             if (straight_blocks > 0) {
-                if (data->sc_data->reversed) {
-                    sensors_controller_reverse(data->sc_data);
-                }
                 pathfinder_straight(data, straight_blocks);
             }
+            #ifdef USE_REVERSE == 1
             else if (straight_blocks < 0) {
-                if (!data->sc_data->reversed) {
-                    sensors_controller_reverse(data->sc_data);
-                }
                 pathfinder_straight(data, straight_blocks);
             }
+            #endif
             else {
+                turn = data->heading - data->next_heading;
                 pathfinder_turn(data, turn);
             }
         }
@@ -163,8 +160,8 @@ static void pathfinder_update_path(PCData* data) {
             // Apply short command boost to attempt to find a trigger
             MotorCommand cmd = {
                 .drive_mode = data->last_command->drive_mode,
-                .arg = (int32_t) (data->last_command->arg * 0.1),
-                .speed = 0.15
+                .arg = data->last_command->arg,
+                .speed = 0.3
             };
             
             motor_controller_set(data->mc_data, &cmd);
@@ -183,19 +180,46 @@ PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd) {
         .last_command = NULL,
         .mc_data = mcd,
         .sc_data = scd,
-        .pathfinder = false,
         .last_run = 0
     };
 
     return data;
 }
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end, int8_t initial_heading) {
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t* food_list, uint8_t food_list_height, uint8_t grid_height, uint8_t grid_width, point_uint8_t start) {
     // Load the map in here
-    data->heading = initial_heading;
     data->graph = graph_create(grid, grid_height, grid_width);
-    data->path = pathfinder(data->graph, &graph_travel_all, start, end);
-    data->pathfinder = true;
+    data->travel_path = pathfinder(data->graph, &graph_travel_all, start, start);
+
+    // Parse and path the food list
+    uint8_t i;
+    LinkedList* astar_path = NULL;
+    
+    for (uint8_t i = 0; i < list_size; i++) {
+        point_uint8_t target = {
+            .x = food_list[i * 2 + 0],
+            .y = food_list[i * 2 + 1]
+        };
+
+        LinkedList* segment_path = pathfinder(data->graph, &graph_astar, start, target);
+        if (astar_path == NULL || astar_path->size == 1) {
+            astar_path = segment_path;
+        }
+        else {
+            astar_path->last->prev->next = segment_path->first;
+            segment_path->first->prev = astar_path->last->prev;
+            astar_path->size--;
+            astar_path->size += segment_path->size;
+            free(astar_path->last);
+            astar_path->last = segment_path->last;
+            free(segment_path);
+        }
+        start.x = target.x;
+        start.y = target.y;
+    }
+    data->astar_path = astar_path;
+
+    data->current_node_id = graph_grid2nodeid(data->graph, start);   
 }
 
 void path_controller_add_command(PCData* data, MotorCommand* cmd) {
@@ -213,20 +237,15 @@ void path_controller_worker(PCData* data) {
              data->mc_data->idle) {
                 if (data->command_queue->size == 0) {
                     // Update path if out of commands
-                    if (data->pathfinder) {
+                    if (data->path != NULL) {
                         pathfinder_update_path(data);
                     }
                 }
                 else {
                     // Run next command
-                    // sensors_controller_reset(data->sc_data);
-                    // data->mc_data->target_dist.L = 0;
-                    // data->mc_data->target_dist.R = 0;
-                    // data->mc_data->ref_dist.L = 0;
-                    // data->mc_data->ref_dist.R = 0;
+
                     MotorCommand* cmd = linked_list_pop(data->command_queue);
                     
-               
                     motor_controller_set(data->mc_data, cmd);
                     if (data->last_command != NULL) {
                         free(data->last_command);

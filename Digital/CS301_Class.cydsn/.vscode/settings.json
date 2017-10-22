@@ -29,6 +29,7 @@
         "stdint.h": "c",
         "pathfinder.h": "c",
         "minunit.h": "c",
-        "graph_travel_all.h": "c"
+        "graph_travel_all.h": "c",
+        "stddef.h": "c"
     }
 }

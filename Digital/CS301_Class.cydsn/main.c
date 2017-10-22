@@ -99,8 +99,7 @@ static void command_test() {
         sensors_controller_worker(&scd);
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
-        
-        
+
         //led_set(pcd.command_queue->size);
     }
 }
@@ -120,11 +119,12 @@ int main() {
     pcd = path_controller_create(30, &scd, &mcd);
     led_set(1);
     uint8_t grid PACMAN_MAP;
+    uint8_t food_list PACMAN_FOOD_LIST;
     point_uint8_t start = {
         .x = PACMAN_START_X,
         .y = PACMAN_START_Y
     };
-    path_controller_load_data(&pcd, (uint8_t*) &grid, 15, 19, start, start, -1);
+    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_SIZE, start);
     while(true) {
         int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
         pcd.heading = initial_heading;
@@ -133,7 +133,12 @@ int main() {
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
+            if (run_mode == 0) {
+                pcd.path = pcd.astar_path;
+                maze_runner();
+            }
             if (run_mode == 1) {
+                pcd.path = pcd.travel_path;
                 maze_runner();
             }
             else if (run_mode == 2) {

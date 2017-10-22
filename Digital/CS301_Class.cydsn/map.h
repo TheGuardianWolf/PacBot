@@ -15,6 +15,17 @@
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},\
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},\
 }
+#define PACMAN_MAP_WIDTH 19
+#define PACMAN_MAP_HEIGHT 15
+
+// Format {x, y}
+#define PACMAN_FOOD_LIST [5][2] = {{1,9},\
+    {5,5},\
+    {7,1},\
+    {13,5},\
+    {9,9}\
+}
+#define PACMAN_FOOD_LIST_SIZE = 5
     
 #define PACMAN_START_X 1
 #define PACMAN_START_Y 1

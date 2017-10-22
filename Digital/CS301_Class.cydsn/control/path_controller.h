@@ -6,22 +6,25 @@
 #include "graph.h"
 #include "linked_list.h"
 
-
-#define GRID_WIDTH 2379.4f
-#define GRID_HEIGHT 1796.6f
 #define GRID_BLOCK_WIDTH 132.19f
 #define GRID_BLOCK_HEIGHT 128.33f
-#define GRID_START_X 0
-#define GRID_START_Y 0
+#define GRID_BLOCK_WIDTH_PX 52.875f
+#define GRID_BLOCK_HEIGHT_PX 51.333f
+#define GRID_OFFSET_X 100.0f
+#define GRID_OFFSET_Y 100.0f
+#define GRID_OFFSET_X_PX 100.0f
+#define GRID_OFFSET_Y_PX 100.0f
 
-// 211.5 mm width for 16 blocks travel
-// 26.5 mm width for 2 blocks travel
-// 154mm height for 12 blocks travel
-// 26 mm height for 2 blocks travel
+// 211.5 cm width for 16 blocks travel
+// 26.5 cm width for 2 blocks travel
+// 154 cm height for 12 blocks travel
+// 26 cm height for 2 blocks travel
 
 typedef struct {
     Graph* graph;
     LinkedList* path;
+    LinkedList* astar_path;
+    LinkedList* travel_path;
     uint32_t sample_time;
     LinkedList* command_queue;
     graph_size_t current_node_id;
@@ -32,16 +35,15 @@ typedef struct {
     SCData* sc_data;
     MCData* mc_data;
     uint32_t last_run;
-    bool pathfinder;
 } PCData;
 
-
+DiPoint rf2grid(DiPoint rf_loc);
 
 void path_controller_init();
 
 PCData path_controller_create(uint32_t sample_time, SCData* scd, MCData* mcd);
 
-void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, point_uint8_t start, point_uint8_t end, int8_t initial_heading);
+void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height, uint8_t grid_width, uint8_t* food_list, uint8_t food_list_height, point_uint8_t start);
 
 void path_controller_add_command(PCData* data, MotorCommand* cmd);
 

@@ -18,6 +18,8 @@
 //RF 
 #define SOP 0xaa
 #define PACKET_INTERVAL 2
+#define RF_MMPERPIXEL 2.5f
+#define RF_DEGREESPERUNIT 5
 
 typedef struct {
     int16_t x;
