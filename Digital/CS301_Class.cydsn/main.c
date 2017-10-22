@@ -10,10 +10,12 @@
 #include "usb.h"
 #include "wireless.h"
 #include "map.h"
-#include "motor.h"
+// #include "motor.h"
 
 #define MAX_CMPS 60
-#define START_ORIENTATION G_N
+
+static uint8_t grid PACMAN_MAP;
+static uint8_t food_list PACMAN_FOOD_LIST;
     
 static SCData scd;
 static MCData mcd;
@@ -32,6 +34,143 @@ static void system_init() {
 //    //0.1 == 9 // 0.2 == 17 // 0.3 == 25 0.4 == 35 // 0.6 == 53 // 0.7 == 60
 //    return 0.01149265 * cmps + 0.0021600519;
 //}
+
+static void command_test();
+
+static void maze_runner();
+
+static void flash_invalid();
+
+int main() {
+    // Red light for initialisation
+    led_set(1);
+    system_init();
+    scd = sensors_controller_create(15, false, true);
+    mcd = motor_controller_create(15, &scd);
+    pcd = path_controller_create(50, &scd, &mcd);
+
+    bool pressed = false;
+    bool held = false;
+    uint32_t last_time = 0;
+    uint8_t selection = 0;
+    int8_t run_mode = -1;
+    int8_t initial_heading = 0;
+    uint8_t state = 0;
+    bool ready = false;
+
+    point_uint8_t start = {
+        .x = PACMAN_START_X,
+        .y = PACMAN_START_Y
+    };
+
+    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
+    
+    led_set(0);
+    while(true) {
+        if(btn_get()) {
+            last_time = systime_ms();
+            while(btn_get()) {
+                if (systime_ms() - last_time >= 1000) {
+                    held = true;
+                    pressed = false;
+                }
+                else {
+                    pressed = true;
+                    held = false;
+                }
+            };
+        }
+
+        if (pressed) {
+            if (selection >= 7) {
+                selection = 0;
+            }
+            else {
+                selection++;
+            }
+        }
+        led_set(selection);
+
+        switch(state) {
+            case 0:
+            if (held) {
+                if (selection > 0 && selection < 4) {
+                    run_mode = selection;
+                    selection = 0;
+                    state++;
+                }
+                else {
+                    flash_invalid();
+                }
+            }
+            break;
+            case 1:
+            if (held) {
+                if (selection > 0 && selection < 5) {
+                    initial_heading = selection;
+                    selection = 0;
+                    state++;
+                }
+                else {
+                    flash_invalid();
+                }
+            }
+            break;
+            case 2:
+            if (held) {
+                ready = true;
+            }
+            else {
+                led_set(0b010);
+            }
+            break;
+            default:
+            state = 0;
+            break;
+        }
+        if (ready) {
+            uint32_t td = 0;
+            last_time = systime_ms();
+            while (td <= 3000) {
+                td = last_time - systime_ms();
+                if (td < 1000) {
+                    led_set(0b001);
+                }
+                else if (td < 2000) {
+                    led_set(0b100);
+                }
+                else {
+                    led_set(0b010);
+                }
+            }
+            led_set(0);
+            pcd.heading = initial_heading;
+            if (run_mode == 1) {
+                pcd.path = pcd.astar_path;
+                maze_runner();
+            }
+            if (run_mode == 2) {
+                pcd.path = pcd.travel_path;
+                maze_runner();
+            }
+            else if (run_mode == 3) {
+                command_test();
+            }
+        }
+
+        pressed = false;
+        held = false;
+    }
+    return 0; 
+}
+
+static void maze_runner() {
+    while (true) {
+        sensors_controller_worker(&scd);
+        path_controller_worker(&pcd);
+        motor_controller_worker(&mcd);
+    }
+}
 
 static void command_test() {    
     MotorCommand cmd = {
@@ -106,61 +245,19 @@ static void command_test() {
     }
 }
 
-static void maze_runner() {
-    while (true) {
-        sensors_controller_worker(&scd);
-        path_controller_worker(&pcd);
-        motor_controller_worker(&mcd);
-    }
+static void flash_invalid() {
+    uint32_t last_time = systime_ms();
+    led_set(0);
+    while(systime_ms() - last_time < 500);
+    last_time = systime_ms();
+    led_set(0b100);
+    while(systime_ms() - last_time < 500);
+    last_time = systime_ms();
+    led_set(0);
+    while(systime_ms() - last_time < 500);
+    last_time = systime_ms();
+    led_set(0b100);
+    while(systime_ms() - last_time < 500);
+    last_time = systime_ms();
+    led_set(0);
 }
-
-static void motor_test() {
-    motor_set_L(100);
-    motor_set_R(100);
-}
-
-int main() {
-    system_init();
-    scd = sensors_controller_create(15, false, true);
-    mcd = motor_controller_create(15, &scd);
-    pcd = path_controller_create(30, &scd, &mcd);
-    led_set(1);
-    uint8_t grid PACMAN_MAP;
-    uint8_t food_list PACMAN_FOOD_LIST;
-    point_uint8_t start = {
-        .x = PACMAN_START_X,
-        .y = PACMAN_START_Y
-    };
-    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
-    while(true) {
-//        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
-        pcd.heading = G_S;
-//        uint8_t run_mode = REG_DIP_Read() & 0b0011;
-//        led_set(pcd.heading);
-        if(btn_get()) {
-            uint32_t time = systime_s();
-            while(systime_s() - time < 2);
-            pcd.path = pcd.astar_path;
-            maze_runner();
-            //command_test();
-//            if (run_mode == 0) {
-//                pcd.path = pcd.astar_path;
-//                maze_runner();
-//            }
-//            if (run_mode == 1) {
-//                pcd.path = pcd.travel_path;
-//                maze_runner();
-//            }
-//            else if (run_mode == 2) {
-//                command_test();
-//                //motor_test();
-//            }
-        }
-    }
-    return 0; 
-}
-
-/* [] END OF FILE */
-
-//0.15f 0.1 straight bias and 0
-//

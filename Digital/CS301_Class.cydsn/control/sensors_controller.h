@@ -11,6 +11,9 @@
 #define WHEEL_CIRCUMFERENCE 204 // millimeters
 #define PULSES_PER_REV 228 // Decoder x4
 #define LINE_SENSORS SIGMUX_MAX + 1
+#define LINE_DISABLE_CONFIG -1
+#define LINE_TRACKING_CONFIG 0
+#define LINE_INTERSECTION_CONFIG 1
 #define ORIENTATION_REV 360
 #define ORIENTATION_HREV 180
 #define DI_N 0
@@ -24,6 +27,7 @@
 
 typedef struct {
     uint32_t sample_time;
+    int8_t line_sensor_config;
     bool use_wireless;
     bool use_line;
     uint8_t line_tracking;

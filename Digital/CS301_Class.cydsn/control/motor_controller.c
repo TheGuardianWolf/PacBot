@@ -6,6 +6,7 @@
 #include "motor.h"
 #include "interactive.h"
 
+#define USE_DIFFERENTIAL 0
 #define LINE(x) data->sc_data->line_state[x]
 #define deg2dist(x)  M_PI * WHEEL_DISTANCE * ((float) x / 360)
 
@@ -18,7 +19,7 @@ static float speed2pidin (float speed) {
 static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
     int32_t difference = abs(target - ref) - abs(now - ref);
     int32_t sign = (int32_t) copysignf(1.0f, (float) target-ref); //(int32_t) copysignf(1.0f, (float) difference);
-    if (difference > 0) { 
+    if (difference > 0) {
         if (difference < 50) {
             return sign * ((float) (0.9f/100)*difference + 0.1f) * speed * (1 + bias);
         }
@@ -57,9 +58,9 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
         .bias_L = 0.0f,
         .bias_R = 0.0f,
         .PID_L = pid_create(1.0f, 10.0f, 0.025f,
-        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
+        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, sample_time, true),
         .PID_R = pid_create(1.0f, 10.0f, 0.025f,
-        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, 30, true),
+        MOTOR_MAX_SPEED, -MOTOR_MAX_SPEED, dead_band, sample_time, true),
         .target_dist = {
             .L = 0,
             .R = 0
@@ -79,7 +80,7 @@ static void adjust_bias(MCData* data) {
     // Run bias calculations
     data->bias_L = 0.0f;
     data->bias_R = 0.0f;
-    
+
     if (data->sc_data->use_line) {
         int32_t tolerance = 100;
         QuadDecData dist_to_target = {
@@ -88,16 +89,16 @@ static void adjust_bias(MCData* data) {
         };
         if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
             switch(data->sc_data->line_tracking) {
-                case DI_L:
-                    data->bias_L += -0.8f;
-                    data->bias_R += -0.5f;
-                    break;
-                case DI_R:
-                    data->bias_L += -0.5f;
-                    data->bias_R += -0.8f;
-                    break;
-                default:
-                    break;
+            case DI_L:
+                data->bias_L += -0.7f;
+                data->bias_R += -0.5f;
+                break;
+            case DI_R:
+                data->bias_L += -0.5f;
+                data->bias_R += -0.7f;
+                break;
+            default:
+                break;
             }
         }
 //        float inversion_bias = -0.02 * data->sc_data->line_inversions;
@@ -115,14 +116,16 @@ static void adjust_bias(MCData* data) {
         }
     }
 
-//    if (data->drive_mode == 0) {
-//        int32_t qd_differential = (data->sc_data->qd_dist.L - data->ref_dist.L) - (data->sc_data->qd_dist.R - data->ref_dist.R);
-////        if (data->bias_L == 0 && data->bias_R == 0) {
-//            // Quad Dec Differential P Bias
-//            data->bias_L += -0.01 * qd_differential;
-//            data->bias_R += 0.01 * qd_differential;
-////        }
-//    }
+    #if USE_DIFFERENTIAL == 1
+    if (data->drive_mode == 0) {
+        int32_t qd_differential = (data->sc_data->qd_dist.L - data->ref_dist.L) - (data->sc_data->qd_dist.R - data->ref_dist.R);
+        if (data->bias_L == 0 && data->bias_R == 0) {
+            // Quad Dec Differential P Bias
+            data->bias_L += -0.01 * qd_differential;
+            data->bias_R += 0.01 * qd_differential;
+        }
+    }
+    #endif
 
     data->bias_L = apply_limit(data->bias_L, -2.0f, 1.0f);
     data->bias_R = apply_limit(data->bias_R, -2.0f, 1.0f);
@@ -133,22 +136,22 @@ static void adjust_setpoint(MCData* data) {
     int32_t tolerance;
     // Run setpoint calculations
     if (data->drive_mode == 0) {
-//        if (data->sc_data->use_line) { 
-//            if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-//                tolerance = 100;
-//                QuadDecData dist_to_target = {
-//                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
-//                    .R = data->target_dist.R - data->sc_data->qd_dist.R
-//                };
-//                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-//                    data->PID_L.setpoint = 0.0f;
-//                    data->PID_R.setpoint = 0.0f;
-//                    data->target_dist.L = data->sc_data->qd_dist.L;
-//                    data->target_dist.R = data->sc_data->qd_dist.R;
-//                    special = true;
-//                }
-//            }
-//        }
+        if (data->sc_data->use_line) {
+            if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
+                tolerance = 100;
+                QuadDecData dist_to_target = {
+                    .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                    .R = data->target_dist.R - data->sc_data->qd_dist.R
+                };
+                if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+                    data->PID_L.setpoint = 0.0f;
+                    data->PID_R.setpoint = 0.0f;
+                    data->target_dist.L = data->sc_data->qd_dist.L;
+                    data->target_dist.R = data->sc_data->qd_dist.R;
+                    special = true;
+                }
+            }
+        }
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
@@ -167,7 +170,7 @@ static void adjust_setpoint(MCData* data) {
                     data->ref_dist.L = data->target_dist.L;
                     data->ref_dist.R = data->target_dist.R;
                     special = true;
-                    
+
                 }
             }
         }

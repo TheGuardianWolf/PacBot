@@ -6,6 +6,8 @@
 #include "pid.h"
 #include "systime.h"
 
+#define USE_DEADBAND_COMPENSATION 1
+
 float apply_limit(float var, float min, float max) {
     if (var > max) {
         return max;
@@ -73,8 +75,8 @@ void pid_compute(PIDData* data) {
 
     output += data->output_sum;
 
-    // Temporaily disable override - not providing low speeds.
     // Override PID when output falls into dead band
+    #if USE_DEADBAND_COMPENSATION == 1
     if (data->output < data->dead_band && data->output > -data->dead_band) {
         output = 0.0f;
         if (data->setpoint > 0.0f) {
@@ -88,6 +90,7 @@ void pid_compute(PIDData* data) {
             }
         } 
     }
+    #endif
     
     // Always apply D effects
     output += - data->kd * input_change;

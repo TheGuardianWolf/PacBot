@@ -1,3 +1,6 @@
+#ifndef MAP_H
+#define MAP_H
+
 #define PACMAN_MAP [15][19] = {\
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},\
     {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},\
@@ -29,3 +32,7 @@
     
 #define PACMAN_START_X 1
 #define PACMAN_START_Y 1
+
+#define PACMAN_START_ORIENTATION G_S
+
+#endif /* MAP_H */

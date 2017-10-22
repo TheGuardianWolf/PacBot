@@ -24,6 +24,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .sample_time = sample_time,
         .use_wireless = use_wireless,
         .use_line = use_line,
+        .line_sensor_config = 0,
         .line_tracking = DI_N,
         .line_intersection = {DI_N, DI_N},
         .line_front_lost = false,
@@ -58,6 +59,12 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
     return data;
 }
 
+void sensors_controller_set_config(SCData* data, int8_t config) {
+    if (data->line_sensor_config != config) {
+        data->line_sensor_config = config;
+    }
+}
+
 void sensors_controller_worker(SCData* data) {
     // Time guarded section
     uint32_t now = systime_ms();
@@ -73,9 +80,7 @@ void sensors_controller_worker(SCData* data) {
         data->qd_dist.R = qd_data.R - data->qd_start.R;
 
         data->curr_speed_L = calc_speed(data->qd_dist.L, data->qd_prev.L, time_diff);
-        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);     
-        
-//        data->qd_differential = data->qd_dist.L - data->qd_dist.R;
+        data->curr_speed_R = calc_speed(data->qd_dist.R, data->qd_prev.R, time_diff);
     }
     
     
