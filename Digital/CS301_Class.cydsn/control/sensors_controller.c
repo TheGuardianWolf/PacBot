@@ -32,6 +32,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .line_inversions = 0,
         .loc_valid = false,
         .qd_differential = 0,
+        .reversed = false,
         .curr_speed_L = 0.0f,
         .curr_speed_R = 0.0f,
         .last_run = 0,
@@ -47,6 +48,11 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
             data.loc_valid = (now - rf_data.timestamp < data.sample_time);
         }
     }
+
+    sensors_line_disable(1);
+    sensors_line_disable(2);
+    sensors_line_disable(0);
+    sensors_line_disable(5);
 
     sensors_controller_reset(&data);
     return data;
@@ -99,9 +105,15 @@ void sensors_controller_worker(SCData* data) {
         if (LINE(1) && LINE(2)) {
             // If front sensors roll off the line, and side sensors aren't detecting
             // Try to correct.
-            if (LINE_INV(3) || LINE_INV(4)) {
+            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || LINE_INV(5)) {
                 uint8_t line_tracking_prev = data->line_tracking;
-                data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
+                if (!data->reversed) {
+                    data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
+                }
+                else {
+                    data->line_tracking = (uint8_t) LINE_INV(3) * DI_L + (uint8_t) LINE_INV(4) * DI_R;
+                }
+
                 if (data->line_tracking == DI_LR) {
                     data->line_tracking = line_tracking_prev;
                 }
@@ -133,18 +145,18 @@ void sensors_controller_worker(SCData* data) {
         }
         
         // Automatic sensor enable/disable for higher switching speed
-        if (LINE_INV(3) && LINE_INV(4) && LINE(1) && LINE(2)) {
-            // Dead end need middle sensor
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            sensors_line_enable(0);
-        }
-        else {
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            sensors_line_disable(0);
-        }
-        sensors_line_disable(5);
+        // if (LINE_INV(3) && LINE_INV(4) && LINE(1) && LINE(2)) {
+        //     // Dead end need middle sensor
+        //     sensors_line_disable(1);
+        //     sensors_line_disable(2);
+        //     sensors_line_enable(0);
+        // }
+        // else {
+        //     sensors_line_enable(1);
+        //     sensors_line_enable(2);
+        //     sensors_line_disable(0);
+        // }
+        // sensors_line_disable(5);
     }
     
     // Wireless fusion section - Guard via interrupt flag
@@ -165,6 +177,17 @@ void sensors_controller_worker(SCData* data) {
         else {
             data->rel_dist += ((data->qd_dist.L - data->qd_prev.L) + (data->qd_dist.R - data->qd_prev.R)) / 2;
         }
+    }
+}
+
+void sensors_controller_reverse(SCData* data) {
+    if (!data->reversed) {
+        data->reversed = true;
+        sensors_line_enable(5);
+    }
+    else {
+        data->reversed = false;
+        sensors_line_disable(5);
     }
 }
 

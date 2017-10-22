@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stddef.h>
+
 static uint8_t count = 0;
 static bool check_start(Graph* graph, graph_size_t node_id) {
     point_uint8_t start_grid = graph_nodeid2grid(graph, node_id);
@@ -24,9 +25,40 @@ static point_uint8_t real2grid(DiPoint real_loc) {
     return grid_pos;
 }
 
+static void pathfinder_turn(PDData* data, int32_t turn) {
+    MotorCommand* cmd;
+
+    // Turn to face the next heading
+    cmd = malloc(sizeof(MotorCommand));
+    cmd->drive_mode = 1;
+    cmd->arg = turn * 85;
+    cmd->speed = 0.3;
+    linked_list_add(data->command_queue, cmd);
+    
+    data->heading = data->next_heading;
+}
+
+static void pathfinder_straight(PDData* data, int32_t blocks) {
+    MotorCommand* cmd;
+
+    // Travel straight if already oriented
+    cmd = malloc(sizeof(MotorCommand));
+    cmd->drive_mode = 0;
+    if (data->next_heading == G_N || data->next_heading == G_S) {
+        cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT * blocks);
+    }
+    else {
+        cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH * blocks);
+    }
+    cmd->speed = 0.3;
+    linked_list_add(data->command_queue, cmd);
+}
+
 static void pathfinder_update_path(PCData* data) {
     if (data->path->size > 0) {
         bool short_boost = false;
+        int32_t straight_blocks = 0;
+        int8_t turn = 0;
 
 //        // Pre-travel checks to make sure we're actually on the next node
 //        if (data->next_node_id != NODE_INVALID) {
@@ -70,67 +102,61 @@ static void pathfinder_update_path(PCData* data) {
 //            }
 //        }
 
-        if (!short_boost) {
-            MotorCommand* cmd;
-            int32_t dist = 0;
-            
+        if (!short_boost) {            
             if (data->last_command == NULL || data->last_command->drive_mode != 1) {
                 // Only pull from path if we're not adjusting orientations
                 graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
                 data->current_node_id = current_node_id;
                 
-                do {
+                while(true) {
                     graph_size_t next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
                     data->next_node_id = next_node_id;
-
                     // Find the travel arc
-                    GraphNode* current_node = vector_get(data->graph->nodes, data->current_node_id);
-                    graph_size_t i;
-                    
-                    for (i = 0; i < current_node->edges->size; i++) {
-                        GraphEdge* travel_edge = vector_get(current_node->edges, i);
-                        GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
-                        if (travel_arc != NULL && travel_arc->destination == next_node_id) {
-                            data->next_heading = travel_arc->heading;
-                            break;
-                        }
+                    GraphArc* travel_arc;
+                    GraphEdge* travel_edge = graph_edge_find(graph, current_node_id, next_node_id, &travel_arc);
+
+                    if (travel_arc == NULL || travel_edge == NULL) {
+                        // Break if unexpected nulls found
+                        break;
                     }
 
-                    dist ++;
+                    turn = (data->heading - travel_arc->heading);
 
-                    if(data->next_heading == data->heading) {
-                        current_node_id = (graph_size_t)(uvoid_t)linked_list_pop(data->path);
+                    if (turn == 0 && straight_blocks >= 0) {
+                        // Straight line travel and concatenation if going forward
+                        straight_blocks++;
+                        current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
                     }
-                } while (data->next_heading == data->heading);
+                    else if (abs(turn) == 2 && straight_blocks <= 0) {
+                        // Straight line travel and concatenation if going backwards
+                        straight_blocks--;
+                        current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+                    }
+                    else {
+                        // Not a straight line, don't concatenate
+                        break;
+                    }
+                } 
 
-                
+                data->next_heading = travel_arc->heading;
+                data->next_node_id = next_node_id;
             }
 
             // Set motor speed and mode
-            if (data->next_heading != data->heading) {
-                // Turn to face the travel arc
-                cmd = malloc(sizeof(MotorCommand));
-                cmd->drive_mode = 1;
-                cmd->arg = (int32_t) (data->heading - data->next_heading) * 85;
-                cmd->speed = 0.3;
-                linked_list_add(data->command_queue, cmd);
-                count ++;
-                
-                
-                data->heading = data->next_heading;
+            if (straight_blocks > 0) {
+                if (data->sc_data->reversed) {
+                    sensors_controller_reverse(data->sc_data);
+                }
+                pathfinder_straight(data, straight_blocks);
+            }
+            else if (straight_blocks < 0) {
+                if (!data->sc_data->reversed) {
+                    sensors_controller_reverse(data->sc_data);
+                }
+                pathfinder_straight(data, straight_blocks);
             }
             else {
-                // Travel straight if already oriented
-                cmd = malloc(sizeof(MotorCommand));
-                cmd->drive_mode = 0;
-                if (data->next_heading == G_N || data->next_heading == G_S) {
-                    cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT * dist);
-                }
-                else {
-                    cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH * dist);
-                }
-                cmd->speed = 0.15;
-                linked_list_add(data->command_queue, cmd);
+                pathfinder_turn(data, turn);
             }
         }
         else {

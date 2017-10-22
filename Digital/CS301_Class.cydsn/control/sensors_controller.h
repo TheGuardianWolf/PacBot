@@ -41,6 +41,7 @@ typedef struct {
     QuadDecData qd_prev;
     int32_t rel_dist;
     int32_t rel_orientation;
+    bool reversed;
     float curr_speed_L;
     float curr_speed_R;
     uint32_t last_run;
@@ -51,6 +52,8 @@ void sensors_controller_init();
 SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool use_line);
 
 void sensors_controller_worker(SCData* data);
+
+void sensors_controller_reverse(SCData* data);
 
 void sensors_controller_reset(SCData* data);
 

@@ -117,6 +117,20 @@ graph_size_t graph_node_order(Graph* graph, graph_size_t node_id) {
     return node->edges->size;
 }
 
+GraphEdge* graph_edge_find(Graph* graph, graph_size_t node_a, graph_size_t node_b, GraphArc** r_arc) {
+    graph_size_t i;
+    GraphNode* current_node = vector_get(data->graph->nodes, node_a);
+    for (i = 0; i < current_node->edges->size; i++) {
+        GraphEdge* travel_edge = vector_get(current_node->edges, i);
+        GraphArc* travel_arc = graph_arc_from(travel_edge, data->current_node_id);
+        if (travel_arc != NULL && travel_arc->destination == node_b) {
+            *r_arc = travel_arc;
+            return travel_edge;
+        }
+    }
+    return NULL;
+}
+
 void graph_edge_remove(Graph* graph, GraphEdge* edge) {
     GraphDetatchedEdge* detatched_edge = malloc(sizeof(GraphDetatchedEdge));
     graph_size_t node_ids[2] = {edge->a1.destination, edge->a2.destination};
