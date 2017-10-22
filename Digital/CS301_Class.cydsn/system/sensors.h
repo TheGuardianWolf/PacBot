@@ -20,6 +20,8 @@ CY_ISR_PROTO(line_fall);
     
 void sensors_init();
 
+bool sensors_ready();
+
 LineData sensors_line_get();
 
 bool sensors_line_check();
