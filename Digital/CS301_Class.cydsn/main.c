@@ -121,8 +121,8 @@ static void motor_test() {
 
 int main() {
     system_init();
-    scd = sensors_controller_create(30, false, true);
-    mcd = motor_controller_create(30, &scd);
+    scd = sensors_controller_create(15, false, true);
+    mcd = motor_controller_create(15, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
     led_set(1);
     uint8_t grid PACMAN_MAP;
@@ -131,7 +131,7 @@ int main() {
         .x = PACMAN_START_X,
         .y = PACMAN_START_Y
     };
-    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_SIZE, start);
+    path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
     while(true) {
 //        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
         pcd.heading = G_S;
@@ -140,7 +140,7 @@ int main() {
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
-            pcd.path = pcd.travel_path;
+            pcd.path = pcd.astar_path;
             maze_runner();
             //command_test();
 //            if (run_mode == 0) {

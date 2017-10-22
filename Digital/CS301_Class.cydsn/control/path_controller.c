@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#define USE_REVERSE 0
+#define USE_REVERSE 1
 
 DiPoint rf2grid(DiPoint rf_loc) {
     DiPoint grid_pos = {
@@ -33,8 +33,8 @@ static void pathfinder_turn(PCData* data, int32_t turn) {
     // Turn to face the next heading
     cmd = malloc(sizeof(MotorCommand));
     cmd->drive_mode = 1;
-    cmd->arg = turn * 85;
-    cmd->speed = 0.3;
+    cmd->arg = turn * 90;
+    cmd->speed = PATHFINDER_TURN_SPEED;
     linked_list_add(data->command_queue, cmd);
     
     data->heading = data->next_heading;
@@ -46,13 +46,13 @@ static void pathfinder_straight(PCData* data, int32_t blocks) {
     // Travel straight if already oriented
     cmd = malloc(sizeof(MotorCommand));
     cmd->drive_mode = 0;
-    if (data->next_heading == G_N || data->next_heading == G_S) {
+    if (data->heading == G_N || data->heading == G_S) {
         cmd->arg = (int32_t) roundf(GRID_BLOCK_HEIGHT * blocks);
     }
     else {
         cmd->arg = (int32_t) roundf(GRID_BLOCK_WIDTH * blocks);
     }
-    cmd->speed = 0.3;
+    cmd->speed = PATHFINDER_STRAIGHT_SPEED;
     linked_list_add(data->command_queue, cmd);
 }
 
@@ -103,7 +103,10 @@ static void pathfinder_update_path(PCData* data) {
 
         if (!short_boost) {
             // Only pull from path if we're not adjusting orientations
-            graph_size_t current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+            graph_size_t current_node_id = data->next_node_id;
+            if (current_node_id == NODE_INVALID) {
+                current_node_id = (graph_size_t)(uvoid_t) linked_list_pop(data->path);
+            }
             data->current_node_id = current_node_id;
             
             GraphArc* travel_arc;
@@ -141,7 +144,7 @@ static void pathfinder_update_path(PCData* data) {
             } 
 
             data->next_heading = travel_arc->heading;
-            data->next_node_id = next_node_id;
+            data->next_node_id = current_node_id;
 
             // Set motor speed and mode
             if (straight_blocks > 0) {
@@ -154,6 +157,9 @@ static void pathfinder_update_path(PCData* data) {
             #endif
             else {
                 turn = data->heading - data->next_heading;
+                if (turn < -2 || turn > 2) {
+                    turn = copysignf(1.0f, turn * -1);
+                }
                 pathfinder_turn(data, turn);
             }
         }
@@ -220,7 +226,7 @@ void path_controller_load_data(PCData* data, uint8_t* grid, uint8_t grid_height,
     }
     data->astar_path = astar_path;
 
-    data->current_node_id = graph_grid2nodeid(data->graph, start);   
+//    data->current_node_id = graph_grid2nodeid(data->graph, start);   
 }
 
 void path_controller_add_command(PCData* data, MotorCommand* cmd) {

@@ -153,8 +153,8 @@ static void adjust_setpoint(MCData* data) {
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
             if (!data->sc_data->line_front_lost) {
-                tolerance = deg2dist(45);
-
+                tolerance = deg2dist(75);
+                led_set(0b111);
                 QuadDecData dist_to_target = {
                     .L = data->target_dist.L - data->sc_data->qd_dist.L,
                     .R = data->target_dist.R - data->sc_data->qd_dist.R
@@ -164,7 +164,10 @@ static void adjust_setpoint(MCData* data) {
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
+                    data->ref_dist.L = data->target_dist.L;
+                    data->ref_dist.R = data->target_dist.R;
                     special = true;
+                    
                 }
             }
         }

@@ -6,6 +6,8 @@
 #include "graph.h"
 #include "linked_list.h"
 
+#define PATHFINDER_TURN_SPEED 0.15f
+#define PATHFINDER_STRAIGHT_SPEED 0.3f
 #define GRID_BLOCK_WIDTH 132.19f
 #define GRID_BLOCK_HEIGHT 128.33f
 #define GRID_BLOCK_WIDTH_PX 52.875f

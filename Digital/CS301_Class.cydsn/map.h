@@ -19,13 +19,13 @@
 #define PACMAN_MAP_HEIGHT 15
 
 // Format {x, y}
-#define PACMAN_FOOD_LIST [5][2] = {{1,9},\
+#define PACMAN_FOOD_LIST [5][2] = {{3,1},\
     {5,5},\
-    {7,1},\
-    {13,5},\
-    {9,9}\
+    {3,5},\
+    {1,3},\
+    {6,4}\
 }
-#define PACMAN_FOOD_LIST_SIZE 0
+#define PACMAN_FOOD_LIST_HEIGHT 5
     
 #define PACMAN_START_X 1
 #define PACMAN_START_Y 1
