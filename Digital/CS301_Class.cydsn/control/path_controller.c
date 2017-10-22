@@ -74,7 +74,7 @@ static void pathfinder_update_path(PCData* data) {
                 // Test: Check if currently in right grid or orientation with RF
                 if (data->last_command->drive_mode == 1) {
                     if (data->heading != real_grid_loc.orientation) {
-                        data->last_command->arg = ((int32_t) data->heading - real_grid_loc.orientation) * 15;
+                        data->last_command->arg = ((int32_t) data->heading - real_grid_loc.orientation) * 35;
                         short_boost = true;
                     }
                 }
@@ -111,6 +111,10 @@ static void pathfinder_update_path(PCData* data) {
             
             GraphArc* travel_arc;
             graph_size_t next_node_id;
+
+            while((graph_size_t)(uvoid_t) linked_list_peek(data->path) == current_node_id) {
+                linked_list_pop(data->path);
+            }
             
             while(true) {
                 next_node_id = (graph_size_t)(uvoid_t) linked_list_peek(data->path);
