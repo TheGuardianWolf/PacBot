@@ -181,24 +181,30 @@ int main() {
     led_set(0);
     while(true) {
         int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
-        uint8_t run_mode = REG_DIP_Read() & 0b0011;
+        uint8_t run_mode = REG_DIP_Read() & 0b0001;
         led_set(initial_heading);
         pcd.heading = initial_heading;
+        uint8_t config_on = ((REG_DIP_Read() >> 1) & 0b0001);
         //led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11))));
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
+            
+            
            if (run_mode == 0) {
                pcd.path = pcd.astar_path;
                maze_runner();
            }
-           if (run_mode == 1) {
+           else if (run_mode == 1) {
                pcd.path = pcd.travel_path;
                maze_runner();
            }
-           else if (run_mode == 2) {
-               command_test();
-               //motor_test();
+           
+           if (config_on == 0) {
+               scd.use_config = 0;
+           }
+           else if (config_on == 1){
+               scd.use_config = 1;
            }
         }
     }

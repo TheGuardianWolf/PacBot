@@ -197,21 +197,21 @@ void sensors_controller_worker(SCData* data) {
         }
 
         // Automatic sensor enable/disable for higher switching speed
-         if (LINE(0)) {
-             sensors_line_disable(5);
-         }
-         else {
-             sensors_line_enable(5);
-         }
+//         if (LINE(0)) {
+//             sensors_line_disable(5);
+//         }
+//         else {
+//             sensors_line_enable(5);
+//         }
 
-         if (LINE(3) || LINE(4)) {
-             sensors_line_disable(1);
-             sensors_line_disable(2);
-         }
-         else {
-             sensors_line_enable(1);
-             sensors_line_enable(2);
-         }
+//         if (LINE(3) || LINE(4)) {
+//             sensors_line_disable(1);
+//             sensors_line_disable(2);
+//         }
+//         else {
+//             sensors_line_enable(1);
+//             sensors_line_enable(2);
+//         }
     }
 }
 

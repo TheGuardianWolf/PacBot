@@ -191,7 +191,7 @@ static void adjust_setpoint(MCData* data) {
                 .R = data->target_dist.R - data->sc_data->qd_dist.R
             };
             if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-                if (!data->sc_data->line_front_lost) {
+                if (data->sc_data->line_tracking_aggressive == false) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
@@ -199,7 +199,7 @@ static void adjust_setpoint(MCData* data) {
                     special = true;
                 }
             }
-            //sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
+            sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
         }
     }
     else if (data->drive_mode == 3) {
