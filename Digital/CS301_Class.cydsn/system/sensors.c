@@ -66,7 +66,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
                         REG_LED_Write(REG_LED_Read() & 0b110);
                     }
                 }
-                else if (mux_selection == 3) {
+                else if (mux_selection == 1) {
                     if (reading == 1) {
                         REG_LED_Write(REG_LED_Read() | 0b010);
                     }
@@ -74,7 +74,7 @@ static void line_fsm(uint8_t trigger) {  // 0 for line_timer, 1 for line_rise, 2
                         REG_LED_Write(REG_LED_Read() & 0b101);
                     }
                 } 
-                else if (mux_selection == 4) {
+                else if (mux_selection == 2) {
                     if (reading == 1) {
                         REG_LED_Write(REG_LED_Read() | 0b100);
                     }

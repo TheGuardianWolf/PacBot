@@ -5,9 +5,10 @@
 
 #include "sensors_controller.h"
 #include "systime.h"
+#include "interactive.h"
 // #include "adc.h"
 
-#define USE_HERUSTICS 0
+#define USE_HERUSTICS 1
 
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
@@ -57,7 +58,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
             data.loc_valid = (now - rf_data.timestamp < data.sample_time);
         }
     }
-    sensors_controller_set_config(&data, LINE_TRACKING_CONFIG);
+//    sensors_controller_set_config(&data, LINE_TRACKING_CONFIG);
     sensors_controller_reset(&data);
     return data;
 }
@@ -131,9 +132,12 @@ void sensors_controller_worker(SCData* data) {
         // Check if front two sensors are both off line.
         if (LINE_INV(3) && LINE_INV(4)) {
             data->line_front_lost = true;
+            //led_set(0b001);
         }
         else {
             data->line_front_lost = false;
+            data->line_herustic_turn = DI_N;
+            //led_set(0b000);
         }
 
         // Straight line tracking / corrections

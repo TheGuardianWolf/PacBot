@@ -170,8 +170,8 @@ int main() {
 int main() {
     led_set(1);
     system_init();
-    scd = sensors_controller_create(30, false, true);
-    mcd = motor_controller_create(30, &scd);
+    scd = sensors_controller_create(20, false, true);
+    mcd = motor_controller_create(20, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
     point_uint8_t start = {
         .x = PACMAN_START_X,

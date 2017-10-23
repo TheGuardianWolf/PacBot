@@ -17,11 +17,15 @@ static float speed2pidin (float speed) {
 }
 
 static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
-    int32_t difference = abs(target - ref) - abs(now - ref);
+    int32_t distance_from_start = abs(now - ref);
+    int32_t difference = abs(target - ref) - distance_from_start;
     int32_t sign = (int32_t) copysignf(1.0f, (float) target-ref); //(int32_t) copysignf(1.0f, (float) difference);
     if (difference > 0) {
-        if (difference < 50) {
-            return sign * ((float) (0.85f/50)*difference + 0.15f) * speed * (1 + bias);
+        if (difference < 120) {
+            return sign * ((float) (0.9f/120)*difference + 0.1f) * speed * (1 + bias);
+        }
+        else if (distance_from_start < 120) {
+            return sign * ((float) (0.9f/120)*distance_from_start + 0.5f) * speed * (1 + bias);
         }
         return sign * speed * (1 + bias);
     }
@@ -69,7 +73,7 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
-        .line_stop_tolerance = 100,
+        .line_stop_tolerance = 70,
         .line_turn_tolerance = deg2dist(45),
         .drive_mode = 0,
         .idle = false,
@@ -82,33 +86,38 @@ static void adjust_bias(MCData* data) {
     // Run bias calculations
     data->bias_L = 0.0f;
     data->bias_R = 0.0f;
-
-    if (data->sc_data->use_line) {
-        int32_t tolerance = 100;
-        QuadDecData dist_to_target = {
-            .L = data->target_dist.L - data->sc_data->qd_dist.L,
-            .R = data->target_dist.R - data->sc_data->qd_dist.R
-        };
-        if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
-            switch(data->sc_data->line_tracking) {
-            case DI_L:
-                data->bias_L += -0.7f;
-                data->bias_R += -0.5f;
-                led_set(0b001);
-                break;
-            case DI_R:
-                data->bias_L += -0.5f;
-                data->bias_R += -0.7f;
-                led_set(0b010);
-                break;
-            default:
-                led_set(0b000);
-                break;
+    if (data->drive_mode == 0) {
+        if (data->sc_data->use_line) {
+            int32_t tolerance = data->line_stop_tolerance;
+            QuadDecData dist_to_target = {
+                .L = data->target_dist.L - data->sc_data->qd_dist.L,
+                .R = data->target_dist.R - data->sc_data->qd_dist.R
+            };
+            if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
+                led_set(0b111);
+                switch(data->sc_data->line_tracking) {
+                case DI_L:
+                    data->bias_L += -1.7f;
+                    data->bias_R += -1.2f;
+    //                led_set(0b001);
+                    break;
+                case DI_R:
+                    data->bias_L += -1.2f;
+                    data->bias_R += -1.7f;
+    //                led_set(0b010);
+                    break;
+                default:
+    //                led_set(0b000);
+                    break;
+                }
             }
+            else {
+                led_set(0b000);
+            }
+    //        float inversion_bias = -0.02 * data->sc_data->line_inversions;
+    //        data->bias_L += inversion_bias;
+    //        data->bias_R += inversion_bias;
         }
-//        float inversion_bias = -0.02 * data->sc_data->line_inversions;
-//        data->bias_L += inversion_bias;
-//        data->bias_R += inversion_bias;
     }
     // if (data->sc_data->use_wireless) {
     //     if (data->sc_data->rel_orientation < ORIENTATION_HREV) {
@@ -143,46 +152,39 @@ static void adjust_setpoint(MCData* data) {
     if (data->drive_mode == 0) {
         if (data->sc_data->use_line) {
             tolerance = data->line_stop_tolerance;
-            QuadDecData dist_to_target = {
-                .L = data->target_dist.L - data->sc_data->qd_dist.L,
-                .R = data->target_dist.R - data->sc_data->qd_dist.R
-            };
-
-            if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-                sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
-                if((data->sc_data->line_end || data->sc_data->line_intersection[0] > 0)) {
-                    data->PID_L.setpoint = 0.0f;
-                    data->PID_R.setpoint = 0.0f;
-                    data->target_dist.L = data->sc_data->qd_dist.L;
-                    data->target_dist.R = data->sc_data->qd_dist.R;
-                    special = true;
-                }
-            }
-            else {
-                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
-            }
+//            QuadDecData dist_to_target = {
+//                .L = data->target_dist.L - data->sc_data->qd_dist.L,
+//                .R = data->target_dist.R - data->sc_data->qd_dist.R
+//            };
+//            if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
+//                if(data->sc_data->line_intersection[0] > 0) {
+//                    data->PID_L.setpoint = 0.0f;
+//                    data->PID_R.setpoint = 0.0f;
+//                    data->target_dist.L = data->sc_data->qd_dist.L;
+//                    data->target_dist.R = data->sc_data->qd_dist.R;
+//                    special = true;
+//                }
+//            }
         }
     }
     else if (data->drive_mode == 1) {
         if (data->sc_data->use_line) {
-            tolerance = data->line_turn_tolerance;
-            QuadDecData dist_to_target = {
-                .L = data->target_dist.L - data->sc_data->qd_dist.L,
-                .R = data->target_dist.R - data->sc_data->qd_dist.R
+            QuadDecData dist_from_start = {
+                .L = data->sc_data->qd_dist.L - data->ref_dist.L,
+                .R = data->sc_data->qd_dist.R - data->ref_dist.R
             };
-            if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-//                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
+            tolerance = abs(data->target_dist.L - data->ref_dist.L) / 2;
+            if (abs(dist_from_start.L) > tolerance && abs(dist_from_start.R) > tolerance) {
                 if (!data->sc_data->line_front_lost) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
                     data->target_dist.L = data->sc_data->qd_dist.L;
                     data->target_dist.R = data->sc_data->qd_dist.R;
+                    data->drive_mode = -1;
                     special = true;
+                    data->idle = true;
                 }
             }
-//            else {
-//                sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
-//            }
         }
     }
     else if (data->drive_mode == 3) {
@@ -191,12 +193,14 @@ static void adjust_setpoint(MCData* data) {
             data->PID_R.setpoint = 0.0f;
             data->target_dist.L = data->sc_data->qd_dist.L;
             data->target_dist.R = data->sc_data->qd_dist.R;
+            data->drive_mode = -1;
             special = true;
         }
         else if (data->sc_data->use_wireless) {
             data->PID_L.setpoint = calc_setpoint(data->target_dist.L, data->sc_data->rel_dist, data->ref_dist.L, data->target_speed, data->bias_L);
             data->PID_R.setpoint = calc_setpoint(data->target_dist.R, data->sc_data->rel_dist, data->ref_dist.R, data->target_speed, data->bias_R);
             special = true;
+            data->drive_mode = -1;
         }
     }
 
@@ -274,22 +278,22 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         data->target_dist.R += dist2dec(-arc_length);
 
         if (arc_length < 0) {
-            data->sc_data->line_herustic_turn = DI_L;
+            data->sc_data->line_herustic_turn = DI_R;
         }
         else if (arc_length > 0) {
-            data->sc_data->line_herustic_turn = DI_R;
+            data->sc_data->line_herustic_turn = DI_L;
         }
     }
     else if (cmd->drive_mode == 2) {
         // Arc turn left/right
         int32_t arc_length = 2.0f * deg2dist(cmd->arg);
         if (arc_length < 0.0f) {
-            data->target_dist.L += dist2dec(arc_length);
-            data->target_dist.R += 0;
+            data->target_dist.L += 0;
+            data->target_dist.R += dist2dec(-arc_length);
         }
         else {
-            data->target_dist.L += 0;
-            data->target_dist.R += dist2dec(arc_length);
+            data->target_dist.L += dist2dec(arc_length);
+            data->target_dist.R += 0;
         }
     }
     else if (cmd->drive_mode == 3) {
