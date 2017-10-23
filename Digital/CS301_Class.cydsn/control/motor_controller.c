@@ -92,13 +92,13 @@ static void adjust_bias(MCData* data) {
         if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
-                data->bias_L += -0.7f;
+                data->bias_L += -0.8f;
                 data->bias_R += -0.5f;
                 led_set(0b001);
                 break;
             case DI_R:
                 data->bias_L += -0.5f;
-                data->bias_R += -0.7f;
+                data->bias_R += -0.8f;
                 led_set(0b010);
                 break;
             default:
