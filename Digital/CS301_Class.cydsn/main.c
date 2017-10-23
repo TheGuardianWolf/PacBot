@@ -183,7 +183,7 @@ int main() {
         int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
         uint8_t run_mode = REG_DIP_Read() & 0b0011;
         led_set(initial_heading);
-       
+        pcd.heading = initial_heading;
         //led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11))));
         if(btn_get()) {
             uint32_t time = systime_s();

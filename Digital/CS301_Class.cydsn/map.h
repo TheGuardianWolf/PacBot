@@ -30,8 +30,8 @@
 }
 #define PACMAN_FOOD_LIST_HEIGHT 5
     
-#define PACMAN_START_X 1
-#define PACMAN_START_Y 1
+#define PACMAN_START_X 13
+#define PACMAN_START_Y 5
 
 #define PACMAN_START_ORIENTATION G_S
 

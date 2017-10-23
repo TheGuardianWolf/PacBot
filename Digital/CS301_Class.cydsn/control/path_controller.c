@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#define USE_REVERSE 1
+#define USE_REVERSE 0
 
 DiPoint rf2grid(DiPoint rf_loc) {
     DiPoint grid_pos = {

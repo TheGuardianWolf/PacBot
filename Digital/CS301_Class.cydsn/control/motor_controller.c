@@ -21,7 +21,7 @@ static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed
     int32_t sign = (int32_t) copysignf(1.0f, (float) target-ref); //(int32_t) copysignf(1.0f, (float) difference);
     if (difference > 0) {
         if (difference < 50) {
-            return sign * ((float) (0.9f/100)*difference + 0.1f) * speed * (1 + bias);
+            return sign * ((float) (0.85f/50)*difference + 0.15f) * speed * (1 + bias);
         }
         return sign * speed * (1 + bias);
     }
@@ -70,7 +70,7 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .R = 0
         },
         .line_stop_tolerance = 100,
-        .line_turn_tolerance = deg2dist(75),
+        .line_turn_tolerance = deg2dist(45),
         .drive_mode = 0,
         .idle = false,
         .last_run = 0
@@ -171,7 +171,7 @@ static void adjust_setpoint(MCData* data) {
                 .R = data->target_dist.R - data->sc_data->qd_dist.R
             };
             if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
+//                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
                 if (!data->sc_data->line_front_lost) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
@@ -180,7 +180,9 @@ static void adjust_setpoint(MCData* data) {
                     special = true;
                 }
             }
-            sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
+//            else {
+//                sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
+//            }
         }
     }
     else if (data->drive_mode == 3) {

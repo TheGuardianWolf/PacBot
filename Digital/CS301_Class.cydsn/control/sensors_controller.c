@@ -7,7 +7,7 @@
 #include "systime.h"
 // #include "adc.h"
 
-#define USE_HERUSTICS 1
+#define USE_HERUSTICS 0
 
 // (s1-s0)/dt -> pulse/ms
 static float calc_speed(int32_t curr, int32_t prev, uint32_t dt) {
@@ -41,6 +41,11 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .curr_speed_R = 0.0f,
         .last_run = 0,
     };
+    
+    sensors_line_disable(0);
+    sensors_line_disable(1);
+    sensors_line_disable(2);
+    sensors_line_disable(5);
 
     if (use_wireless) {
         uint32_t now = systime_ms();
@@ -58,37 +63,37 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
 }
 
 void sensors_controller_set_config(SCData* data, int8_t config) {
-    if (data->line_sensor_config != config) {
-        data->line_sensor_config = config;
-        switch(config) {
-            case LINE_DISABLE_CONFIG:
-            sensors_line_disable(3);
-            sensors_line_disable(4);
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            sensors_line_enable(0);
-            sensors_line_enable(5);
-            break;
-            case LINE_TRACKING_CONFIG:
-            sensors_line_disable(0);
-            sensors_line_enable(3);
-            sensors_line_enable(4);
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            sensors_line_disable(5);
-            break;
-            case LINE_INTERSECTION_CONFIG:
-            sensors_line_disable(0);
-            sensors_line_disable(3);
-            sensors_line_disable(4);
-            sensors_line_enable(1);
-            sensors_line_enable(2);
-            sensors_line_enable(5);
-            break;
-            default:
-            break;
-        }
-    }
+//    if (data->line_sensor_config != config) {
+//        data->line_sensor_config = config;
+//        switch(config) {
+//            case LINE_DISABLE_CONFIG:
+//            sensors_line_disable(3);
+//            sensors_line_disable(4);
+//            sensors_line_disable(1);
+//            sensors_line_disable(2);
+//            sensors_line_enable(0);
+//            sensors_line_enable(5);
+//            break;
+//            case LINE_TRACKING_CONFIG:
+//            sensors_line_disable(0);
+//            sensors_line_enable(3);
+//            sensors_line_enable(4);
+//            sensors_line_disable(1);
+//            sensors_line_disable(2);
+//            sensors_line_disable(5);
+//            break;
+//            case LINE_INTERSECTION_CONFIG:
+//            sensors_line_disable(0);
+//            sensors_line_disable(3);
+//            sensors_line_disable(4);
+//            sensors_line_enable(1);
+//            sensors_line_enable(2);
+//            sensors_line_enable(5);
+//            break;
+//            default:
+//            break;
+//        }
+//    }
 }
 
 void sensors_controller_worker(SCData* data) {
