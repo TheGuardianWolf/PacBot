@@ -170,8 +170,8 @@ int main() {
 int main() {
     led_set(1);
     system_init();
-    scd = sensors_controller_create(15, false, true);
-    mcd = motor_controller_create(15, &scd);
+    scd = sensors_controller_create(30, false, true);
+    mcd = motor_controller_create(30, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
     point_uint8_t start = {
         .x = PACMAN_START_X,
@@ -183,7 +183,7 @@ int main() {
         int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
         uint8_t run_mode = REG_DIP_Read() & 0b0011;
         
-        led_set(initial_heading);
+        //led_set(initial_heading);
        
         //led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11))));
         if(btn_get()) {
@@ -225,8 +225,8 @@ static void command_test() {
 //
 //    cmd.drive_mode = 1;
 //    cmd.speed = 0.3f;
-//    cmd.arg = 85;
-//    path_controller_add_command(&pcd, &cmd);
+    cmd.arg = -GRID_BLOCK_WIDTH * 10;
+    path_controller_add_command(&pcd, &cmd);
 //
 //    cmd.drive_mode = 0;
 //    cmd.speed = 0.3f;
@@ -284,7 +284,7 @@ static void command_test() {
         path_controller_worker(&pcd);
         motor_controller_worker(&mcd);
 
-        led_set(pcd.command_queue->size);
+        //led_set(pcd.command_queue->size);
     }
 }
 

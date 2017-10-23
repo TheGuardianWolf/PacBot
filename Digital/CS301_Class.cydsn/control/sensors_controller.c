@@ -26,7 +26,7 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
         .sample_time = sample_time,
         .use_wireless = use_wireless,
         .use_line = use_line,
-        .line_sensor_config = 0,
+        .line_sensor_config = -1,
         .line_tracking = DI_N,
         .line_tracking_prev = DI_N,
         .line_intersection = {DI_N, DI_N},
@@ -52,51 +52,41 @@ SCData sensors_controller_create(uint32_t sample_time, bool use_wireless, bool u
             data.loc_valid = (now - rf_data.timestamp < data.sample_time);
         }
     }
-
-    sensors_line_disable(1);
-    sensors_line_disable(2);
-    sensors_line_disable(0);
-    sensors_line_disable(5);
-
+    sensors_controller_set_config(&data, LINE_TRACKING_CONFIG);
     sensors_controller_reset(&data);
     return data;
 }
 
 void sensors_controller_set_config(SCData* data, int8_t config) {
-    if (data->line_sensor_config != config) {
-        data->line_sensor_config = config;
-        switch(config) {
-            case LINE_DISABLE_CONFIG:
-            sensors_line_disable(0);
-            sensors_line_disable(3);
-            sensors_line_disable(4);
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            sensors_line_disable(5);
-            case LINE_TRACKING_CONFIG:
-            sensors_line_disable(0);
-            sensors_line_enable(3);
-            sensors_line_enable(4);
-            sensors_line_disable(1);
-            sensors_line_disable(2);
-            if (data->reversed) {
-                sensors_line_enable(5);
-            }
-            else {
-                sensors_line_disable(5);
-            }
-            case LINE_INTERSECTION_CONFIG:
-            sensors_line_disable(0);
-            sensors_line_disable(3);
-            sensors_line_disable(4);
-            sensors_line_enable(1);
-            sensors_line_enable(2);
-            sensors_line_enable(5);
-            break;
-            default:
-            break;
-        }
-    }
+//    if (data->line_sensor_config != config) {
+//        data->line_sensor_config = config;
+//        switch(config) {
+//            case LINE_DISABLE_CONFIG:
+//            sensors_line_disable(0);
+//            sensors_line_disable(3);
+//            sensors_line_disable(4);
+//            sensors_line_disable(1);
+//            sensors_line_disable(2);
+//            sensors_line_disable(5);
+//            case LINE_TRACKING_CONFIG:
+//            sensors_line_disable(0);
+//            sensors_line_enable(3);
+//            sensors_line_enable(4);
+//            sensors_line_disable(1);
+//            sensors_line_disable(2);
+//            sensors_line_disable(5);
+//            case LINE_INTERSECTION_CONFIG:
+//            sensors_line_disable(0);
+//            sensors_line_disable(3);
+//            sensors_line_disable(4);
+//            sensors_line_enable(1);
+//            sensors_line_enable(2);
+//            sensors_line_enable(5);
+//            break;
+//            default:
+//            break;
+//        }
+//    }
 }
 
 void sensors_controller_worker(SCData* data) {
@@ -143,14 +133,9 @@ void sensors_controller_worker(SCData* data) {
         if (LINE(1) && LINE(2)) {
             // If front sensors roll off the line, and side sensors aren't detecting
             // Try to correct.
-            if ((LINE_INV(3) || LINE_INV(4)) && (!data->reversed || (data->reversed && LINE_INV(5)))) {
+            if (LINE_INV(3) || LINE_INV(4)) {
                 data->line_tracking_prev = data->line_tracking;
-                if (!data->reversed) {
-                    data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
-                }
-                else {
-                    data->line_tracking = (uint8_t) LINE_INV(3) * DI_L + (uint8_t) LINE_INV(4) * DI_R;
-                }
+                data->line_tracking = (uint8_t) LINE_INV(3) * DI_R + (uint8_t) LINE_INV(4) * DI_L;
 
                 if (data->line_tracking == DI_LR) {
                     // Use herustics submitted by another controller if available.
@@ -218,15 +203,15 @@ void sensors_controller_worker(SCData* data) {
 void sensors_controller_reverse(SCData* data) {
     if (!data->reversed) {
         data->reversed = true;
-        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
-            sensors_line_enable(5);
-        }
+//        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
+//            sensors_line_enable(5);
+//        }
     }
     else {
         data->reversed = false;
-        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
-            sensors_line_disable(5);
-        }
+//        if (data->line_sensor_config == LINE_TRACKING_CONFIG) {
+//            sensors_line_disable(5);
+//        }
     }
 }
 

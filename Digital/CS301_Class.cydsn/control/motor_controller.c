@@ -94,12 +94,15 @@ static void adjust_bias(MCData* data) {
             case DI_L:
                 data->bias_L += -0.7f;
                 data->bias_R += -0.5f;
+                led_set(0b001);
                 break;
             case DI_R:
                 data->bias_L += -0.5f;
                 data->bias_R += -0.7f;
+                led_set(0b010);
                 break;
             default:
+                led_set(0b000);
                 break;
             }
         }
@@ -245,6 +248,7 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         data->target_dist.R = data->sc_data->qd_dist.R;
     }
     if (cmd->drive_mode == 0) {
+        sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
         // Forward/Back
         data->target_dist.L += dist2dec(cmd->arg);
         data->target_dist.R += dist2dec(cmd->arg);
@@ -261,6 +265,7 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         }
     }
     else if (cmd->drive_mode == 1) {
+        sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
         // Point turn left/right
         int32_t arc_length = deg2dist(cmd->arg);
         data->target_dist.L += dist2dec(arc_length);
