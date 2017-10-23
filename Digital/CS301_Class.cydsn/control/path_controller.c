@@ -35,7 +35,7 @@ static void pathfinder_turn(PCData* data, int32_t turn) {
     cmd->drive_mode = 1;
     
     if (abs(turn) == 2) {
-        cmd->arg = turn * 95;
+        cmd->arg = turn * 110;
     }
     else {
         cmd->arg = turn * 85;

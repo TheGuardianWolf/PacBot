@@ -53,6 +53,6 @@
 #define PACMAN_START_X 17
 #define PACMAN_START_Y 13
 
-#define PACMAN_START_ORIENTATION G_S
+#define PACMAN_START_ORIENTATION G_W
 
 #endif /* MAP_H */
