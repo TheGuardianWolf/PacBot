@@ -73,7 +73,7 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
-        .line_stop_tolerance = 70,
+        .line_stop_tolerance = 50,
         .line_turn_tolerance = deg2dist(45),
         .drive_mode = 0,
         .idle = false,
@@ -97,13 +97,13 @@ static void adjust_bias(MCData* data) {
                 led_set(0b111);
                 switch(data->sc_data->line_tracking) {
                 case DI_L:
-                    data->bias_L += -1.7f;
-                    data->bias_R += -1.2f;
+                    data->bias_L += -1.1f;
+                    data->bias_R += -0.6f;
     //                led_set(0b001);
                     break;
                 case DI_R:
-                    data->bias_L += -1.2f;
-                    data->bias_R += -1.7f;
+                    data->bias_L += -0.6f;
+                    data->bias_R += -1.1f;
     //                led_set(0b010);
                     break;
                 default:

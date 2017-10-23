@@ -33,7 +33,7 @@ static void pathfinder_turn(PCData* data, int32_t turn) {
     // Turn to face the next heading
     cmd = malloc(sizeof(MotorCommand));
     cmd->drive_mode = 1;
-    cmd->arg = turn * 100;
+    cmd->arg = turn * 105;
     cmd->speed = PATHFINDER_TURN_SPEED;
     linked_list_add(data->command_queue, cmd);
     
