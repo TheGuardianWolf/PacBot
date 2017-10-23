@@ -12,7 +12,7 @@
 #include "map.h"
 // #include "motor.h"
 
-#define TOUCH_UI 1
+#define TOUCH_UI 0
 #define MAX_CMPS 60
 
 static uint8_t grid PACMAN_MAP;
@@ -173,8 +173,6 @@ int main() {
     scd = sensors_controller_create(15, false, true);
     mcd = motor_controller_create(15, &scd);
     pcd = path_controller_create(30, &scd, &mcd);
-    uint8_t grid PACMAN_MAP;
-    uint8_t food_list PACMAN_FOOD_LIST;
     point_uint8_t start = {
         .x = PACMAN_START_X,
         .y = PACMAN_START_Y
@@ -182,9 +180,12 @@ int main() {
     path_controller_load_data(&pcd, (uint8_t*) &grid, PACMAN_MAP_HEIGHT, PACMAN_MAP_WIDTH, (uint8_t*) &food_list, PACMAN_FOOD_LIST_HEIGHT, start);
     led_set(0);
     while(true) {
-       int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
-       uint8_t run_mode = REG_DIP_Read() & 0b0011;
-       led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11));
+        int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
+        uint8_t run_mode = REG_DIP_Read() & 0b0011;
+        
+        led_set(initial_heading);
+       
+        //led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11))));
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
