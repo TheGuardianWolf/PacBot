@@ -97,20 +97,24 @@ static void adjust_bias(MCData* data) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
                 if (data->sc_data->line_tracking_aggressive) {
+                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
                     data->bias_L += -1.6f;
                     data->bias_R += -0.5f;
                 }
                 else {
+                    sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
                     data->bias_L += -1.1f;
                     data->bias_R += -0.6f;
                 }
                 break;
             case DI_R:
                 if (data->sc_data->line_tracking_aggressive) {
+                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
                     data->bias_L += -0.5f;
                     data->bias_R += -1.6f;
                 }
                 else {
+                    sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
                     data->bias_R += -1.1f;
                     data->bias_L += -0.6f;
                 }
@@ -284,6 +288,7 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         }
     }
     else if (cmd->drive_mode == 1) {
+        sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
         // Point turn left/right
         int32_t arc_length = deg2dist(cmd->arg);
         data->target_dist.L += dist2dec(arc_length);

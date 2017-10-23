@@ -94,8 +94,16 @@ void sensors_controller_set_config(SCData* data, int8_t config) {
             sensors_line_disable(4);
             sensors_line_enable(1);
             sensors_line_enable(2);
-            sensors_line_enable(5);
+            sensors_line_disable(5);
             break;
+            case LINE_ALL_CONFIG:
+            led_set(0b101);
+            sensors_line_disable(0);
+            sensors_line_enable(3);
+            sensors_line_enable(4);
+            sensors_line_enable(1);
+            sensors_line_enable(2);
+            sensors_line_disable(5);
             default:
             break;
         }
@@ -203,7 +211,7 @@ void sensors_controller_worker(SCData* data) {
 //         else {
 //             sensors_line_enable(5);
 //         }
-
+//
 //         if (LINE(3) || LINE(4)) {
 //             sensors_line_disable(1);
 //             sensors_line_disable(2);
