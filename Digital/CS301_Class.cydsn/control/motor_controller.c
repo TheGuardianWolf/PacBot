@@ -6,7 +6,7 @@
 #include "motor.h"
 #include "interactive.h"
 
-#define USE_DIFFERENTIAL 0
+#define USE_DIFFERENTIAL 1
 #define LINE(x) data->sc_data->line_state[x]
 #define deg2dist(x)  M_PI * WHEEL_DISTANCE * ((float) x / 360)
 
@@ -122,8 +122,8 @@ static void adjust_bias(MCData* data) {
     // }
 
 #if USE_DIFFERENTIAL == 1
-    if (data->drive_mode == 0) {
-        int32_t qd_differential = (data->sc_data->qd_dist.L - data->ref_dist.L) - (data->sc_data->qd_dist.R - data->ref_dist.R);
+    if (data->drive_mode == 0 && data->sc_data->reversed) {
+        int32_t qd_differential = abs(data->sc_data->qd_dist.L - data->ref_dist.L) - abs(data->sc_data->qd_dist.R - data->ref_dist.R);
         if (data->bias_L == 0 && data->bias_R == 0) {
             // Quad Dec Differential P Bias
             data->bias_L += -0.01 * qd_differential;

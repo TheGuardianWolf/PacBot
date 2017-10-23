@@ -182,7 +182,8 @@ int main() {
     while(true) {
         int8_t initial_heading = ((REG_DIP_Read() >> 2) & 0b0011) + 1;
         uint8_t run_mode = REG_DIP_Read() & 0b0011;
-        
+        pcd.path = pcd.travel_path;
+        maze_runner();
         //led_set(initial_heading);
        
         //led_set(((((uint8_t)(initial_heading - 1) << 2) & (run_mode & 0b11))));
