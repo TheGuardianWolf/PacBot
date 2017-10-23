@@ -96,29 +96,33 @@ static void adjust_bias(MCData* data) {
         if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
-                if (data->sc_data->line_tracking_aggressive) {
-                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
-                    data->bias_L += -1.6f;
-                    data->bias_R += -0.5f;
-                }
-                else {
+//                if (data->sc_data->line_tracking_aggressive) {
+//                    led_set(0b111);
+//                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
+//                    data->bias_L += -1.6f;
+//                    data->bias_R += -1.2f;
+//                }
+//                else {
                     sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
-                    data->bias_L += -1.1f;
+                    led_set(0b000);
+                    data->bias_L += -1.0f;
                     data->bias_R += -0.6f;
-                }
+//                }
                 break;
             case DI_R:
-                if (data->sc_data->line_tracking_aggressive) {
-                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
-                    data->bias_L += -0.5f;
-                    data->bias_R += -1.6f;
-                }
-                else {
+//                if (data->sc_data->line_tracking_aggressive) {
+//                    led_set(0b111);
+//                    sensors_controller_set_config(data->sc_data, LINE_INTERSECTION_CONFIG);
+//                    data->bias_L += -1.2f;
+//                    data->bias_R += -1.6f;
+//                }
+//                else {
                     sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
-                    data->bias_R += -1.1f;
+                    led_set(0b000);
+                    data->bias_R += -1.0f;
                     data->bias_L += -0.6f;
-                }
-                break
+//                }
+                break;
             default:
                 break;
             }

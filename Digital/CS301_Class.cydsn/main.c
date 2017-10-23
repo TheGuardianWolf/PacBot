@@ -189,7 +189,13 @@ int main() {
         if(btn_get()) {
             uint32_t time = systime_s();
             while(systime_s() - time < 2);
-            
+           
+           if (config_on == 0) {
+               scd.use_config = 0;
+           }
+           else if (config_on == 1){
+               scd.use_config = 1;
+           }
             
            if (run_mode == 0) {
                pcd.path = pcd.astar_path;
@@ -199,13 +205,7 @@ int main() {
                pcd.path = pcd.travel_path;
                maze_runner();
            }
-           
-           if (config_on == 0) {
-               scd.use_config = 0;
-           }
-           else if (config_on == 1){
-               scd.use_config = 1;
-           }
+
         }
     }
     return 0;
