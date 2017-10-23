@@ -17,11 +17,15 @@ static float speed2pidin (float speed) {
 }
 
 static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed, float bias) {
-    int32_t difference = abs(target - ref) - abs(now - ref);
+    int32_t distance_from_start = abs(now - ref);
+    int32_t difference = abs(target - ref) - distance_from_start;
     int32_t sign = (int32_t) copysignf(1.0f, (float) target-ref); //(int32_t) copysignf(1.0f, (float) difference);
     if (difference > 0) {
-        if (difference < 50) {
-            return sign * ((float) (0.85f/50)*difference + 0.15f) * speed * (1 + bias);
+        if (difference < 60) {
+            return sign * ((float) (0.5f/60)*difference + 0.5f) * speed * (1 + bias);
+        }
+        else if (distance_from_start < 60) {
+            return sign * ((float) (0.5f/60)*distance_from_start + 0.5f) * speed * (1 + bias);
         }
         return sign * speed * (1 + bias);
     }
@@ -84,7 +88,7 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
 
     if (data->sc_data->use_line) {
-        int32_t tolerance = 100;
+        int32_t tolerance = 60;
         QuadDecData dist_to_target = {
             .L = data->target_dist.L - data->sc_data->qd_dist.L,
             .R = data->target_dist.R - data->sc_data->qd_dist.R
