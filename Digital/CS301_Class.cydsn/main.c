@@ -75,6 +75,7 @@ int main() {
                 if (systime_ms() - last_time >= 1000) {
                     held = true;
                     pressed = false;
+                    led_set(0b111);
                 }
                 else {
                     pressed = true;
