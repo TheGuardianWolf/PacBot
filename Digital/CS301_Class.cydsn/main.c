@@ -135,7 +135,7 @@ int main() {
             uint32_t td = 0;
             last_time = systime_ms();
             while (td <= 3000) {
-                td = last_time - systime_ms();
+                td = systime_ms() - last_time;
                 if (td < 1000) {
                     led_set(0b001);
                 }
