@@ -73,7 +73,7 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
-        .line_stop_tolerance = 60,
+        .line_stop_tolerance = 50,
         .line_turn_tolerance = deg2dist(45),
         .drive_mode = 0,
         .idle = false,
@@ -96,17 +96,36 @@ static void adjust_bias(MCData* data) {
         if (abs(dist_to_target.L) > tolerance && abs(dist_to_target.R) > tolerance) {
             switch(data->sc_data->line_tracking) {
             case DI_L:
-                data->bias_L += -0.8f;
-                data->bias_R += -0.5f;
+                if (data->sc_data->line_tracking_aggressive) {
+                    data->bias_L += -1.6f;
+                    data->bias_R += -0.5f;
+                }
+                else {
+                    data->bias_L += -1.1f;
+                    data->bias_R += -0.6f;
+                }
                 break;
             case DI_R:
-                data->bias_L += -0.5f;
-                data->bias_R += -0.8f;
-                break;
+                if (data->sc_data->line_tracking_aggressive) {
+                    data->bias_L += -0.5f;
+                    data->bias_R += -1.6f;
+                }
+                else {
+                    data->bias_R += -1.1f;
+                    data->bias_L += -0.6f;
+                }
+                break
             default:
                 break;
             }
+        
+            //float inversion_bias = -0.02 * data->sc_data->line_inversions;
+            //data->bias_L += inversion_bias;
+            //data->bias_R += inversion_bias;
         }
+        
+        
+        
 //        float inversion_bias = -0.02 * data->sc_data->line_inversions;
 //        data->bias_L += inversion_bias;
 //        data->bias_R += inversion_bias;
@@ -180,7 +199,7 @@ static void adjust_setpoint(MCData* data) {
                     special = true;
                 }
             }
-            sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
+            //sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
         }
     }
     else if (data->drive_mode == 3) {

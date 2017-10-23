@@ -32,6 +32,7 @@ typedef struct {
     bool use_line;
     uint8_t line_tracking;
     uint8_t line_tracking_prev;
+    uint8_t line_tracking_aggressive;
     uint8_t line_intersection[2];
     uint8_t line_herustic_turn;
     bool line_end;
