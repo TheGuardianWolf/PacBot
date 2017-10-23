@@ -216,67 +216,19 @@ static void maze_runner() {
 
 static void command_test() {
     MotorCommand cmd = {
-        .speed = 0.3f,
+        .speed = 0.2f,
         .drive_mode = 0,
-        .arg = -GRID_BLOCK_WIDTH * 10
+        .arg = GRID_BLOCK_WIDTH * 5
     };
     path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.speed = 0.3f;
-    cmd.arg = -GRID_BLOCK_WIDTH * 10;
+    cmd.drive_mode = 1;
+    cmd.speed = 0.3f;
+    cmd.arg = 180;
     path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.speed = 0.3f;
-//    cmd.arg = GRID_BLOCK_HEIGHT * 2;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.speed = 0.3f;
-//    cmd.arg = 85;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.speed = 0.3f;
-//    cmd.arg = GRID_BLOCK_WIDTH * 2;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = -85;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.arg = GRID_BLOCK_HEIGHT * 2;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = -85;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.arg = GRID_BLOCK_WIDTH * 6;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = -85;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.arg = GRID_BLOCK_HEIGHT * 2;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = 85;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 0;
-//    cmd.arg = GRID_BLOCK_WIDTH * 10;
-//    path_controller_add_command(&pcd, &cmd);
-//
-//    cmd.drive_mode = 1;
-//    cmd.arg = 185;
-//    path_controller_add_command(&pcd, &cmd);
+    cmd.drive_mode = 0;
+    cmd.speed = 0.2f;
+    cmd.arg = GRID_BLOCK_WIDTH * 5;
+    path_controller_add_command(&pcd, &cmd);
 
     while (true) {
         sensors_controller_worker(&scd);

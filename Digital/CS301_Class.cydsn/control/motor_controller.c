@@ -25,7 +25,7 @@ static float calc_setpoint(int32_t target, int32_t now, int32_t ref, float speed
             return sign * ((float) (0.5f/60)*difference + 0.5f) * speed * (1 + bias);
         }
         else if (distance_from_start < 60) {
-            return sign * ((float) (0.5f/60)*distance_from_start + 0.5f) * speed * (1 + bias);
+            return sign * ((float) (0.2f/60)*distance_from_start + 0.8f) * speed * (1 + bias);
         }
         return sign * speed * (1 + bias);
     }
@@ -73,7 +73,7 @@ MCData motor_controller_create(uint32_t sample_time, SCData *sc_data) {
             .L = 0,
             .R = 0
         },
-        .line_stop_tolerance = 100,
+        .line_stop_tolerance = 60,
         .line_turn_tolerance = deg2dist(45),
         .drive_mode = 0,
         .idle = false,
@@ -88,7 +88,7 @@ static void adjust_bias(MCData* data) {
     data->bias_R = 0.0f;
 
     if (data->sc_data->use_line) {
-        int32_t tolerance = 60;
+        int32_t tolerance = data->line_stop_tolerance;
         QuadDecData dist_to_target = {
             .L = data->target_dist.L - data->sc_data->qd_dist.L,
             .R = data->target_dist.R - data->sc_data->qd_dist.R
@@ -98,15 +98,12 @@ static void adjust_bias(MCData* data) {
             case DI_L:
                 data->bias_L += -0.8f;
                 data->bias_R += -0.5f;
-                led_set(0b001);
                 break;
             case DI_R:
                 data->bias_L += -0.5f;
                 data->bias_R += -0.8f;
-                led_set(0b010);
                 break;
             default:
-                led_set(0b000);
                 break;
             }
         }
@@ -175,7 +172,6 @@ static void adjust_setpoint(MCData* data) {
                 .R = data->target_dist.R - data->sc_data->qd_dist.R
             };
             if (abs(dist_to_target.L) < tolerance && abs(dist_to_target.R) < tolerance) {
-//                sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
                 if (!data->sc_data->line_front_lost) {
                     data->PID_L.setpoint = 0.0f;
                     data->PID_R.setpoint = 0.0f;
@@ -184,9 +180,7 @@ static void adjust_setpoint(MCData* data) {
                     special = true;
                 }
             }
-//            else {
-//                sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
-//            }
+            sensors_controller_set_config(data->sc_data, LINE_TRACKING_CONFIG);
         }
     }
     else if (data->drive_mode == 3) {
@@ -271,7 +265,6 @@ void motor_controller_set(MCData* data, MotorCommand* cmd) {
         }
     }
     else if (cmd->drive_mode == 1) {
-        sensors_controller_set_config(data->sc_data, LINE_DISABLE_CONFIG);
         // Point turn left/right
         int32_t arc_length = deg2dist(cmd->arg);
         data->target_dist.L += dist2dec(arc_length);

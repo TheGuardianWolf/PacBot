@@ -6,7 +6,7 @@
 #include "pid.h"
 #include "systime.h"
 
-#define USE_DEADBAND_COMPENSATION 1
+#define USE_DEADBAND_COMPENSATION 0
 
 float apply_limit(float var, float min, float max) {
     if (var > max) {
